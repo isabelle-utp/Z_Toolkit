@@ -46,8 +46,15 @@ notation relcomp (infixr "\<^bold>;" 75)
 
 subsection \<open> Functional composition \<close>
 
-no_notation comp (infixl "\<circ>" 55)
+text \<open> We take the liberty of assuming that if a function composition is being applied, then
+  probably we want to compose two functions, rather than two relations. This makes sense,
+  given that relational composition and functional composition are semantically identical 
+  (but reversed). \<close>
 
+no_notation comp (infixl "\<circ>" 55)
+notation pfun_comp (infixl "\<circ>" 55)
+
+(*
 consts fcomp :: "'r1 \<Rightarrow> 'r2 \<Rightarrow> 'r3" (infixl "\<circ>" 55)
 
 text \<open> Since adhoc overloading and subtype coercion are mutually exclusive, we need to explicitly
@@ -72,6 +79,7 @@ adhoc_overloading fcomp comp
   and fcomp ffun_rel_fcomp
   and fcomp rel_ffun_fcomp
   and fcomp ffun_comp
+*)
 
 subsection \<open> Domain restriction \<close>
 

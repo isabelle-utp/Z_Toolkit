@@ -42,9 +42,6 @@ lift_definition pId_on :: "'a set \<Rightarrow> ('a, 'a) pfun" is "\<lambda> A x
 abbreviation pId :: "('a, 'a) pfun" where
 "pId \<equiv> pId_on UNIV"
 
-lift_definition plambda :: "('a \<Rightarrow> bool) \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> ('a, 'b) pfun"
-is "\<lambda> P f x. if (P x) then Some (f x) else None" .
-
 lift_definition pdom_res :: "'a set \<Rightarrow> ('a, 'b) pfun \<Rightarrow> ('a, 'b) pfun" (infixr "\<lhd>\<^sub>p" 85)
 is "\<lambda> A f. restrict_map f A" .
 
@@ -59,6 +56,11 @@ lift_definition pfun_entries :: "'k set \<Rightarrow> ('k \<Rightarrow> 'v) \<Ri
 "\<lambda> d f x. if (x \<in> d) then Some (f x) else None" .
 
 abbreviation "fun_pfun \<equiv> pfun_entries UNIV"
+
+no_notation disj (infixr "|" 30)
+
+definition pabs :: "'a set \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> 'a \<Rightarrow>\<^sub>p 'b" where
+"pabs A P f = (A \<inter> Collect P) \<lhd>\<^sub>p fun_pfun f"
 
 definition pcard :: "('a, 'b) pfun \<Rightarrow> nat"
 where "pcard f = card (pdom f)"
@@ -123,7 +125,10 @@ lemma pfun_subset_eq_least [simp]:
 syntax
   "_PfunUpd"  :: "[('a, 'b) pfun, maplets] => ('a, 'b) pfun" ("_'(_')\<^sub>p" [900,0]900)
   "_Pfun"     :: "maplets => ('a, 'b) pfun"            ("(1{_}\<^sub>p)")
-  "_plam"     :: "pttrn \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("\<lambda> _ | _ . _" [0,0,10] 10)
+  "_pabs"      :: "pttrn \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("\<lambda> _ \<in> _ | _ \<bullet> _" [0, 0, 0, 10] 10)
+  "_pabs_mem"  :: "pttrn \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("\<lambda> _ \<in> _ \<bullet> _" [0, 0, 10] 10)
+  "_pabs_pred" :: "pttrn \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("\<lambda> _ | _ \<bullet> _" [0, 0, 10] 10)
+  "_pabs_tot"  :: "pttrn \<Rightarrow> logic \<Rightarrow> logic" ("\<lambda> _ \<bullet> _" [0, 10] 10)
 
 translations
   "_PfunUpd m (_Maplets xy ms)"  == "_PfunUpd (_PfunUpd m xy) ms"
@@ -131,10 +136,13 @@ translations
   "_Pfun ms"                     => "_PfunUpd (CONST pempty) ms"
   "_Pfun (_Maplets ms1 ms2)"     <= "_PfunUpd (_Pfun ms1) ms2"
   "_Pfun ms"                     <= "_PfunUpd (CONST pempty) ms"
-  "\<lambda> x | P . e"                  => "CONST plambda (\<lambda> x. P) (\<lambda> x. e)"
-  "\<lambda> x | P . e"                  <= "CONST plambda (\<lambda> x. P) (\<lambda> y. e)"
-  "\<lambda> y | P . e"                  <= "CONST plambda (\<lambda> x. P) (\<lambda> y. e)"
-  "\<lambda> y | f v y . e"              <= "CONST plambda (f v) (\<lambda> y. e)"
+  "_pabs x A P f" => "CONST pabs A (\<lambda> x. P) (\<lambda> x. f)"
+  "_pabs x A P f" <= "CONST pabs A (\<lambda> y. P) (\<lambda> x. f)"
+  "_pabs x A P (f x)" <= "CONST pabs A (\<lambda> x. P) f"
+  "_pabs_mem x A f" == "_pabs x A (CONST True) f"
+  "_pabs_pred x P f" == "_pabs x (CONST UNIV) P f"
+  "_pabs_tot x f" == "_pabs_pred x (CONST True) f"
+  "_pabs_tot x f" <= "_pabs_mem x (CONST UNIV) f"
 
 subsection \<open> Algebraic laws \<close>
 
@@ -205,17 +213,6 @@ lemma pfun_plus_pos: "x + y = {}\<^sub>p \<Longrightarrow> x = {}\<^sub>p"
 
 lemma pfun_le_plus: "pdom x \<inter> pdom y = {} \<Longrightarrow> x \<le> x + y"
   by (transfer, auto simp add: map_le_iff_add)
-
-subsection \<open> Lambda abstraction \<close>
-
-lemma plambda_app [simp]: "(\<lambda> x | P x . f x)(v)\<^sub>p = (if (P v) then (f v) else undefined)"
-  by (transfer, auto)
-
-lemma plambda_eta [simp]: "(\<lambda> x | x \<in> pdom(f). f(x)\<^sub>p) = f"
-  by (transfer; auto simp add: domIff)
-
-lemma plambda_id [simp]: "(\<lambda> x | P x . x) = pId_on {x. P x}"
-  by (transfer, simp)
 
 subsection \<open> Membership, application, and update \<close>
 
@@ -304,6 +301,9 @@ lemma psubseteq_ran_subset:
   "f \<subseteq>\<^sub>p g \<Longrightarrow> pran(f) \<subseteq> pran(g)"
   by (transfer, auto simp add: map_le_def dom_def ran_def, fastforce)
 
+lemma pfun_eq_iff: "f = g \<longleftrightarrow> (pdom(f) = pdom(g) \<and> (\<forall> x \<in> pdom(f). f(x)\<^sub>p = g(x)\<^sub>p))"
+  by (auto, transfer, simp add: map_eq_iff, metis domD option.sel)
+
 subsection \<open> Domain laws \<close>
 
 lemma pdom_zero [simp]: "pdom 0 = {}"
@@ -330,9 +330,6 @@ lemma pdom_comp [simp]: "pdom (g \<circ>\<^sub>p f) = pdom (f \<rhd>\<^sub>p pdo
 lemma pdom_upd [simp]: "pdom (f(k \<mapsto> v)\<^sub>p) = insert k (pdom f)"
   by (transfer, simp)
 
-lemma pdom_plamda [simp]: "pdom (\<lambda> x | P x . f x) = {x. P x}"
-  by (transfer, auto)
-
 lemma pdom_pdom_res [simp]: "pdom (A \<lhd>\<^sub>p f) = A \<inter> pdom(f)"
   by (transfer, auto)
 
@@ -357,9 +354,6 @@ lemma pran_pId_on [simp]: "pran (pId_on A) = A"
 
 lemma pran_upd [simp]: "pran (f(k \<mapsto> v)\<^sub>p) = insert v (pran ((- {k}) \<lhd>\<^sub>p f))"
   by (transfer, auto simp add: ran_def restrict_map_def)
-
-lemma pran_plamda [simp]: "pran (\<lambda> x | P x . f x) = {f x | x. P x}"
-  by (transfer, auto simp add: ran_def)
 
 lemma pran_pran_res [simp]: "pran (f \<rhd>\<^sub>p A) = pran(f) \<inter> A"
   by (transfer, auto)
@@ -426,6 +420,9 @@ lemma pdom_res_apply [simp]:
     
 subsection \<open> Range restriction laws \<close>
 
+lemma pran_res_UNIV [simp]: "f \<rhd>\<^sub>p UNIV = f"
+  by (transfer, simp add: ran_restrict_map_def)
+
 lemma pran_res_zero [simp]: "{}\<^sub>p \<rhd>\<^sub>p A = {}\<^sub>p"
   by (transfer, auto simp add: ran_restrict_map_def)
 
@@ -443,6 +440,54 @@ lemma pran_res_override: "(f + g) \<rhd>\<^sub>p A \<subseteq>\<^sub>p (f \<rhd>
   apply (rename_tac f g A a y x)
   apply (case_tac "g a")
    apply (auto)
+  done
+
+subsection \<open> Entries \<close>
+  
+lemma pfun_entries_empty [simp]: "pfun_entries {} f = {}\<^sub>p"
+  by (transfer, simp)
+
+lemma pdom_pfun_entries [simp]: "pdom (pfun_entries A f) = A"
+  by (transfer, auto)
+
+lemma pran_pfun_entries [simp]: "pran (pfun_entries A f) = f ` A"
+  by (transfer, simp add: ran_def, auto)
+
+lemma pfun_entries_apply_1 [simp]: 
+  "x \<in> d \<Longrightarrow> (pfun_entries d f)(x)\<^sub>p = f x"
+  by (transfer, auto)
+
+lemma pfun_entries_apply_2 [simp]: 
+  "x \<notin> d \<Longrightarrow> (pfun_entries d f)(x)\<^sub>p = undefined"
+  by (transfer, auto)
+
+subsection \<open> Lambda abstraction \<close>
+
+lemma pabs_apply [simp]: "\<lbrakk> y \<in> A; P y \<rbrakk>  \<Longrightarrow> (\<lambda> x \<in> A | P x \<bullet> f x) (y)\<^sub>p = f y"
+  by (simp add: pabs_def)
+
+lemma pdom_pabs [simp]: "pdom (\<lambda> x \<in> A | P x \<bullet> f x) = A \<inter> Collect P"
+  by (simp add: pabs_def)
+
+lemma pran_pabs [simp]: "pran (\<lambda> x \<in> A | P x \<bullet> f x) = {f x | x. x \<in> A \<and> P x}"
+  unfolding pabs_def 
+  by (transfer, auto simp add: ran_def restrict_map_def)
+
+lemma pabs_eta [simp]: "(\<lambda> x \<in> pdom(f) \<bullet> f(x)\<^sub>p) = f"
+  by (simp add: pabs_def, transfer, auto simp add: fun_eq_iff domIff restrict_map_def)
+
+lemma pabs_id [simp]: "(\<lambda> x \<in> A | P x \<bullet> x) = pId_on {x\<in>A. P x}"
+  unfolding pabs_def by (transfer, simp add: restrict_map_def)
+
+text \<open> This rule can perhaps be simplified \<close>
+
+lemma pcomp_pabs: 
+  "(\<lambda> x \<in> A | P x \<bullet> f x) \<circ>\<^sub>p (\<lambda> x \<in> B | Q x \<bullet> g x) 
+    = (\<lambda> x \<in> pdom (pabs B Q g \<rhd>\<^sub>p (A \<inter> Collect P)) \<bullet> (f (g x)))"
+  apply (subst pabs_eta[THEN sym, of "(\<lambda> x \<in> A | P x \<bullet> f x) \<circ>\<^sub>p (\<lambda> x \<in> B | Q x \<bullet> g x)"]) 
+  apply (simp)
+  apply (simp add: pabs_def)
+  apply (transfer, auto simp add: restrict_map_def map_comp_def ran_restrict_map_def fun_eq_iff)
   done
 
 subsection \<open> Graph laws \<close>
@@ -477,24 +522,12 @@ lemma pfun_graph_override: "pfun_graph (f + g) = pfun_graph f +\<^sub>r pfun_gra
   by (transfer, auto simp add: map_add_def rel_override_def rel_domres_def map_graph_def option.case_eq_if)
      (metis option.collapse)+
 
-subsection \<open> Entries \<close>
-  
-lemma pfun_entries_empty [simp]: "pfun_entries {} f = {}\<^sub>p"
-  by (transfer, simp)
+lemma pfun_graph_comp: "pfun_graph (f \<circ>\<^sub>p g) = pfun_graph g O pfun_graph f"
+  by (transfer, simp add: map_graph_comp)
 
-lemma pdom_pfun_entries [simp]: "pdom (pfun_entries A f) = A"
-  by (transfer, auto)
-
-lemma pran_pfun_entries [simp]: "pran (pfun_entries A f) = f ` A"
-  by (transfer, simp add: ran_def, auto)
-
-lemma pfun_entries_apply_1 [simp]: 
-  "x \<in> d \<Longrightarrow> (pfun_entries d f)(x)\<^sub>p = f x"
-  by (transfer, auto)
-
-lemma pfun_entries_apply_2 [simp]: 
-  "x \<notin> d \<Longrightarrow> (pfun_entries d f)(x)\<^sub>p = undefined"
-  by (transfer, auto)
+lemma pfun_graph_pabs: "pfun_graph (\<lambda> x \<in> A | P x \<bullet> f x) = {(x, f x) | x. x \<in> A \<and> P x}"
+  unfolding pabs_def
+  by (transfer, auto simp add: map_graph_def restrict_map_def)
 
 subsection \<open> Summation \<close>
     
@@ -551,31 +584,32 @@ lemma pfun_sum_pdom_antires [simp]:
 
 subsection \<open> Conversions \<close>
 
-lift_definition list_pfun :: "'a list \<Rightarrow> nat \<Rightarrow>\<^sub>p 'a" is
-"\<lambda> xs i. if (0 < i \<and> i \<le> length xs) then Some (xs ! (i-1)) else None" .
+definition list_pfun :: "'a list \<Rightarrow> nat \<Rightarrow>\<^sub>p 'a" where
+"list_pfun xs = (\<lambda> i | 0 < i \<and> i \<le> length xs \<bullet> xs ! (i-1))"
 
 lemma pdom_list_pfun [simp]: "pdom (list_pfun xs) = {1..length xs}"
-  by (transfer, auto)
+  by (auto simp add: list_pfun_def)
 
 lemma pran_list_pfun [simp]: "pran (list_pfun xs) = set xs"
-  by (transfer, simp add: ran_def, safe, simp_all)
+  by (simp add: list_pfun_def, auto)
      (metis One_nat_def Suc_leI diff_Suc_1 in_set_conv_nth zero_less_Suc)
 
 lemma pfun_app_list_pfun: "\<lbrakk> 0 < i; i \<le> length xs \<rbrakk> \<Longrightarrow> (list_pfun xs)(i)\<^sub>p = xs ! (i - 1)"
-  by (transfer, auto)
+  by (simp add: list_pfun_def)
 
 lemma pfun_graph_list_pfun: "pfun_graph (list_pfun xs) = (\<lambda> i. (i, xs ! (i - 1))) ` {1..length xs}"
-  by (transfer, auto simp add: map_graph_def)
+  by (simp add: list_pfun_def pfun_graph_pabs, auto)
 
 lemma range_list_pfun:
   "range list_pfun = {f. \<exists> i. pdom(f) = {1..i}}"
+  apply (simp add: list_pfun_def pabs_def)
   apply (transfer, auto)
   apply (rename_tac xs)
   apply (rule_tac x="length xs" in exI, auto simp add: dom_def)[1]
   apply (simp add: image_def)
   apply (rename_tac f i)
   apply (rule_tac x="map (the \<circ> f \<circ> nat) [1..i]" in exI)
-  apply (auto simp add: fun_eq_iff)
+  apply (auto simp add: fun_eq_iff restrict_map_def)
   apply (metis Suc_le_mono Suc_pred atLeastAtMost_iff domIff le0 nat_int of_nat_Suc option.exhaust_sel)
   apply (metis One_nat_def atLeastAtMost_iff domIff le_zero_eq zero_neq_one)
   done

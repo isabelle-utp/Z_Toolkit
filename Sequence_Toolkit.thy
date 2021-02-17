@@ -40,45 +40,91 @@ lemma iter_eqs:
 
 subsection \<open> Number of members of a set \<close>
 
-notation card ("#_" [999] 999)
+notation size ("#_" [999] 999)
 
-lemma card_rel_of_list [simp]: 
-  "#(rel_of_list xs) = length xs"
-  by (auto simp add: pfun_graph_list_pfun card_image inj_on_convol_ident)
+instantiation set :: (type) size
+begin
+definition [simp]: "size A = card A"
+instance ..
+end
 
-subsection \<open> Maximum \<close>
+lemma size_rel_of_list: 
+  "#xs = length xs" 
+  by simp
 
 subsection \<open> Minimum \<close>
 
+text \<open> Implemented by the function @{const Min}. \<close>
+
+subsection \<open> Maximum \<close>
+
+text \<open> Implemented by the function @{const Max}. \<close>
+
 subsection \<open> Finite sequences \<close>
 
-definition "seq X = {f \<in> \<nat> \<rightarrow>\<^sub>f X. dom f = {1..#f}}"
+definition "seq (a::'a itself) = lists (UNIV :: 'a set)"
+
+syntax "_seq" :: "type \<Rightarrow> logic" ("seq'(_')")
+translations "seq('a)" == "CONST seq TYPE('a)"
 
 lemma seq_ffun_set: "range list_ffun = {f :: \<nat> \<Rightarrow>\<^sub>f 'X. dom(f) = {1..#f}}"
   by (simp add: range_list_ffun, force)
 
-lemma seq_eq: "range (rel_of_list :: 'a list \<Rightarrow> nat \<leftrightarrow> 'a) = seq (UNIV :: 'a set)"
-  oops
-
 subsection \<open> Non-empty finite sequences \<close>
 
-definition "seq\<^sub>1 X = seq X - {{}}"
+definition "seq1 X = seq X - {[]}"
+
+syntax "_seq1" :: "type \<Rightarrow> logic" ("seq\<^sub>1'(_')")
+translations "seq\<^sub>1('a)" == "CONST seq1 TYPE('a)"
+
+lemma seq1 [simp]: "xs \<in> seq\<^sub>1('a) \<Longrightarrow> #xs > 0"
+  by (simp add: seq1_def)
 
 subsection \<open> Head of a sequence \<close>
 
 definition head :: "'a list \<Rightarrow>\<^sub>p 'a" where
-"head = {xs. length xs > 0} \<lhd> fun_pfun hd"
+"head = (\<lambda> xs :: 'a list | #xs > 0 \<bullet> hd xs)"
 
-lemma dom_head: "dom head = {xs. length xs > 0}"
+lemma dom_head: "dom head = {xs. #xs > 0}"
   by (simp add: head_def)
 
-lemma head_app: "length xs > 0 \<Longrightarrow> head xs = hd xs"
+lemma head_app: "#xs > 0 \<Longrightarrow> head xs = hd xs"
   by (simp add: head_def)
+
+lemma head_z_def: "xs \<in> seq\<^sub>1('a) \<Longrightarrow> head xs = xs 1"
+  by (simp add: hd_conv_nth head_app seq1_def)
 
 subsection \<open> Last of a sequence \<close>
 
-lemma last_eq: "length s > 0 \<Longrightarrow> last s = s (#s)"
-  by (simp add: last_conv_nth)
+hide_const (open) last
+
+definition last :: "'a list \<Rightarrow>\<^sub>p 'a" where
+"last = (\<lambda> xs :: 'a list | #xs > 0 \<bullet> List.last xs)"
+
+lemma dom_last: "dom last = {xs. #xs > 0}"
+  by (simp add: last_def)
+
+lemma last_app: "#xs > 0 \<Longrightarrow> last xs = List.last xs"
+  by (simp add: last_def)
+
+lemma last_eq: "#s > 0 \<Longrightarrow> last s = s (#s)"
+  by (simp add: last_app last_conv_nth)
+
+subsection \<open> Tail of a sequence \<close>
+
+definition tail :: "'a list \<Rightarrow>\<^sub>p 'a list" where
+"tail = (\<lambda> xs :: 'a list | #xs > 0 \<bullet> tl xs)"
+
+lemma dom_tail: "dom tail = {xs. #xs > 0}"
+  by (simp add: tail_def)
+
+lemma tail_app: "#xs > 0 \<Longrightarrow> tail xs = tl xs"
+  by (simp add: tail_def)
+
+subsection \<open> Examples \<close>
+
+lemma "([1,2,3] \<^bold>; (\<lambda> x \<bullet> x + 1)) 1 = 2"
+  by (simp add: pfun_graph_comp[THEN sym] list_pfun_def pcomp_pabs)
 
 
 end
