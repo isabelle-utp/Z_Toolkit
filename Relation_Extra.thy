@@ -1,8 +1,15 @@
-section \<open> Relations: extra definitions and theorems \<close>
+section \<open> Relational Universe \<close>
 
 theory Relation_Extra
   imports "HOL-Library.FuncSet"
 begin
+
+text \<open> This theory develops a universe for a Z-like relational language, including the core 
+  operators of the ISO Z metalanguage. Much of this already exists in @{theory HOL.Relation},
+  but we need to add some additional functions and sets. It characterises relations, partial
+  functions, total functions, and finite functions. \<close>
+
+subsection \<open> Type Syntax\<close>
 
 text \<open> We set up some nice syntax for heterogeneous relations at the type level \<close>
 
@@ -14,17 +21,36 @@ translations
 
 subsection \<open> Relational Function Operations \<close>
 
+text \<open> These functions are all adapted from their ISO Z counterparts. \<close>
+
 definition rel_apply :: "('a \<leftrightarrow> 'b) \<Rightarrow> 'a \<Rightarrow> 'b" ("_'(_')\<^sub>r" [999,0] 999) where
 "rel_apply R x = (if x \<in> Domain(R) then THE y. (x, y) \<in> R else undefined)"
+
+text \<open> If there exists a unique @{term "e\<^sub>3"} such that @{term "(e\<^sub>2, e\<^sub>3)"} is in @{term "e\<^sub>1"}, then 
+  the value of @{term "e\<^sub>1(e\<^sub>2)\<^sub>r"} is @{term e\<^sub>3}, otherwise each @{term "e\<^sub>1(e\<^sub>2)\<^sub>r"} has a fixed but 
+  unknown value (i.e. @{const undefined}). \<close>
 
 definition rel_domres :: "'a set \<Rightarrow> ('a \<leftrightarrow> 'b) \<Rightarrow> 'a \<leftrightarrow> 'b" (infixr "\<lhd>\<^sub>r" 85) where
 "rel_domres A R = {(k, v) \<in> R. k \<in> A}"
 
+text \<open> Domain restriction (@{term "A \<lhd>\<^sub>r R"} contains the set of pairs in @{term R}, such that the
+  first element of every such pair in in @{term A}. \<close>
+
 definition rel_override :: "('a \<leftrightarrow> 'b) \<Rightarrow> ('a \<leftrightarrow> 'b) \<Rightarrow> 'a \<leftrightarrow> 'b" (infixl "+\<^sub>r" 65) where
-"rel_override R S = (- Domain S) \<lhd>\<^sub>r R \<union> S"
+"rel_override R S = ((- Domain S) \<lhd>\<^sub>r R) \<union> S"
+
+text \<open> Relational override (@{term "R +\<^sub>r S"}) combines the pairs of @{term S} with the pairs of
+  @{term S} that do not have a first element also in @{term S}. \<close>
 
 definition rel_update :: "('a \<leftrightarrow> 'b) \<Rightarrow> 'a \<Rightarrow> 'b \<Rightarrow> 'a \<leftrightarrow> 'b" where
 "rel_update R k v = rel_override R {(k, v)}"
+
+text \<open> Relational update adds a new pair to a relation. \<close>
+
+definition rel_compat :: "('a \<leftrightarrow> 'b) \<Rightarrow> ('a \<leftrightarrow> 'b) \<Rightarrow> bool" (infix "\<approx>\<^sub>r" 50) where
+"R \<approx>\<^sub>r S \<longleftrightarrow> (Domain R) \<lhd>\<^sub>r S = (Domain S) \<lhd>\<^sub>r R"
+
+text \<open> Relations are compatible is they agree on the values for maplets they both possess. \<close>
 
 subsection \<open> Domain Restriction \<close>
 
@@ -77,9 +103,6 @@ lemma functional_elem:
   assumes "functional R" "x \<in> Domain(R)"
   shows "(x, R(x)\<^sub>r) \<in> R"
   using assms(1) assms(2) functional_apply by fastforce
-
-lemma functional_empty [simp]: "functional {}"
-  by (simp add: functional_def)
 
 lemma functional_override [intro]: "\<lbrakk> functional R; functional S \<rbrakk> \<Longrightarrow> functional (R +\<^sub>r S)"
   by (auto simp add: functional_algebraic rel_override_def rel_domres_def)
@@ -134,13 +157,13 @@ lemma left_totalr_fun_rel: "left_totalr (fun_rel f)"
 subsection \<open> Relation Sets \<close>
 
 definition rel_typed :: "'a set \<Rightarrow> 'b set \<Rightarrow> ('a \<leftrightarrow> 'b) set" (infixr "\<leftrightarrow>" 55) where
-"rel_typed A B = {R. Domain(R) \<subseteq> A \<and> Range(R) \<subseteq> B}"
+"rel_typed A B = {R. Domain(R) \<subseteq> A \<and> Range(R) \<subseteq> B}" \<comment> \<open> Relations \<close>
 
 lemma rel_typed_intro: "\<lbrakk> Domain(R) \<subseteq> A; Range(R) \<subseteq> B \<rbrakk> \<Longrightarrow> R \<in> A \<leftrightarrow> B"
   by (simp add: rel_typed_def)
 
 definition rel_pfun :: "'a set \<Rightarrow> 'b set \<Rightarrow> ('a \<leftrightarrow> 'b) set" (infixr "\<rightarrow>\<^sub>p" 55) where
-"rel_pfun A B = {R. R \<in> A \<leftrightarrow> B \<and> functional R}"
+"rel_pfun A B = {R. R \<in> A \<leftrightarrow> B \<and> functional R}" \<comment> \<open> Partial Functions \<close>
 
 lemma rel_pfun_intro: "\<lbrakk> R \<in> A \<leftrightarrow> B; functional R \<rbrakk> \<Longrightarrow> R \<in> A \<rightarrow>\<^sub>p B"
   by (simp add: rel_pfun_def)
@@ -148,10 +171,10 @@ lemma rel_pfun_intro: "\<lbrakk> R \<in> A \<leftrightarrow> B; functional R \<r
 no_notation funcset (infixr "\<rightarrow>" 60)
 
 definition rel_tfun :: "'a set \<Rightarrow> 'b set \<Rightarrow> ('a \<leftrightarrow> 'b) set" (infixr "\<rightarrow>" 55) where
-"rel_tfun A B = {R. R \<in> A \<rightarrow>\<^sub>p B \<and> left_totalr R}"
+"rel_tfun A B = {R. R \<in> A \<rightarrow>\<^sub>p B \<and> left_totalr R}" \<comment> \<open> Total Functions \<close>
 
 definition rel_ffun :: "'a set \<Rightarrow> 'b set \<Rightarrow> ('a \<leftrightarrow> 'b) set" (infixr "\<rightarrow>\<^sub>f" 55) where
-"rel_ffun A B = {R. R \<in> A \<rightarrow>\<^sub>p B \<and> finite(Domain R)}"
+"rel_ffun A B = {R. R \<in> A \<rightarrow>\<^sub>p B \<and> finite(Domain R)}" \<comment> \<open> Finite Functions \<close>
 
 subsection \<open> Closure Properties \<close>
 

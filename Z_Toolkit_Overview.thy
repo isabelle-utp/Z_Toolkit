@@ -34,19 +34,31 @@ text \<open> The objective of this theory development is an implementation of th
   
   Now, it is entirely possible to reconstruct the Z mathematical toolkit in the way described above, 
   following the ISO standard, such that everything boils down to sets. However, there is a major 
-  downside to this, which is that we cannot easily use the results in the HOL standard library and the Archive 
-  of Formal Proofs, since these are all built using the HOL type universe extension paradigm. There
-  are also several benefits to the HOL approach, notably that the type system can be used to deduce when
-  a function is closed under a set. This in turn greatly improves proof automation, since there is
-  no obligation to check well-formedness of expressions as part of the proof. Consequently, we chose
+  downside to this, which is that we cannot easily use the results in the HOL standard library (@{theory Main}) 
+  and the Archive of Formal Proofs\footnote{Archive of Formal Proofs. \url{http://www.isa-afp.org}}, 
+  since these are all built using the HOL type universe extension paradigm. There are also several 
+  benefits to the HOL approach, notably that the type system can be used to deduce when a function 
+  is closed under a set. This in turn greatly improves proof automation, since there is no 
+  obligation to check well-formedness of expressions as part of the proof. Consequently, we chose
   to stick with the HOL approach.
   
-  In order to achieve compatibility with the Z mathematical toolkit in HOL, the principle problem
-  to solve is the necessity of type coercions. As mentioned, in Z, sequences are subtypes of sets, 
-  and so set-based functions can be directly applied to functions, which is often benefical. For 
-  example, the domain of a sequence is the set of indices of that sequence. So the technical goal
-  is to allow HOL to accept expressions of this kind. Our solution is to use a mixture of coercive
-  subtyping and type overloading to achieve this.
+  However, in order to be faithful with Z, we also implement the Z universe as a set of definitions,
+  based on the ISO standard. Much of this already in implemented in the theory @{theory HOL.Relation},
+  but we extend it with functions like application, domain restriction, and overriding, which
+  are all part of the Z metalanguage. Crucially, this development is all based on sets and relations,
+  not HOL functions, and therefore is a faithful encoding with Z. Upon this foundation, we construct
+  a hierarchy of types corresponding to partial functions, finite functions, and total functions, 
+  and we reuse the HOL @{typ "'a list"} type. We then prove that every HOL typed construction can
+  be safely converted into a Z-like set-based construction, which provides the link between the
+  efficiently implement HOL functions, and their Z counterparts.
+
+  In order to achieve compatibility between this HOL type hierarchy, and the Z mathematical toolkit, 
+  the principle problem to solve is the necessity of type coercions. As mentioned, in Z, sequences 
+  are subtypes of sets, and so set-based functions can be directly applied to functions, which is 
+  often benefical. For example, the domain of a sequence is the set of indices of that sequence. So 
+  the technical goal s to allow HOL to accept expressions of this kind. Our solution is to use a 
+  mixture of coercive subtyping and type overloading to achieve this. This allows the user to
+  write Z expressions into Isabelle, which are then internally mapped into HOL expressions.
 
   There are basically two types of situation we need to capture. The first is the use of a more 
   abstract type (e.g. set) to act as a view on a more concrete type (e.g. a sequence). Thus
