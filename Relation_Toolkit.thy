@@ -1,4 +1,4 @@
-section \<open> Relations \<close>
+section \<open> Relation Toolkit \<close>
 
 theory Relation_Toolkit
   imports Set_Toolkit Relation_Extra Partial_Fun Finite_Fun Total_Fun
@@ -47,39 +47,12 @@ notation relcomp (infixr "\<^bold>;" 75)
 subsection \<open> Functional composition \<close>
 
 text \<open> We take the liberty of assuming that if a function composition is being applied, then
-  probably we want to compose two functions, rather than two relations. This makes sense,
+  probably we want to compose two partial functions, rather than two relations. This makes sense,
   given that relational composition and functional composition are semantically identical 
   (but reversed). \<close>
 
 no_notation comp (infixl "\<circ>" 55)
 notation pfun_comp (infixl "\<circ>" 55)
-
-(*
-consts fcomp :: "'r1 \<Rightarrow> 'r2 \<Rightarrow> 'r3" (infixl "\<circ>" 55)
-
-text \<open> Since adhoc overloading and subtype coercion are mutually exclusive, we need to explicitly
-  create all the variants for composing relations and different subclasses. This has the benefit
-  that the most specific implementation is picked. \<close>
-
-abbreviation (input) "rel_rel_fcomp P Q \<equiv> Q O P"
-abbreviation (input) "pfun_rel_fcomp P Q \<equiv> Q O pfun_graph P"
-abbreviation (input) "rel_pfun_fcomp P Q \<equiv> pfun_graph Q O P"
-abbreviation (input) "ffun_pfun_fcomp P Q \<equiv> Q \<circ>\<^sub>p pfun_of P"
-abbreviation (input) "pfun_ffun_fcomp P Q \<equiv> pfun_of Q \<circ>\<^sub>p P"
-abbreviation (input) "ffun_rel_fcomp P Q \<equiv> Q O ffun_graph P"
-abbreviation (input) "rel_ffun_fcomp P Q \<equiv> ffun_graph Q O P"
-
-adhoc_overloading fcomp comp 
-  and fcomp rel_rel_fcomp
-  and fcomp pfun_rel_fcomp
-  and fcomp rel_pfun_fcomp
-  and fcomp pfun_comp
-  and fcomp ffun_pfun_fcomp
-  and fcomp pfun_ffun_fcomp
-  and fcomp ffun_rel_fcomp
-  and fcomp rel_ffun_fcomp
-  and fcomp ffun_comp
-*)
 
 subsection \<open> Domain restriction \<close>
 
@@ -91,6 +64,13 @@ adhoc_overloading
   and dom_res fdom_res
 
 subsection \<open> Range restriction \<close>
+
+consts ran_res :: "'a set \<Rightarrow> 'r1 \<Rightarrow> 'r2" (infixr "\<rhd>" 65)
+
+adhoc_overloading 
+(*  ran_res rel_ranres *)
+  ran_res pran_res
+  and dom_res fran_res
 
 subsection \<open> Domain subtraction \<close>
 

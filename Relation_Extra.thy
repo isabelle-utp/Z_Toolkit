@@ -1,4 +1,4 @@
-section \<open> Extra Relational Definitions and Theorems \<close>
+section \<open> Relations: extra definitions and theorems \<close>
 
 theory Relation_Extra
   imports "HOL-Library.FuncSet"

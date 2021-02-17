@@ -1,4 +1,4 @@
-section \<open> Functions \<close>
+section \<open> Function Toolkit \<close>
 
 theory Function_Toolkit
   imports Relation_Toolkit

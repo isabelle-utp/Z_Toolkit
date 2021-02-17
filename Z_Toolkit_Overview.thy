@@ -1,21 +1,26 @@
+section \<open> Overview \<close>
+
+(*<*)
 theory Z_Toolkit_Overview
   imports Main
 begin
+(*>*)
 
-text \<open> The objective of this theory development is an implementation of the Z mathematical toolkit
+text \<open> The objective of this theory development is an implementation of the Z mathematical 
+  toolkit\footnote{Z formal specification notation. \url{https://www.iso.org/standard/21573.html}} 
   (ISO 13568:2002) that is both efficient for proof and faithful to the standard. 
 
-  The main challenge to overcome is mismatch between the type system of Z, and the way that 
+  The main challenge to overcome is a mismatch between the type system of Z, and the way that 
   Isabelle/HOL theories are typically developed. This is because the objectives of Z and HOL 
   are a little different: Z targets a mathematically pure foundational development for formal
   specification based on ZF set theory, whereas HOL targets an efficient proof system capable
-  of scalable verification.
+  of scalable verification. The aim then is to reconcile these two objectives in one development.
 
   In Z, the type system is very simple, consisting only of given types closed under powerset and 
   product constructions. For example, in Z a total function is simply encoded as its graph in a 
   relation, and a relation is simply a set of pairs. There is no distinct type constructor for
   functions. Similarly, a sequence (list in HOL) is a finite function whose domain is 
-  @{term "{1..n}"}, for some natural number @{term n}. This means in Z, we can write expressions
+  @{term "{1::nat..n}"}, for some natural number @{term n}. This means in Z, we can write expressions
   that compare a relation and sequence, since they have the same type. 
 
   In contrast, in HOL it is impossible to directly compare a relation and a list since they have 
@@ -24,14 +29,14 @@ text \<open> The objective of this theory development is an implementation of th
   Indeed, the dominant paradigm for theory development in HOL is to constantly extend the type 
   system to capture new mathematical concepts, such as vectors, bounded continuous functions, and
   physical quantities, to name a few examples. This approach has proven to be very successful and
-  scalable, as evidenced by large verification projects like seL4, and the every growing Archive of 
+  scalable, as evidenced by large verification projects like seL4, and the ever growing Archive of 
   Formal Proofs.
   
   Now, it is entirely possible to reconstruct the Z mathematical toolkit in the way described above, 
   following the ISO standard, such that everything boils down to sets. However, there is a major 
-  downside to this that we cannot easily use the results in the HOL standard library and the Archive 
+  downside to this, which is that we cannot easily use the results in the HOL standard library and the Archive 
   of Formal Proofs, since these are all built using the HOL type universe extension paradigm. There
-  are several benefits to the HOL approach, notably that the type system can be used to deduce when
+  are also several benefits to the HOL approach, notably that the type system can be used to deduce when
   a function is closed under a set. This in turn greatly improves proof automation, since there is
   no obligation to check well-formedness of expressions as part of the proof. Consequently, we chose
   to stick with the HOL approach.
@@ -61,7 +66,9 @@ text \<open> The objective of this theory development is an implementation of th
   disjointness conditions. This development therefore implements the Z toolkit in this way.
 
   In conclusion, we wish to retain the generality of Z, whilst also taking full advantage of the
-  automation afforded by HOL. We hope our theory development achieves this.
+  automation afforded by Isabelle/HOL. We hope our theory development achieves this.
  \<close>
 
+(*<*)
 end
+(*>*)
