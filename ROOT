@@ -3,3 +3,4 @@ session "Z_Toolkit" = "Optics" +
   theories Relation_Lib Z_Toolkit
   document_files
     "root.tex"
+    "root.bib"

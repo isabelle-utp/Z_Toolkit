@@ -1,7 +1,9 @@
 section \<open> Meta-theory for Relation Library \<close>
 
 theory Relation_Lib
-  imports Countable_Set_Extra Positive FSet_Extra Relation_Extra Partial_Fun Finite_Fun Total_Fun List_Extra
+  imports
+    Countable_Set_Extra Positive Infinity FSet_Extra 
+    Relation_Extra Partial_Fun Finite_Fun Total_Fun List_Extra
 begin 
 
 text \<open> This theory marks the boundary between reusable library utilities and the creation of the

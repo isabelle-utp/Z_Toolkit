@@ -7,8 +7,8 @@ begin
 (*>*)
 
 text \<open> The objective of this theory development is an implementation of the Z mathematical 
-  toolkit\footnote{Z formal specification notation. \url{https://www.iso.org/standard/21573.html}} 
-  (ISO 13568:2002) that is both efficient for proof and faithful to the standard. 
+  toolkit~\cite{zrm} (ISO 13568:2002\footnote{Z formal specification notation. 
+  \url{https://www.iso.org/standard/21573.html}}) that is both efficient for proof and faithful to the standard. 
 
   The main challenge to overcome is a mismatch between the type system of Z, and the way that 
   Isabelle/HOL theories are typically developed. This is because the objectives of Z and HOL 
