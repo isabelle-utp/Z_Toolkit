@@ -126,5 +126,4 @@ subsection \<open> Examples \<close>
 lemma "([1,2,3] \<^bold>; (\<lambda> x \<bullet> x + 1)) 1 = 2"
   by (simp add: pfun_graph_comp[THEN sym] list_pfun_def pcomp_pabs)
 
-
 end

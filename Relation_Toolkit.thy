@@ -56,7 +56,7 @@ notation pfun_comp (infixl "\<circ>" 55)
 
 subsection \<open> Domain restriction \<close>
 
-consts dom_res :: "'a set \<Rightarrow> 'r1 \<Rightarrow> 'r2" (infixr "\<lhd>" 65)
+consts dom_res :: "'a set \<Rightarrow> 'r \<Rightarrow> 'r" (infixr "\<lhd>" 65)
 
 adhoc_overloading 
   dom_res rel_domres
@@ -65,7 +65,7 @@ adhoc_overloading
 
 subsection \<open> Range restriction \<close>
 
-consts ran_res :: "'a set \<Rightarrow> 'r1 \<Rightarrow> 'r2" (infixr "\<rhd>" 65)
+consts ran_res :: "'a set \<Rightarrow> 'r \<Rightarrow> 'r" (infixr "\<rhd>" 65)
 
 adhoc_overloading 
 (*  ran_res rel_ranres *)
@@ -82,5 +82,48 @@ notation converse ("(_\<^sup>\<sim>)" [1000] 999)
 
 lemma relational_inverse: "r\<^sup>\<sim> = {(p.2, p.1) | p. p \<in> r}"
   by auto
-  
+
+subsection \<open> Relational image \<close>
+
+notation Image ("_\<lparr>_\<rparr>" [990] 990)
+
+lemma Image_eq: "r\<lparr>a\<rparr> = {p.2 | p. p \<in> r \<and> p.1 \<in> a}"
+  by (auto simp add: Image_def)
+
+subsection \<open> Overriding \<close>
+
+text \<open> We employ some type class trickery to enable a polymorphic operator for override. \<close>
+
+class override = 
+  fixes override :: "'a \<Rightarrow> 'a \<Rightarrow> 'a" (infix "\<oplus>" 50)
+
+class restrict =
+  fixes res :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set"
+
+instantiation prod :: (type, type) restrict
+begin
+definition res_prod :: "('a \<leftrightarrow> 'b) \<Rightarrow> ('a \<leftrightarrow> 'b) \<Rightarrow> 'a \<leftrightarrow> 'b" where [simp]: "res_prod = (+\<^sub>r)"
+
+instance ..
+end
+
+instantiation set :: (restrict) override
+begin
+definition override_set :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set" where
+[simp]: "override_set = res"
+instance ..
+end
+
+instantiation pfun :: (type, type) override
+begin
+definition override_pfun :: "('a \<Rightarrow>\<^sub>p 'b) \<Rightarrow> ('a \<Rightarrow>\<^sub>p 'b) \<Rightarrow> 'a \<Rightarrow>\<^sub>p 'b" where [simp]: "override_pfun = (+)"
+instance ..
+end
+
+instantiation ffun :: (type, type) override
+begin
+definition override_ffun :: "('a \<Rightarrow>\<^sub>f 'b) \<Rightarrow> ('a \<Rightarrow>\<^sub>f 'b) \<Rightarrow> 'a \<Rightarrow>\<^sub>f 'b" where [simp]: "override_ffun = (+)"
+instance ..
+end
+
 end
