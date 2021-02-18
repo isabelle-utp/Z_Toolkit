@@ -1,7 +1,7 @@
 section \<open> Relation Toolkit \<close>
 
 theory Relation_Toolkit
-  imports Set_Toolkit
+  imports Set_Toolkit Overriding
 begin
 
 subsection \<open> Conversions \<close>
@@ -92,38 +92,13 @@ lemma Image_eq: "r\<lparr>a\<rparr> = {p.2 | p. p \<in> r \<and> p.1 \<in> a}"
 
 subsection \<open> Overriding \<close>
 
-text \<open> We employ some type class trickery to enable a polymorphic operator for override. \<close>
+lemma override_eq: "r \<oplus> s = ((- dom s) \<lhd> r) \<union> s"
+  by (simp add: oplus_set_def rel_override_def)
 
-class override = 
-  fixes override :: "'a \<Rightarrow> 'a \<Rightarrow> 'a" (infix "\<oplus>" 50)
+lemma dom_override: "dom (Q \<oplus> R) = (dom Q) \<union> (dom R)"
+  by (simp add: override_eq Domain_Un_eq Un_Int_distrib2)
 
-class restrict =
-  fixes res :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set"
-
-instantiation prod :: (type, type) restrict
-begin
-definition res_prod :: "('a \<leftrightarrow> 'b) \<Rightarrow> ('a \<leftrightarrow> 'b) \<Rightarrow> 'a \<leftrightarrow> 'b" where [simp]: "res_prod = (+\<^sub>r)"
-
-instance ..
-end
-
-instantiation set :: (restrict) override
-begin
-definition override_set :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set" where
-[simp]: "override_set = res"
-instance ..
-end
-
-instantiation pfun :: (type, type) override
-begin
-definition override_pfun :: "('a \<Rightarrow>\<^sub>p 'b) \<Rightarrow> ('a \<Rightarrow>\<^sub>p 'b) \<Rightarrow> 'a \<Rightarrow>\<^sub>p 'b" where [simp]: "override_pfun = (+)"
-instance ..
-end
-
-instantiation ffun :: (type, type) override
-begin
-definition override_ffun :: "('a \<Rightarrow>\<^sub>f 'b) \<Rightarrow> ('a \<Rightarrow>\<^sub>f 'b) \<Rightarrow> 'a \<Rightarrow>\<^sub>f 'b" where [simp]: "override_ffun = (+)"
-instance ..
-end
+lemma override_Un: "dom Q \<inter> dom R = {} \<Longrightarrow> Q \<oplus> R = Q \<union> R"
+  by (simp add: override_eq Int_commute rel_domres_compl_disj)
 
 end

@@ -79,10 +79,16 @@ lemma rel_domres_nil [simp]: "A \<lhd>\<^sub>r {} = {}"
 lemma rel_domres_inter [simp]: "A \<lhd>\<^sub>r B \<lhd>\<^sub>r R = (A \<inter> B) \<lhd>\<^sub>r R"
   by (auto simp add: rel_domres_def)
 
+lemma rel_domres_compl_disj: "A \<inter> Domain P = {} \<Longrightarrow> (- A) \<lhd>\<^sub>r P = P"
+  by (auto simp add: rel_domres_def)
+
 subsection \<open> Relational Override \<close>
 
 interpretation rel_override_monoid: monoid_add "(+\<^sub>r)" "{}"
   by (unfold_locales, simp_all add: rel_override_def, auto simp add: rel_domres_def)
+
+lemma rel_override_idem [simp]: "P +\<^sub>r P = P"
+  by (auto simp add: rel_override_def rel_domres_def)
 
 lemma Domain_rel_override [simp]: "Domain (R +\<^sub>r S) = Domain(R) \<union> Domain(S)"
   by (auto simp add: rel_override_def Domain_Un_eq)

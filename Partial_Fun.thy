@@ -183,6 +183,9 @@ lemma pfun_minus_self [simp]:
   shows "f - f = 0"
   by (transfer, simp add: map_minus_def)
 
+lemma pfun_plus_idem [simp]: "(f :: 'a \<Rightarrow>\<^sub>p 'b) + f = f"
+  by (transfer, simp add: map_add_subsumed2)
+
 lemma pfun_plus_commute:
   "pdom(f) \<inter> pdom(g) = {} \<Longrightarrow> f + g = g + f"
   by (transfer, metis map_add_comm)

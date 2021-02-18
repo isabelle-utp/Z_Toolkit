@@ -138,6 +138,9 @@ lemma ffun_minus_self [simp]:
   shows "f - f = 0"
   by (transfer, simp)
 
+lemma ffun_plus_idem [simp]: "(f :: 'a \<Rightarrow>\<^sub>f 'b) + f = f"
+  by (transfer, simp)
+
 lemma ffun_plus_commute:
   "fdom(f) \<inter> fdom(g) = {} \<Longrightarrow> f + g = g + f"
   by (transfer, metis pfun_plus_commute)
