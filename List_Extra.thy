@@ -1,9 +1,9 @@
-(******************************************************************************)
-(* Project: Isabelle/UTP Toolkit                                              *)
-(* File: List_Extra.thy                                                       *)
-(* Authors: Simon Foster and Frank Zeyda                                      *)
-(* Emails: simon.foster@york.ac.uk and frank.zeyda@york.ac.uk                 *)
-(******************************************************************************)
+(*****************************************************************************************)
+(* Project: Isabelle/UTP Toolkit                                                         *)
+(* File: List_Extra.thy                                                                  *)
+(* Authors: Simon Foster, Pedro Ribeiro, and Frank Zeyda                                 *)
+(* Emails: simon.foster@york.ac.uk, pedro.ribeiro@york.ac.uk, and frank.zeyda@york.ac.uk *)
+(*****************************************************************************************)
 
 section \<open> Lists: extra functions and properties \<close>
 
