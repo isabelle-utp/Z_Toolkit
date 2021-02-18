@@ -62,6 +62,22 @@ definition rel_compat :: "('a \<leftrightarrow> 'b) \<Rightarrow> ('a \<leftrigh
 
 text \<open> Relations are compatible is they agree on the values for maplets they both possess. \<close>
 
+subsection \<open> Domain laws \<close>
+
+lemma Domain_Preimage: "Domain P = P\<inverse> `` UNIV"
+  by (simp add: Image_def Domain_unfold)
+
+lemma Domain_relcomp: "Domain (P O Q) = (P\<inverse> `` Domain(Q))"
+  by (simp add: Domain_Preimage converse_relcomp relcomp_Image)
+
+subsection \<open> Range laws \<close>
+
+lemma Range_Image: "Range P = P `` UNIV"
+  by (simp add: Image_def Range_iff set_eq_iff)
+
+lemma Range_relcomp: "Range (P O Q) = (Q `` Range(P))"
+  by (simp add: Range_Image relcomp_Image)
+
 subsection \<open> Domain Restriction \<close>
 
 lemma Domain_rel_domres [simp]: "Domain (A \<lhd>\<^sub>r R) = A \<inter> Domain(R)"
@@ -81,6 +97,9 @@ lemma rel_domres_inter [simp]: "A \<lhd>\<^sub>r B \<lhd>\<^sub>r R = (A \<inter
 
 lemma rel_domres_compl_disj: "A \<inter> Domain P = {} \<Longrightarrow> (- A) \<lhd>\<^sub>r P = P"
   by (auto simp add: rel_domres_def)
+
+lemma rel_domres_Id_on: "A \<lhd>\<^sub>r R = Id_on A O R"
+  by (auto simp add: rel_domres_def Id_on_def relcomp_unfold)
 
 subsection \<open> Relational Override \<close>
 
