@@ -479,6 +479,9 @@ lemma pabs_eta [simp]: "(\<lambda> x \<in> pdom(f) \<bullet> f(x)\<^sub>p) = f"
 lemma pabs_id [simp]: "(\<lambda> x \<in> A | P x \<bullet> x) = pId_on {x\<in>A. P x}"
   unfolding pabs_def by (transfer, simp add: restrict_map_def)
 
+lemma pfun_entries_pabs: "pfun_entries A f = (\<lambda> x \<in> A \<bullet> f x)"
+  by (simp add: pabs_def, transfer, auto)
+
 text \<open> This rule can perhaps be simplified \<close>
 
 lemma pcomp_pabs: 
