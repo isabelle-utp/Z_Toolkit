@@ -19,6 +19,16 @@ syntax
 translations
   (type) "'a \<leftrightarrow> 'b" == (type) "('a \<times> 'b) set"
 
+subsection \<open> Notation for types as sets \<close>
+
+definition "TUNIV (a::'a itself) = (UNIV :: 'a set)"
+
+syntax "_tvar" :: "type \<Rightarrow> logic" ("[_]\<^sub>T")
+translations "['a]\<^sub>T" == "CONST TUNIV TYPE('a)"
+
+lemma TUNIV_mem [simp]: "x \<in> ['a]\<^sub>T"
+  by (simp add: TUNIV_def)
+
 subsection \<open> Relational Function Operations \<close>
 
 text \<open> These functions are all adapted from their ISO Z counterparts. \<close>
@@ -168,9 +178,7 @@ definition rel_pfun :: "'a set \<Rightarrow> 'b set \<Rightarrow> ('a \<leftrigh
 lemma rel_pfun_intro: "\<lbrakk> R \<in> A \<leftrightarrow> B; functional R \<rbrakk> \<Longrightarrow> R \<in> A \<rightarrow>\<^sub>p B"
   by (simp add: rel_pfun_def)
 
-no_notation funcset (infixr "\<rightarrow>" 60)
-
-definition rel_tfun :: "'a set \<Rightarrow> 'b set \<Rightarrow> ('a \<leftrightarrow> 'b) set" (infixr "\<rightarrow>" 55) where
+definition rel_tfun :: "'a set \<Rightarrow> 'b set \<Rightarrow> ('a \<leftrightarrow> 'b) set" (infixr "\<rightarrow>\<^sub>t" 55) where
 "rel_tfun A B = {R. R \<in> A \<rightarrow>\<^sub>p B \<and> left_totalr R}" \<comment> \<open> Total Functions \<close>
 
 definition rel_ffun :: "'a set \<Rightarrow> 'b set \<Rightarrow> ('a \<leftrightarrow> 'b) set" (infixr "\<rightarrow>\<^sub>f" 55) where
@@ -185,7 +193,7 @@ named_theorems rclos
 lemma rel_ffun_is_pfun [rclos]: "R \<in> rel_ffun A B \<Longrightarrow> R \<in> A \<rightarrow>\<^sub>p B"
   by (simp add: rel_ffun_def)
 
-lemma rel_tfun_is_pfun [rclos]: "R \<in> A \<rightarrow> B \<Longrightarrow> R \<in> A \<rightarrow>\<^sub>p B"
+lemma rel_tfun_is_pfun [rclos]: "R \<in> A \<rightarrow>\<^sub>t B \<Longrightarrow> R \<in> A \<rightarrow>\<^sub>p B"
   by (simp add: rel_tfun_def)
 
 lemma rel_pfun_is_typed [rclos]: "R \<in> A \<rightarrow>\<^sub>p B \<Longrightarrow> R \<in> A \<leftrightarrow> B"
@@ -197,7 +205,7 @@ lemma rel_ffun_empty [rclos]: "{} \<in> rel_ffun A B"
 lemma rel_pfun_apply [rclos]: "\<lbrakk> x \<in> Domain(R); R \<in> A \<rightarrow>\<^sub>p B \<rbrakk> \<Longrightarrow> R(x)\<^sub>r \<in> B"
   using functional_apply by (fastforce simp add: rel_pfun_def rel_typed_def)
 
-lemma rel_tfun_apply [rclos]: "\<lbrakk> x \<in> A; R \<in> A \<rightarrow> B \<rbrakk> \<Longrightarrow> R(x)\<^sub>r \<in> B"
+lemma rel_tfun_apply [rclos]: "\<lbrakk> x \<in> A; R \<in> A \<rightarrow>\<^sub>t B \<rbrakk> \<Longrightarrow> R(x)\<^sub>r \<in> B"
   by (metis (no_types, lifting) Domain_iff iso_tuple_UNIV_I left_totalr_on_def mem_Collect_eq rel_pfun_apply rel_tfun_def)
 
 lemma rel_typed_insert [rclos]: "\<lbrakk> R \<in> A \<leftrightarrow> B; x \<in> A; y \<in> B \<rbrakk> \<Longrightarrow> insert (x, y) R \<in> A \<leftrightarrow> B"

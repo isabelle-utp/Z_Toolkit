@@ -1,7 +1,7 @@
 section \<open> Relation Toolkit \<close>
 
 theory Relation_Toolkit
-  imports Set_Toolkit Relation_Extra Partial_Fun Finite_Fun Total_Fun
+  imports Set_Toolkit
 begin
 
 subsection \<open> Conversions \<close>

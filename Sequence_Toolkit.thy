@@ -1,7 +1,7 @@
 section \<open> Sequence Toolkit \<close>
 
 theory Sequence_Toolkit
-  imports List_Extra Number_Toolkit
+  imports Number_Toolkit
 begin
 
 subsection \<open> Conversion \<close>
