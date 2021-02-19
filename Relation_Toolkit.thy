@@ -13,8 +13,16 @@ declare [[coercion rel_apply]]
 declare [[coercion pfun_app]]
 declare [[coercion pfun_of]]
 declare [[coercion pfun_graph]]
+(* declare [[coercion ffun_graph]] *)
+
+notation pfun_graph ("\<lbrakk>_\<rbrakk>\<^sub>p")
+notation ffun_graph ("\<lbrakk>_\<rbrakk>\<^sub>f")
 
 subsection \<open> First component projection \<close>
+
+text \<open> Z supports n-ary Cartesian products. We cannot support such structures directly in 
+  Isabelle/HOL, but instead add the projection notations for the first and second components.
+  A homogeneous finite Cartesian product type also exists in the Multivariate Analysis package. \<close>
 
 abbreviation (input) "first \<equiv> fst"
 notation first ("_.1" [999] 999)

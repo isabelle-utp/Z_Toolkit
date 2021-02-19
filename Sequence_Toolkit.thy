@@ -8,7 +8,7 @@ subsection \<open> Conversion \<close>
 
 text \<open> We define a number of coercions for mapping a list to finite function. \<close>
 
-abbreviation rel_of_list :: "'a list \<Rightarrow> nat \<leftrightarrow> 'a" where
+abbreviation rel_of_list :: "'a list \<Rightarrow> nat \<leftrightarrow> 'a" ("\<lbrakk>_\<rbrakk>\<^sub>s") where
 "rel_of_list xs \<equiv> pfun_graph (list_pfun xs)"
 
 abbreviation seq_nth ("_'(_')\<^sub>s" [999,0] 999) where
@@ -79,6 +79,27 @@ translations "seq\<^sub>1('a)" == "CONST seq1 TYPE('a)"
 
 lemma seq1 [simp]: "xs \<in> seq\<^sub>1('a) \<Longrightarrow> #xs > 0"
   by (simp add: seq1_def)
+
+subsection \<open> Injective sequences \<close>
+
+definition "iseq X = seq X \<inter> Collect distinct"
+
+syntax "_iseq" :: "type \<Rightarrow> logic" ("iseq'(_')")
+translations "iseq('a)" == "CONST iseq TYPE('a)"
+
+(* Proof that this corresponds to the Z definition required *)
+
+subsection \<open> Sequence brackets \<close>
+
+text \<open> Provided by the HOL list notation @{term "[x, y, z]"}. \<close>
+
+subsection \<open> Concatenation \<close>
+
+text \<open> Provided by the HOL concatenation operator @{term "(@)"}. \<close>
+
+subsection \<open> Reverse \<close>
+
+text \<open> Provided by the HOL function @{const rev}. \<close>
 
 subsection \<open> Head of a sequence \<close>
 
