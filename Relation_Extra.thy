@@ -19,6 +19,15 @@ syntax
 translations
   (type) "'a \<leftrightarrow> 'b" == (type) "('a \<times> 'b) set"
 
+text \<open> Setup pretty printing for homogeneous relations. \<close>
+
+print_translation \<open>
+let fun tr' ctx [ Const (@{type_syntax "prod"},_) $ a $ b ] = 
+      if a = b then Syntax.const @{type_syntax "rel"} $ a else raise Match;
+in [(@{type_syntax "set"},tr')]
+end
+\<close>
+
 subsection \<open> Notation for types as sets \<close>
 
 definition "TUNIV (a::'a itself) = (UNIV :: 'a set)"

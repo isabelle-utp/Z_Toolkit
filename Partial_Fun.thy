@@ -266,6 +266,9 @@ lemma pfun_upd_comm_linorder [simp]:
   shows "f(y \<mapsto> u, x \<mapsto> v)\<^sub>p = f(x \<mapsto> v, y \<mapsto> u)\<^sub>p"
   using assms by (transfer, auto)
 
+lemma pfun_ovrd_single_upd: "x \<in> pdom(g) \<Longrightarrow> f + ({x} \<lhd>\<^sub>p g) = f(x \<mapsto> g(x)\<^sub>p)\<^sub>p"
+  by (transfer, auto simp add: map_add_def restrict_map_def fun_eq_iff)
+
 lemma pfun_app_minus [simp]: "x \<notin> pdom g \<Longrightarrow> (f - g)(x)\<^sub>p = f(x)\<^sub>p"
   by (transfer, auto simp add: map_minus_def)
 
@@ -630,6 +633,10 @@ lemma pfun_lens_mwb [simp]: "mwb_lens (pfun_lens i)"
 
 lemma pfun_lens_src: "\<S>\<^bsub>pfun_lens i\<^esub> = {f. i \<in> pdom(f)}"
   by (auto simp add: lens_defs lens_source_def, transfer, force)
+
+lemma lens_override_pfun_lens:
+  "x \<in> pdom(g) \<Longrightarrow> f \<oplus>\<^sub>L g on pfun_lens x = f + ({x} \<lhd>\<^sub>p g)"
+  by (simp add: lens_defs pfun_ovrd_single_upd)
 
 text \<open> Hide implementation details for partial functions \<close>
 

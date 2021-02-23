@@ -304,11 +304,11 @@ lemma fdom_res_fdom [simp]:
   "fdom(f) \<lhd>\<^sub>f f = f"
   by (transfer, auto)
 
-lemma pdom_res_upd_in [simp]:
+lemma fdom_res_upd_in [simp]:
   "k \<in> A \<Longrightarrow> A \<lhd>\<^sub>f f(k \<mapsto> v)\<^sub>f = (A \<lhd>\<^sub>f f)(k \<mapsto> v)\<^sub>f"
   by (transfer, auto)
 
-lemma pdom_res_upd_out [simp]:
+lemma fdom_res_upd_out [simp]:
   "k \<notin> A \<Longrightarrow> A \<lhd>\<^sub>f f(k \<mapsto> v)\<^sub>f = A \<lhd>\<^sub>f f"
   by (transfer, auto)
 

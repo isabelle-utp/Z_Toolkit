@@ -11,6 +11,8 @@ text \<open> We here use type classes to create the overriding operator and inst
 class oplus = 
   fixes oplus :: "'a \<Rightarrow> 'a \<Rightarrow> 'a" (infixl "\<oplus>" 65)
 
+text \<open> FIXME: We should be using Partial Abelian Monoids here ... \<close>
+
 class override = oplus + zero +
   assumes override_idem [simp]: "P \<oplus> P = P"
   and override_assoc: "P \<oplus> (Q \<oplus> R) = (P \<oplus> Q) \<oplus> R"
