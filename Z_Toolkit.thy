@@ -2,7 +2,7 @@ section \<open> Z Mathematical Toolkit Meta-Theory \<close>
 
 theory Z_Toolkit
   imports
-    Z_Toolkit_Overview
+    Relation_Lib
     Set_Toolkit
     Relation_Toolkit
     Function_Toolkit
