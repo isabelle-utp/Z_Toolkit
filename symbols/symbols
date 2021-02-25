@@ -1,0 +1,20 @@
+\<power>                code: 0x002119  group: letter
+\<finset>               code: 0x01D53D  group: letter
+\<arith>                code: 0x01D538  group: letter
+\<univ>                 code: 0x01D54C  group: letter
+\<world>                code: 0x01D54E  group: letter
+\<fun>                  code: 0x0021FE  group: arrow
+\<inj>                  code: 0x0021A3  group: arrow
+\<pinj>                 code: 0x002914  group: arrow
+\<finj>                 code: 0x002915  group: arrow
+\<surj>                 code: 0x0021A0  group: arrow
+\<psurj>                code: 0x002900  group: arrow
+\<bij>                  code: 0x002916  group: arrow
+\<pfun>                 code: 0x0021F8  group: arrow  abbrev: +>
+\<ffun>                 code: 0x0021FB  group: arrow  abbrev: #>
+\<dres>                 code: 0x0025C1  group: relation
+\<ndres>                code: 0x002A64  group: relation
+\<rres>                 code: 0x0025B7  group: relation
+\<nrres>                code: 0x002A65  group: relation
+\<semi>                 code: 0x002A1F  group: punctuation
+\<spot>                 code: 0x002981  group: punctuation
