@@ -10,4 +10,6 @@ text \<open> The majority of the Z set toolkit is implemented in the core librar
 
 declare [[coercion_enabled]]
 
+type_notation bool ("\<bool>")
+
 end

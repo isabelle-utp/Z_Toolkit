@@ -55,6 +55,9 @@ definition rel_domres :: "'a set \<Rightarrow> ('a \<leftrightarrow> 'b) \<Right
 text \<open> Domain restriction (@{term "A \<lhd>\<^sub>r R"} contains the set of pairs in @{term R}, such that the
   first element of every such pair in in @{term A}. \<close>
 
+definition rel_ranres :: "('a \<leftrightarrow> 'b) \<Rightarrow> 'b set \<Rightarrow> 'a \<leftrightarrow> 'b" (infixl "\<rhd>\<^sub>r" 85) where
+"rel_ranres R A = {(k, v) \<in> R. v \<in> A}"
+
 definition rel_override :: "('a \<leftrightarrow> 'b) \<Rightarrow> ('a \<leftrightarrow> 'b) \<Rightarrow> 'a \<leftrightarrow> 'b" (infixl "+\<^sub>r" 65) where
 "rel_override R S = ((- Domain S) \<lhd>\<^sub>r R) \<union> S"
 

@@ -33,8 +33,8 @@ lift_definition ffun_comp :: "('b, 'c) ffun \<Rightarrow> ('a, 'b) ffun \<Righta
 
 lift_definition ffun_member :: "'a \<times> 'b \<Rightarrow> ('a, 'b) ffun \<Rightarrow> bool" (infix "\<in>\<^sub>f" 50) is "(\<in>\<^sub>p)" .
 
-lift_definition fdom_res :: "'a set \<Rightarrow> ('a, 'b) ffun \<Rightarrow> ('a, 'b) ffun" (infixl "\<lhd>\<^sub>f" 85)
-is "pdom_res" by simp
+lift_definition fdom_res :: "'a set \<Rightarrow> ('a, 'b) ffun \<Rightarrow> ('a, 'b) ffun" (infixr "\<lhd>\<^sub>f" 85)
+is pdom_res by simp
 
 lift_definition fran_res :: "('a, 'b) ffun \<Rightarrow> 'b set \<Rightarrow> ('a, 'b) ffun" (infixl "\<rhd>\<^sub>f" 85)
 is pran_res by simp
