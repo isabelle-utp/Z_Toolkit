@@ -18,3 +18,5 @@
 \<nrres>                code: 0x002A65  group: relation
 \<semi>                 code: 0x002A1F  group: punctuation
 \<spot>                 code: 0x002981  group: punctuation
+\<lbind>                code: 0x002989  group: punctuation  abbrev: <|
+\<rbind>                code: 0x00298A  group: punctuation  abbrev: |>
