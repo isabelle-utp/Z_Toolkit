@@ -26,4 +26,4 @@
 \<project>              code: 0x002A21  group: operator
 \<typecolon>            code: 0x002982  group: punctuation
 \<hide>                 code: 0x0029F9  group: operator
-
+\<cat>                  code: 0x002040  group: operator
