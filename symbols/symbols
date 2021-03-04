@@ -22,7 +22,6 @@
 \<spot>                 code: 0x002981  group: punctuation
 \<lblot>                code: 0x002989  group: punctuation
 \<rblot>                code: 0x00298A  group: punctuation
-\<pipe>                 code: 0x002AA2  group: operator
 \<project>              code: 0x002A21  group: operator
 \<typecolon>            code: 0x002982  group: punctuation
 \<hide>                 code: 0x0029F9  group: operator
