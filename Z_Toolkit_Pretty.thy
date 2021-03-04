@@ -6,8 +6,8 @@ begin
 
 subsection \<open> Types \<close>
 
-type_notation set ("\<power>'(_')")
-type_notation fset ("\<finset>'(_')")
+type_notation set ("\<power> _" [999] 999)
+type_notation fset ("\<finset> _" [999] 999)
 type_notation pfun (infixr "\<pfun>" 0)
 type_notation ffun (infixr "\<ffun>" 0)
 type_notation tfun (infixr "\<fun>" 0)

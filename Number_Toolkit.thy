@@ -20,6 +20,14 @@ subsection \<open> Natural numbers \<close>
 
 type_notation nat ("\<nat>")
 
+subsection \<open> Rational numbers \<close>
+
+type_notation rat ("\<rat>")
+
+subsection \<open> Real numbers \<close>
+
+type_notation real ("\<real>")
+
 subsection \<open> Strictly positive natural numbers \<close>
 
 definition Nats1 ("\<nat>\<^sub>1") where "\<nat>\<^sub>1 = {x \<in> \<nat>. \<not> x = 0}"
