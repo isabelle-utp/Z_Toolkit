@@ -1,6 +1,8 @@
+# Z Notation Symbols
+
 \<power>                code: 0x002119  group: letter
 \<finset>               code: 0x01D53D  group: letter
-\<arith>                code: 0x01D538  group: letter
+\<arithmos>             code: 0x01D538  group: letter
 \<univ>                 code: 0x01D54C  group: letter
 \<world>                code: 0x01D54E  group: letter
 \<fun>                  code: 0x0021FE  group: arrow
@@ -18,5 +20,10 @@
 \<nrres>                code: 0x002A65  group: relation
 \<semi>                 code: 0x002A1F  group: punctuation
 \<spot>                 code: 0x002981  group: punctuation
-\<lbind>                code: 0x002989  group: punctuation  abbrev: <|
-\<rbind>                code: 0x00298A  group: punctuation  abbrev: |>
+\<lblot>                code: 0x002989  group: punctuation
+\<rblot>                code: 0x00298A  group: punctuation
+\<pipe>                 code: 0x002AA2  group: operator
+\<project>              code: 0x002A21  group: operator
+\<typecolon>            code: 0x002982  group: punctuation
+\<hide>                 code: 0x0029F9  group: operator
+
