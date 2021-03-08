@@ -79,9 +79,11 @@ lemma functional_insert: "functional (insert a R) \<Longrightarrow> functional R
 lemma Domain_insert: "Domain (insert a R) = insert (fst a) (Domain R)"
   by (simp add: Domain_fst)
 
+find_theorems card insert
+
 lemma card_map_graph: "\<lbrakk> finite R; functional R \<rbrakk> \<Longrightarrow> card R = card (Domain R)"
-  by (induct R rule: finite.induct, simp_all add: functional_insert card_insert Domain_insert finite_Domain)
-     (metis DiffD1 Diff_insert_absorb DomainE Map_Extra.Domain_insert card_Diff_singleton_if finite_Domain insertI1 insert_Diff prod.collapse single_valued_def)
+  by (induct R rule: finite.induct, simp_all add: functional_insert card_insert_if Domain_insert finite_Domain)
+     (metis DiffD1 Diff_insert_absorb DomainE Map_Extra.Domain_insert insertI1 insert_Diff prod.collapse single_valued_def)
 
 lemma graph_map_inv [simp]: "functional g \<Longrightarrow> map_graph (graph_map g) = g"
   apply (auto simp add:map_graph_def graph_map_def functional_def)
