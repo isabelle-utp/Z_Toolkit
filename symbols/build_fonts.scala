@@ -66,6 +66,7 @@ object Build_Fonts
         0x2033,  // second
         0x2038,  // caret
         0x20cd,  // currency symbol
+        0x2040,  // sequence concatenation
       ) ++
       (0x2100 to 0x214f) ++  // Letterlike Symbols
       (0x2190 to 0x21ff) ++  // Arrows
