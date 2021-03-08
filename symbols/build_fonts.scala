@@ -179,7 +179,7 @@ object Build_Fonts
   /* hinting */
 
   // see https://www.freetype.org/ttfautohint/doc/ttfautohint.html
-  private def auto_hint(source: Path, target: Path)
+  private def auto_hint(source: Path, target: Path): Unit =
   {
     Isabelle_System.bash("ttfautohint -i " +
       File.bash_path(source) + " " + File.bash_path(target)).check
@@ -216,10 +216,10 @@ object Build_Fonts
     target_prefix: String = "Isabelle",
     target_version: String = "",
     target_dir: Path = default_target_dir,
-    progress: Progress = No_Progress)
+    progress: Progress = new Progress): Unit =
   {
     progress.echo("Directory " + target_dir)
-    hinting.foreach(hinted => Isabelle_System.mkdirs(target_dir + hinted_path(hinted)))
+    hinting.foreach(hinted => Isabelle_System.make_directory(target_dir + hinted_path(hinted)))
 
     val font_dirs = source_dirs ::: List(Path.explode("~~/Admin/isabelle_fonts"))
     for (dir <- font_dirs if !dir.is_dir) error("Bad source directory: " + dir)
@@ -244,7 +244,7 @@ object Build_Fonts
             progress.echo("Font " + target_file.toString + " ...")
 
             if (hinted) auto_hint(source_file, tmp_file)
-            else File.copy(source_file, tmp_file)
+            else Isabelle_System.copy_file(source_file, tmp_file)
 
             Fontforge.execute(
               Fontforge.commands(
@@ -284,7 +284,7 @@ object Build_Fonts
       val domain =
         (for ((name, index) <- targets if index == 0)
           yield Fontforge.font_domain(target_dir + hinted_path(false) + name))
-        .flatten.toSet.toList.sorted
+        .flatten.distinct.sorted
 
       Fontforge.execute(
         Fontforge.commands(
@@ -307,8 +307,7 @@ object Build_Fonts
 
     // etc/settings
 
-    val settings_path = Components.settings(target_dir)
-    Isabelle_System.mkdirs(settings_path.dir)
+    val settings_path = Isabelle_System.make_directory(Components.settings(target_dir))
 
     def fonts_settings(hinted: Boolean): String =
       "\n  isabelle_fonts \\\n" +
@@ -329,14 +328,14 @@ isabelle_fonts_hidden "$COMPONENT/""" + hinted_path(false).file_name + """/Vacuo
 
 
     // README
-    File.copy(Path.explode("~~/Admin/isabelle_fonts/README"), target_dir)
+    Isabelle_System.copy_file(Path.explode("~~/Admin/isabelle_fonts/README"), target_dir)
   }
 
 
   /* Isabelle tool wrapper */
 
   val isabelle_tool =
-    Isabelle_Tool("build_fonts", "construct Isabelle fonts", args =>
+    Isabelle_Tool("build_fonts", "construct Isabelle fonts", Scala_Project.here, args =>
     {
       var source_dirs: List[Path] = Nil
 
