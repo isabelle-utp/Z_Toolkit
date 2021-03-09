@@ -23,7 +23,7 @@ notation dom_res (infixr "\<dres>" 65)
 notation ndres (infixr "\<ndres>" 65)
 
 notation ran_res (infixr "\<rres>" 65)
-notation ndres (infixr "\<nrres>" 65)
+notation nrres (infixr "\<nrres>" 65)
 
 subsection \<open> Examples \<close>
 
