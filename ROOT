@@ -5,4 +5,4 @@ session "Z_Toolkit" = "Optics" +
     "root.tex"
     "root.bib"
     "isabellezed.sty"
-    "zed.sty"
+    "cztsymb.sty"

@@ -1,28 +1,31 @@
 # Z Notation Symbols
 
+# Reusable symbols
 \<power>                code: 0x002119  group: letter
 \<finset>               code: 0x01D53D  group: letter
 \<arithmos>             code: 0x01D538  group: letter
 \<univ>                 code: 0x01D54C  group: letter
 \<world>                code: 0x01D54E  group: letter
-\<fun>                  code: 0x0021FE  group: arrow
-\<inj>                  code: 0x0021A3  group: arrow
-\<pinj>                 code: 0x002914  group: arrow
-\<finj>                 code: 0x002915  group: arrow
-\<surj>                 code: 0x0021A0  group: arrow
-\<psurj>                code: 0x002900  group: arrow
-\<bij>                  code: 0x002916  group: arrow
-\<pfun>                 code: 0x0021F8  group: arrow  abbrev: +>
-\<ffun>                 code: 0x0021FB  group: arrow  abbrev: #>
-\<dres>                 code: 0x0025C1  group: relation
-\<ndres>                code: 0x002A64  group: relation
-\<rres>                 code: 0x0025B7  group: relation
-\<nrres>                code: 0x002A65  group: relation
 \<semi>                 code: 0x002A1F  group: punctuation
-\<spot>                 code: 0x002981  group: punctuation
 \<lblot>                code: 0x002989  group: punctuation
 \<rblot>                code: 0x00298A  group: punctuation
-\<project>              code: 0x002A21  group: operator
-\<typecolon>            code: 0x002982  group: punctuation
-\<hide>                 code: 0x0029F9  group: operator
-\<cat>                  code: 0x002040  group: operator
+
+# Z Specific Symbols
+\<Zfun>                 code: 0x0021FE  group: Z_Notation
+\<Zinj>                 code: 0x0021A3  group: Z_Notation
+\<Zpinj>                code: 0x002914  group: Z_Notation
+\<Zfinj>                code: 0x002915  group: Z_Notation
+\<Zsurj>                code: 0x0021A0  group: Z_Notation
+\<Zpsurj>               code: 0x002900  group: Z_Notation
+\<Zbij>                 code: 0x002916  group: Z_Notation
+\<Zpfun>                code: 0x0021F8  group: Z_Notation  abbrev: +>
+\<Zffun>                code: 0x0021FB  group: Z_Notation  abbrev: #>
+\<Zdres>                code: 0x0025C1  group: Z_Notation
+\<Zndres>               code: 0x002A64  group: Z_Notation
+\<Zrres>                code: 0x0025B7  group: Z_Notation
+\<Znrres>               code: 0x002A65  group: Z_Notation
+\<Zspot>                code: 0x002981  group: Z_Notation
+\<Zproject>             code: 0x002A21  group: Z_Notation
+\<Ztypecolon>           code: 0x002982  group: Z_Notation
+\<Zhide>                code: 0x0029F9  group: Z_Notation
+\<Zcat>                 code: 0x002040  group: Z_Notation
