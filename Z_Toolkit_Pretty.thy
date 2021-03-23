@@ -1,7 +1,7 @@
 section \<open> Pretty Notation for Z \<close>
 
 theory Z_Toolkit_Pretty
-  imports Z_Toolkit
+  imports Relation_Toolkit Number_Toolkit
   abbrevs "+>" = "\<Zpfun>" and "+>" = "\<Zpsurj>" and "++>" = "\<Zffun>"
     and ">->" = "\<Zinj>" and ">->" = "\<Zbij>" and ">+>" = "\<Zpinj>" and ">++>" = "\<Zfinj>"
     and "<|" = "\<lhd>" and "<|" = "\<Zdres>" and "<|" = "\<Zndres>" and "<|" = "\<lblot>"
@@ -12,7 +12,7 @@ theory Z_Toolkit_Pretty
     and "PP" = "\<bbbP>" and "FF" = "\<bbbF>"
 begin
 
-bundle Z_syntax
+bundle Z_Syntax
 begin
   
 no_notation funcset (infixr "\<rightarrow>" 60)
@@ -46,7 +46,7 @@ notation nrres (infixr "\<Znrres>" 65)
 end
 
 context
-  includes Z_syntax
+  includes Z_Syntax
 begin
 
 subsection \<open> Examples \<close>
@@ -57,7 +57,7 @@ term "{}"
 term "P \<Zcomp> Q"
 term "A \<Zdres> B \<Zndres> (P :: \<bbbF>(\<nat>) \<Zpfun> \<bool>)"
 
-term "\<bbbP>(\<nat>) \<rightarrow> \<nat>"
+term "\<bbbP> \<nat> \<rightarrow> \<nat>"
 term "\<nat> \<Zffun> \<nat>"
 
 end

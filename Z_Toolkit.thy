@@ -8,4 +8,5 @@ theory Z_Toolkit
     Function_Toolkit
     Number_Toolkit
     Sequence_Toolkit
+    Z_Toolkit_Pretty
 begin end
