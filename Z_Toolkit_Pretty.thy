@@ -1,20 +1,26 @@
 section \<open> Pretty Notation for Z \<close>
 
 theory Z_Toolkit_Pretty
-  imports Z_Toolkit "HOL-Library.Function_Algebras"
-  abbrevs "+>" = "\<Zpfun>"
-    and "#>" = "\<Zffun>"
+  imports Z_Toolkit
+  abbrevs "+>" = "\<Zpfun>" and "+>" = "\<Zpsurj>" and "++>" = "\<Zffun>"
+    and ">->" = "\<Zinj>" and ">->" = "\<Zbij>" and ">+>" = "\<Zpinj>" and ">++>" = "\<Zfinj>"
+    and "<|" = "\<lhd>" and "<|" = "\<Zdres>" and "<|" = "\<Zndres>" and "<|" = "\<lblot>"
+    and "|>" = "\<rhd>" and "|>" = "\<Zrres>" and "|>" = "\<Znrres>" and "|>" = "\<rblot>"
+    and "|`" = "\<restriction>" and "|`" = "\<upharpoonleft>" and "|`" = "\<Zproject>"
+    and "O+" = "\<oplus>"
+    and ";;" = "\<Zcomp>" and ";;" = "\<Zsemi>"
+    and "PP" = "\<bbbP>" and "FF" = "\<bbbF>"
 begin
 
 bundle Z_syntax
 begin
-
+  
 no_notation funcset (infixr "\<rightarrow>" 60)
 
 subsection \<open> Types \<close>
 
-type_notation set ("\<Zpower> _" [999] 999)
-type_notation fset ("\<Zfinset> _" [999] 999)
+type_notation set ("\<bbbP> _" [999] 999)
+type_notation fset ("\<bbbF> _" [999] 999)
 
 type_notation tfun (infixr "\<rightarrow>" 0)
 type_notation pfun (infixr "\<Zpfun>" 0)
@@ -26,10 +32,10 @@ notation rel_ffun (infixr "\<Zffun>" 60)
 
 subsection \<open> Functions \<close>
 
-notation Pow ("\<Zpower>")
-notation Fpow ("\<Zfinset>")
+notation Pow ("\<bbbP>")
+notation Fpow ("\<bbbF>")
 
-notation relcomp (infixr "\<Zsemi>" 75)
+notation relcomp (infixr "\<Zcomp>" 75)
 
 notation dom_res (infixr "\<Zdres>" 65)
 notation ndres (infixr "\<Zndres>" 65)
@@ -45,13 +51,13 @@ begin
 
 subsection \<open> Examples \<close>
 
-typ "\<Zpower>(\<nat>) \<rightarrow> \<nat>"
-typ "\<Zpower>(\<nat>) \<Zpfun> \<bool>"
+typ "\<bbbP> \<nat> \<rightarrow> \<nat>"
+typ "\<bbbP> \<nat> \<Zpfun> \<bool>"
+term "{}"
+term "P \<Zcomp> Q"
+term "A \<Zdres> B \<Zndres> (P :: \<bbbF>(\<nat>) \<Zpfun> \<bool>)"
 
-term "P \<Zsemi> Q"
-term "A \<Zdres> B \<Zndres> (P :: \<Zfinset>(\<nat>) \<Zpfun> \<bool>)"
-
-term "\<Zpower>(\<nat>) \<rightarrow> \<nat>"
+term "\<bbbP>(\<nat>) \<rightarrow> \<nat>"
 term "\<nat> \<Zffun> \<nat>"
 
 end

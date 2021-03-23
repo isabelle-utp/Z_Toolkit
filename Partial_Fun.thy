@@ -423,7 +423,11 @@ lemma pdom_res_comp [simp]: "A \<lhd>\<^sub>p (g \<circ>\<^sub>p f) =  g \<circ>
 lemma pdom_res_apply [simp]:
   "x \<in> A \<Longrightarrow> (A \<lhd>\<^sub>p f)(x)\<^sub>p = f(x)\<^sub>p"
   by (transfer, auto)
-    
+
+lemma pdom_res_frame_update [simp]: 
+  "\<lbrakk> x \<in> pdom(f); (-{x}) \<lhd>\<^sub>p f = (-{x}) \<lhd>\<^sub>p g \<rbrakk> \<Longrightarrow> g(x \<mapsto> f(x)\<^sub>p)\<^sub>p = f"
+  by (transfer, auto, metis fun_upd_triv fun_upd_upd restrict_complement_singleton_eq)
+
 subsection \<open> Range restriction laws \<close>
 
 lemma pran_res_UNIV [simp]: "f \<rhd>\<^sub>p UNIV = f"
