@@ -17,11 +17,28 @@ text \<open> I'm not completely satisfied with partial functions as provided by 
 
 subsection \<open> Partial function type and operations \<close>
 
-typedef ('a, 'b) pfun = "UNIV :: ('a \<rightharpoonup> 'b) set" ..
+typedef ('a, 'b) pfun = "UNIV :: ('a \<rightharpoonup> 'b) set"
+  morphisms pfun_lookup pfun_of_map ..
 
 type_notation pfun (infixr "\<Rightarrow>\<^sub>p" 0)
 
 setup_lifting type_definition_pfun
+
+lemma pfun_lookup_map [simp]: "pfun_lookup (pfun_of_map f) = f"
+  by (simp add: pfun_of_map_inverse)
+
+lift_bnf (dead 'k, pran: 'v) pfun [wits: "Map.empty :: 'k \<Rightarrow> 'v option"] for map: map_pfun rel: relt_pfun
+  by auto
+
+instantiation pfun :: (type, type) equal
+begin
+
+definition "HOL.equal m1 m2 \<longleftrightarrow> (\<forall>k. pfun_lookup m1 k = pfun_lookup m2 k)"
+
+instance 
+  by (intro_classes, auto simp add: equal_pfun_def, transfer, auto)
+
+end
 
 lift_definition pfun_app :: "('a, 'b) pfun \<Rightarrow> 'a \<Rightarrow> 'b" ("_'(_')\<^sub>p" [999,0] 999) is 
 "\<lambda> f x. if (x \<in> dom f) then the (f x) else undefined" .
@@ -31,7 +48,8 @@ is "\<lambda> f k v. f(k := Some v)" .
 
 lift_definition pdom :: "('a, 'b) pfun \<Rightarrow> 'a set" is dom .
 
-lift_definition pran :: "('a, 'b) pfun \<Rightarrow> 'b set" is ran .
+lemma pran_rep_eq [transfer_rule]: "pran f = ran (pfun_lookup f)"
+  by (transfer, auto simp add: ran_def)
 
 lift_definition pfun_comp :: "('b, 'c) pfun \<Rightarrow> ('a, 'b) pfun \<Rightarrow> ('a, 'c) pfun" (infixl "\<circ>\<^sub>p" 55) is map_comp .
 
@@ -234,6 +252,9 @@ lemma pfun_member_minus:
   "(x, y) \<in>\<^sub>p f - g \<longleftrightarrow> (x, y) \<in>\<^sub>p f \<and> (\<not> (x, y) \<in>\<^sub>p g)"
   by (transfer, simp add: map_member_minus)
 
+lemma pfun_app_map [simp]: "(pfun_of_map f)(x)\<^sub>p = (if (x \<in> dom(f)) then the (f x) else undefined)"
+  by (transfer, simp)
+
 lemma pfun_app_upd_1 [simp]: "x = y \<Longrightarrow> (f(x \<mapsto> v)\<^sub>p)(y)\<^sub>p = v"
   by (transfer, simp)
 
@@ -305,7 +326,7 @@ lemma psubseteq_dom_subset:
 
 lemma psubseteq_ran_subset:
   "f \<subseteq>\<^sub>p g \<Longrightarrow> pran(f) \<subseteq> pran(g)"
-  by (transfer, auto simp add: map_le_def dom_def ran_def, fastforce)
+  by (transfer, auto simp add: map_le_def dom_def ran_def)
 
 lemma pfun_eq_iff: "f = g \<longleftrightarrow> (pdom(f) = pdom(g) \<and> (\<forall> x \<in> pdom(f). f(x)\<^sub>p = g(x)\<^sub>p))"
   by (auto, transfer, simp add: map_eq_iff, metis domD option.sel)
@@ -350,6 +371,12 @@ lemma pdom_pfun_graph_finite [simp]:
   "finite (pdom f) \<Longrightarrow> finite (pfun_graph f)"
   by (transfer, simp add: finite_dom_graph)
 
+lemma pdom_map_pfun [simp]: "pdom (map_pfun F G) = pdom G"
+  unfolding map_pfun_def by (auto; metis dom_map_option_comp pdom.abs_eq pdom.rep_eq)
+
+lemma map_pfun_apply [simp]: "x \<in> pdom G \<Longrightarrow> (map_pfun F G)(x)\<^sub>p = F(G(x)\<^sub>p)"
+  unfolding map_pfun_def by (auto simp add: pfun_app.rep_eq domD pdom.rep_eq)
+
 subsection \<open> Range laws \<close>
 
 lemma pran_zero [simp]: "pran 0 = {}"
@@ -362,13 +389,16 @@ lemma pran_upd [simp]: "pran (f(k \<mapsto> v)\<^sub>p) = insert v (pran ((- {k}
   by (transfer, auto simp add: ran_def restrict_map_def)
 
 lemma pran_pran_res [simp]: "pran (f \<rhd>\<^sub>p A) = pran(f) \<inter> A"
-  by (transfer, auto)
+  by (transfer, auto simp add: ran_restrict_map_def)
 
 lemma pran_comp [simp]: "pran (g \<circ>\<^sub>p f) = pran (pran f \<lhd>\<^sub>p g)"
   by (transfer, auto simp add: ran_def restrict_map_def)
 
 lemma pran_finite [simp]: "finite (pdom f) \<Longrightarrow> finite (pran f)"
-  by (transfer, auto)
+  by (simp add: pdom.rep_eq pran_rep_eq)
+
+lemma pran_pdom: "pran F = pfun_app F ` pdom F"
+  by (transfer, force simp add: dom_def)
 
 subsection \<open> Domain restriction laws \<close>
 
@@ -641,6 +671,42 @@ lemma pfun_lens_src: "\<S>\<^bsub>pfun_lens i\<^esub> = {f. i \<in> pdom(f)}"
 lemma lens_override_pfun_lens:
   "x \<in> pdom(g) \<Longrightarrow> f \<oplus>\<^sub>L g on pfun_lens x = f + ({x} \<lhd>\<^sub>p g)"
   by (simp add: lens_defs pfun_ovrd_single_upd)
+
+subsection \<open> Code Generator \<close>
+
+subsubsection \<open> Associative Lists \<close>
+
+lemma relt_pfun_iff: 
+  "relt_pfun R f g \<longleftrightarrow> (pdom(f) = pdom(g) \<and> (\<forall> x\<in>pdom(f). R (f(x)\<^sub>p) (g(x)\<^sub>p)))"
+  by (transfer, auto simp add: rel_map_iff)
+
+lift_definition pfun_of_alist :: "('a \<times> 'b) list \<Rightarrow> 'a \<Rightarrow>\<^sub>p 'b" is map_of .
+
+lemma dom_pfun_alist [simp, code]: "pdom (pfun_of_alist xs) = set (map fst xs)"
+  by (transfer, simp add: dom_map_of_conv_image_fst)
+
+lemma empty_pfun_alist [code]: "{}\<^sub>p = pfun_of_alist []"
+  by (transfer, simp)
+
+lemma update_pfun_alist [code]: "pfun_upd (pfun_of_alist xs) k v = pfun_of_alist (AList.update k v xs)"
+  by transfer (simp add: update_conv')
+
+lemma apply_pfun_alist [code]: 
+  "pfun_app (pfun_of_alist xs) k = (if k \<in> set (map fst xs) then the (map_of xs k) else undefined)"
+  apply (transfer, auto)
+  apply (metis map_of_eq_None_iff option.distinct(1))
+  apply (metis option.distinct(1) weak_map_of_SomeI)
+  done
+
+lemma equal_pfun [code]:
+  "HOL.equal (pfun_of_alist xs) (pfun_of_alist ys) \<longleftrightarrow>
+    (let ks = map fst xs; ls = map fst ys
+     in (\<forall>l\<in>set ls. l \<in> set ks) \<and> (\<forall>k\<in>set ks. k \<in> set ls \<and> map_of xs k = map_of ys k))"
+  apply (simp add: equal_pfun_def, transfer, auto)
+  apply (metis map_of_eq_None_iff option.distinct(1) weak_map_of_SomeI)
+  apply (metis domI domIff map_of_eq_None_iff weak_map_of_SomeI)
+  apply (metis (no_types, lifting) image_iff map_of_eq_None_iff)
+  done
 
 text \<open> Hide implementation details for partial functions \<close>
 

@@ -12,6 +12,7 @@ theory Map_Extra
   Relation_Extra
   "HOL-Library.Countable_Set"
   "HOL-Library.Monad_Syntax"
+  "HOL-Library.AList"
 begin
 
 subsection \<open> Extensionality \<close>
@@ -840,5 +841,16 @@ lemma map_le_iff_add: "f \<subseteq>\<^sub>m g \<longleftrightarrow> (\<exists> 
 lemma map_add_comm_weak: "(\<forall> k \<in> dom m1 \<inter> dom m2. m1(k) = m2(k)) \<Longrightarrow> m1 ++ m2 = m2 ++ m1"
   by (auto simp add: map_add_def option.case_eq_if fun_eq_iff)
      (metis IntI domI option.inject)
+
+abbreviation "rel_map R \<equiv> rel_fun (=) (rel_option R)"
+
+lemma rel_map_iff: 
+  "rel_map R f g \<longleftrightarrow> (dom(f) = dom(g) \<and> (\<forall> x\<in>dom(f). R (the (f x)) (the (g x))))"
+  apply (auto simp add: rel_fun_def)
+  apply (metis not_None_eq option.rel_distinct(2))
+  apply (metis not_None_eq option.rel_distinct(1))
+  apply (metis option.rel_sel option.sel option.simps(3))
+  apply (metis domIff option.rel_sel)
+  done
 
 end
