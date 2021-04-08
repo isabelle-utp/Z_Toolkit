@@ -30,6 +30,8 @@ lemma pfun_lookup_map [simp]: "pfun_lookup (pfun_of_map f) = f"
 lift_bnf (dead 'k, pran: 'v) pfun [wits: "Map.empty :: 'k \<Rightarrow> 'v option"] for map: map_pfun rel: relt_pfun
   by auto
 
+declare pfun.map_transfer [transfer_rule]
+
 instantiation pfun :: (type, type) equal
 begin
 
@@ -273,6 +275,9 @@ lemma pfun_app_add [simp]: "x \<in> pdom(g) \<Longrightarrow> (f + g)(x)\<^sub>p
 lemma pfun_upd_add [simp]: "f + g(x \<mapsto> v)\<^sub>p = (f + g)(x \<mapsto> v)\<^sub>p"
   by (transfer, simp)
 
+lemma pfun_upd_add_left [simp]: "x \<notin> pdom(g) \<Longrightarrow> f(x \<mapsto> v)\<^sub>p + g = (f + g)(x \<mapsto> v)\<^sub>p"
+  by (transfer, auto, metis domD map_add_upd_left)
+
 lemma pfun_upd_twice [simp]: "f(x \<mapsto> u, x \<mapsto> v)\<^sub>p = f(x \<mapsto> v)\<^sub>p"
   by (transfer, simp)
 
@@ -331,6 +336,17 @@ lemma psubseteq_ran_subset:
 lemma pfun_eq_iff: "f = g \<longleftrightarrow> (pdom(f) = pdom(g) \<and> (\<forall> x \<in> pdom(f). f(x)\<^sub>p = g(x)\<^sub>p))"
   by (auto, transfer, simp add: map_eq_iff, metis domD option.sel)
 
+subsection \<open> Map laws \<close>
+
+lemma map_pfun_empty [simp]: "map_pfun f {}\<^sub>p = {}\<^sub>p"
+  by (transfer, simp)
+
+lemma map_pfun_upd [simp]: "map_pfun f (g(x \<mapsto> v)\<^sub>p) = (map_pfun f g)(x \<mapsto> f v)\<^sub>p"
+  by (simp add: map_pfun_def pfun_upd.rep_eq pfun_upd.abs_eq)
+
+lemma map_pfun_apply [simp]: "x \<in> pdom G \<Longrightarrow> (map_pfun F G)(x)\<^sub>p = F(G(x)\<^sub>p)"
+  unfolding map_pfun_def by (auto simp add: pfun_app.rep_eq domD pdom.rep_eq)
+
 subsection \<open> Domain laws \<close>
 
 lemma pdom_zero [simp]: "pdom 0 = {}"
@@ -373,9 +389,6 @@ lemma pdom_pfun_graph_finite [simp]:
 
 lemma pdom_map_pfun [simp]: "pdom (map_pfun F G) = pdom G"
   unfolding map_pfun_def by (auto; metis dom_map_option_comp pdom.abs_eq pdom.rep_eq)
-
-lemma map_pfun_apply [simp]: "x \<in> pdom G \<Longrightarrow> (map_pfun F G)(x)\<^sub>p = F(G(x)\<^sub>p)"
-  unfolding map_pfun_def by (auto simp add: pfun_app.rep_eq domD pdom.rep_eq)
 
 subsection \<open> Range laws \<close>
 
@@ -682,6 +695,12 @@ lemma relt_pfun_iff:
 
 lift_definition pfun_of_alist :: "('a \<times> 'b) list \<Rightarrow> 'a \<Rightarrow>\<^sub>p 'b" is map_of .
 
+lemma pfun_of_alist_Nil [simp]: "pfun_of_alist [] = {}\<^sub>p"
+  by (transfer, simp)
+
+lemma pfun_of_alist_Cons [simp]: "pfun_of_alist (p # ps) = pfun_of_alist ps(fst p \<mapsto> snd p)\<^sub>p"
+  by (transfer, metis (full_types) map_of.simps(2))
+
 lemma dom_pfun_alist [simp, code]: "pdom (pfun_of_alist xs) = set (map fst xs)"
   by (transfer, simp add: dom_map_of_conv_image_fst)
 
@@ -697,6 +716,22 @@ lemma apply_pfun_alist [code]:
   apply (metis map_of_eq_None_iff option.distinct(1))
   apply (metis option.distinct(1) weak_map_of_SomeI)
   done
+
+lemma map_of_Cons_code [code]:
+  "pfun_lookup (pfun_of_alist []) k = None"
+  "pfun_lookup (pfun_of_alist ((l, v) # ps)) k = (if l = k then Some v else map_of ps k)"
+  by (transfer, simp)+
+
+lemma map_pfun_alist [code]: 
+  "map_pfun f (pfun_of_alist m) = pfun_of_alist (map (\<lambda> (k, v). (k, f v)) m)"
+  by (transfer, simp add: map_of_map)
+
+lemma pdom_res_alist [code]:
+  "A \<lhd>\<^sub>p (pfun_of_alist m) = pfun_of_alist (AList.restrict A m)"
+  by (transfer, simp add: restr_conv')
+
+lemma plus_pfun_alist [code]: "pfun_of_alist f + pfun_of_alist g = pfun_of_alist (g @ f)"
+  by (transfer, simp)
 
 lemma equal_pfun [code]:
   "HOL.equal (pfun_of_alist xs) (pfun_of_alist ys) \<longleftrightarrow>
