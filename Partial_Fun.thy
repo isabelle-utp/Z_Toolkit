@@ -75,6 +75,16 @@ lift_definition graph_pfun :: "('a \<times> 'b) set \<Rightarrow> ('a, 'b) pfun"
 lift_definition pfun_entries :: "'k set \<Rightarrow> ('k \<Rightarrow> 'v) \<Rightarrow> ('k, 'v) pfun" is
 "\<lambda> d f x. if (x \<in> d) then Some (f x) else None" .
 
+definition pfuse :: "('a \<Rightarrow>\<^sub>p 'b) \<Rightarrow> ('a \<Rightarrow>\<^sub>p 'c) \<Rightarrow> ('a \<Rightarrow>\<^sub>p 'b \<times> 'c)"
+  where "pfuse f g = pfun_entries (pdom(f) \<inter> pdom(g)) (\<lambda> x. (pfun_app f x, pfun_app g x))"
+
+lift_definition ptabulate :: "'a list \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> ('a, 'b) pfun"
+  is "\<lambda>ks f. (map_of (List.map (\<lambda>k. (k, f k)) ks))" .
+
+lift_definition pcombine ::
+  "('b \<Rightarrow> 'b \<Rightarrow> 'b) \<Rightarrow> ('a, 'b) pfun \<Rightarrow> ('a, 'b) pfun \<Rightarrow> ('a, 'b) pfun"
+  is "\<lambda>f m1 m2 x. combine_options f (m1 x) (m2 x)" .
+
 abbreviation "fun_pfun \<equiv> pfun_entries UNIV"
 
 no_notation disj (infixr "|" 30)
@@ -732,6 +742,33 @@ lemma pdom_res_alist [code]:
 
 lemma plus_pfun_alist [code]: "pfun_of_alist f + pfun_of_alist g = pfun_of_alist (g @ f)"
   by (transfer, simp)
+
+lemma pfun_entries_alist [code]: "pfun_entries (set ks) f = pfun_of_alist (map (\<lambda> k. (k, f k)) ks)"
+  apply (transfer, auto simp add: fun_eq_iff)
+  apply (metis map_of_map_restrict o_def restrict_map_def)
+  apply (metis map_of_map_restrict restrict_map_def)
+  done
+
+term pfun_entries
+
+text \<open> Adapted from Mapping theory \<close>
+
+lemma ptabulate_alist [code]: "ptabulate ks f = pfun_of_alist (map (\<lambda>k. (k, f k)) ks)"
+  by transfer (simp add: map_of_map_restrict)
+
+lemma pcombine_alist [code]:
+  "pcombine f (pfun_of_alist xs) (pfun_of_alist ys) =
+     ptabulate (remdups (map fst xs @ map fst ys))
+       (\<lambda>x. the (combine_options f (map_of xs x) (map_of ys x)))"
+  apply transfer
+  apply (rule ext)
+  apply (rule sym)
+  subgoal for f xs ys x
+    apply (cases "map_of xs x"; cases "map_of ys x"; simp)
+       apply (force simp: map_of_eq_None_iff combine_options_def option.the_def o_def image_iff
+        dest: map_of_SomeD split: option.splits)+
+    done
+  done
 
 lemma equal_pfun [code]:
   "HOL.equal (pfun_of_alist xs) (pfun_of_alist ys) \<longleftrightarrow>
