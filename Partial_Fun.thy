@@ -357,6 +357,16 @@ lemma map_pfun_upd [simp]: "map_pfun f (g(x \<mapsto> v)\<^sub>p) = (map_pfun f 
 lemma map_pfun_apply [simp]: "x \<in> pdom G \<Longrightarrow> (map_pfun F G)(x)\<^sub>p = F(G(x)\<^sub>p)"
   unfolding map_pfun_def by (auto simp add: pfun_app.rep_eq domD pdom.rep_eq)
 
+lemma map_pfun_as_pabs: "map_pfun f g = (\<lambda> x \<in> pdom(g) \<bullet> f(g(x)\<^sub>p))"
+  by (simp add: pabs_def, transfer, auto simp add: fun_eq_iff restrict_map_def)
+
+lemma map_pfun_ovrd [simp]: "map_pfun f (g + h) = (map_pfun f g) + (map_pfun f h)"
+  by (simp add: map_pfun_def, transfer, auto simp add: map_add_def fun_eq_iff)
+     (metis bind.bind_lunit comp_apply map_conv_bind_option option.case_eq_if)
+
+lemma map_pfun_dres [simp]: "map_pfun f (A \<lhd>\<^sub>p g) = A \<lhd>\<^sub>p map_pfun f g"
+  by (simp add: map_pfun_def, transfer, auto simp add: restrict_map_def)
+
 subsection \<open> Domain laws \<close>
 
 lemma pdom_zero [simp]: "pdom 0 = {}"
@@ -524,7 +534,16 @@ lemma pfun_entries_apply_2 [simp]:
   "x \<notin> d \<Longrightarrow> (pfun_entries d f)(x)\<^sub>p = undefined"
   by (transfer, auto)
 
+lemma pdom_res_entries: "A \<lhd>\<^sub>p pfun_entries B f = pfun_entries (A \<inter> B) f"
+  by (transfer, auto simp add: fun_eq_iff restrict_map_def)
+
 subsection \<open> Lambda abstraction \<close>
+
+lemma pabs_cong:
+  assumes "A = B" "\<And> x. x \<in> A \<Longrightarrow> P(x) = Q(x)" "\<And> x. x \<in> A \<Longrightarrow> F(x) = G(x)"
+  shows "(\<lambda> x \<in> A | P x \<bullet> F(x)) = (\<lambda> x \<in> B | Q x \<bullet> G(x))"
+  using assms unfolding pabs_def
+  by (transfer, auto simp add: restrict_map_def fun_eq_iff)
 
 lemma pabs_apply [simp]: "\<lbrakk> y \<in> A; P y \<rbrakk>  \<Longrightarrow> (\<lambda> x \<in> A | P x \<bullet> f x) (y)\<^sub>p = f y"
   by (simp add: pabs_def)
@@ -714,6 +733,18 @@ lemma pfun_of_alist_Cons [simp]: "pfun_of_alist (p # ps) = pfun_of_alist ps(fst 
 lemma dom_pfun_alist [simp, code]: "pdom (pfun_of_alist xs) = set (map fst xs)"
   by (transfer, simp add: dom_map_of_conv_image_fst)
 
+lemma map_graph_map_of: "map_graph (map_of xs) = set (AList.clearjunk xs)"
+  apply (induct xs, simp_all)                 
+  apply (auto simp add: map_graph_def)
+  apply (metis map_of_SomeD map_of_clearjunk map_of_delete)
+  apply (metis map_of_SomeD map_of_clearjunk map_of_delete option.inject snd_conv)
+  apply (metis clearjunk_delete delete_conv' fun_upd_apply option.distinct(1) weak_map_of_SomeI)
+  apply (metis Some_eq_map_of_iff distinct_clearjunk map_of_clearjunk map_of_delete)
+  done
+
+lemma pfun_graph_alist [code]: "pfun_graph (pfun_of_alist xs) = set (AList.clearjunk xs)"
+  by (transfer, meson map_graph_map_of)
+
 lemma empty_pfun_alist [code]: "{}\<^sub>p = pfun_of_alist []"
   by (transfer, simp)
 
@@ -749,8 +780,6 @@ lemma pfun_entries_alist [code]: "pfun_entries (set ks) f = pfun_of_alist (map (
   apply (metis map_of_map_restrict restrict_map_def)
   done
 
-term pfun_entries
-
 text \<open> Adapted from Mapping theory \<close>
 
 lemma ptabulate_alist [code]: "ptabulate ks f = pfun_of_alist (map (\<lambda>k. (k, f k)) ks)"
@@ -779,6 +808,13 @@ lemma equal_pfun [code]:
   apply (metis domI domIff map_of_eq_None_iff weak_map_of_SomeI)
   apply (metis (no_types, lifting) image_iff map_of_eq_None_iff)
   done
+
+
+lemma set_inter_Collect: "set xs \<inter> Collect P = set (filter P xs)"
+  by (auto)
+
+lemma pabs_set [code]: "pabs (set xs) P f = pfun_of_alist (map (\<lambda>k. (k, f k)) (filter P xs))"
+  by (simp only: pabs_def pfun_entries_alist pdom_res_entries set_inter_Collect Int_UNIV_right)
 
 text \<open> Hide implementation details for partial functions \<close>
 
