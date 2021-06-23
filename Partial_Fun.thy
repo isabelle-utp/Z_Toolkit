@@ -8,7 +8,7 @@
 section \<open> Partial Functions \<close>
 
 theory Partial_Fun
-imports "Optics.Lenses" Map_Extra
+imports "Optics.Lenses" Map_Extra "HOL-Library.Mapping"
 begin
 
 text \<open> I'm not completely satisfied with partial functions as provided by Map.thy, since they don't
@@ -27,7 +27,7 @@ setup_lifting type_definition_pfun
 lemma pfun_lookup_map [simp]: "pfun_lookup (pfun_of_map f) = f"
   by (simp add: pfun_of_map_inverse)
 
-lift_bnf (dead 'k, pran: 'v) pfun [wits: "Map.empty :: 'k \<Rightarrow> 'v option"] for map: map_pfun rel: relt_pfun
+lift_bnf ('k, pran: 'v) pfun [wits: "Map.empty :: 'k \<Rightarrow> 'v option"] for map: map_pfun rel: relt_pfun
   by auto
 
 declare pfun.map_transfer [transfer_rule]
@@ -55,7 +55,17 @@ lemma pran_rep_eq [transfer_rule]: "pran f = ran (pfun_lookup f)"
 
 lift_definition pfun_comp :: "('b, 'c) pfun \<Rightarrow> ('a, 'b) pfun \<Rightarrow> ('a, 'c) pfun" (infixl "\<circ>\<^sub>p" 55) is map_comp .
 
+lift_definition map_pfun' :: "('c \<Rightarrow> 'a) \<Rightarrow> ('b \<Rightarrow> 'd) \<Rightarrow> ('a, 'b) pfun \<Rightarrow> ('c, 'd) pfun"
+  is "\<lambda>f g m. (map_option g \<circ> m \<circ> f)" parametric map_parametric .
+
+functor map_pfun'
+  by (transfer, auto simp add: fun_eq_iff option.map_comp option.map_id)+
+
 lift_definition pfun_member :: "'a \<times> 'b \<Rightarrow> ('a, 'b) pfun \<Rightarrow> bool" (infix "\<in>\<^sub>p" 50) is "(\<in>\<^sub>m)" .
+
+lift_definition pfun_inj :: "('a, 'b) pfun \<Rightarrow> bool" is "\<lambda> f. inj_on f (dom f)" .
+
+lift_definition pfun_inv :: "('a, 'b) pfun \<Rightarrow> ('b, 'a) pfun" is map_inv .
 
 lift_definition pId_on :: "'a set \<Rightarrow> ('a, 'a) pfun" is "\<lambda> A x. if (x \<in> A) then Some x else None" .
 
@@ -183,6 +193,12 @@ lemma pfun_comp_left_id [simp]: "pId \<circ>\<^sub>p f = f"
   by (transfer, auto)
 
 lemma pfun_comp_right_id [simp]: "f \<circ>\<^sub>p pId = f"
+  by (transfer, auto)
+
+lemma pfun_comp_left_zero [simp]: "{}\<^sub>p \<circ>\<^sub>p f = {}\<^sub>p"
+  by (transfer, auto)
+
+lemma pfun_comp_right_zero [simp]: "f \<circ>\<^sub>p {}\<^sub>p = {}\<^sub>p"
   by (transfer, auto)
 
 lemma pfun_override_dist_comp:
@@ -351,6 +367,9 @@ subsection \<open> Map laws \<close>
 lemma map_pfun_empty [simp]: "map_pfun f {}\<^sub>p = {}\<^sub>p"
   by (transfer, simp)
 
+lemma map_pfun'_empty [simp]: "map_pfun' f g {}\<^sub>p = {}\<^sub>p"
+  unfolding map_pfun'_def by (transfer, simp add: comp_def)
+
 lemma map_pfun_upd [simp]: "map_pfun f (g(x \<mapsto> v)\<^sub>p) = (map_pfun f g)(x \<mapsto> f v)\<^sub>p"
   by (simp add: map_pfun_def pfun_upd.rep_eq pfun_upd.abs_eq)
 
@@ -432,6 +451,23 @@ lemma pran_finite [simp]: "finite (pdom f) \<Longrightarrow> finite (pran f)"
 
 lemma pran_pdom: "pran F = pfun_app F ` pdom F"
   by (transfer, force simp add: dom_def)
+
+subsection \<open> Partial Injections \<close>
+
+lemma pfun_inj_empty [simp]: "pfun_inj {}\<^sub>p"
+  by (transfer, simp)
+
+lemma pinj_pId_on [simp]: "pfun_inj (pId_on A)"
+  by (transfer, auto simp add: inj_on_def)
+
+lemma pfun_inj_inv_inv: "pfun_inj f \<Longrightarrow> pfun_inv (pfun_inv f) = f"
+  by (transfer, simp)
+
+lemma pfun_inj_inv: "pfun_inj f \<Longrightarrow> pfun_inj (pfun_inv f)"
+  by (transfer, simp add: inj_map_inv)
+
+lemma pfun_inj_upd: "\<lbrakk> pfun_inj f; v \<notin> pran f \<rbrakk> \<Longrightarrow> pfun_inj (f(k \<mapsto> v)\<^sub>p)"
+  by (transfer, auto, meson f_the_inv_into_f inj_on_fun_updI)
 
 subsection \<open> Domain restriction laws \<close>
 
