@@ -469,6 +469,12 @@ lemma pfun_inj_inv: "pfun_inj f \<Longrightarrow> pfun_inj (pfun_inv f)"
 lemma pfun_inj_upd: "\<lbrakk> pfun_inj f; v \<notin> pran f \<rbrakk> \<Longrightarrow> pfun_inj (f(k \<mapsto> v)\<^sub>p)"
   by (transfer, auto, meson f_the_inv_into_f inj_on_fun_updI)
 
+lemma pfun_inj_dres: "pfun_inj f \<Longrightarrow> pfun_inj (A \<lhd>\<^sub>p f)"
+  by (transfer, auto simp add: inj_on_def)
+
+lemma pfun_inj_rres: "pfun_inj f \<Longrightarrow> pfun_inj (f \<rhd>\<^sub>p A)"
+  by (transfer, auto simp add: inj_on_def ran_restrict_map_def, metis domI option.simps(3))
+
 subsection \<open> Domain restriction laws \<close>
 
 lemma pdom_res_zero [simp]: "A \<lhd>\<^sub>p {}\<^sub>p = {}\<^sub>p"
