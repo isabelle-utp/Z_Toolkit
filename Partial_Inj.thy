@@ -26,9 +26,12 @@ end
 
 abbreviation pinj_empty :: "('a, 'b) pinj" ("{}\<^sub>\<rho>") where "{}\<^sub>\<rho> \<equiv> 0"
 
+lift_definition pinj_app :: "('a, 'b) pinj \<Rightarrow> 'a \<Rightarrow> 'b" ("_'(_')\<^sub>\<rho>" [999,0] 999) 
+is "pfun_app" .
+
 lift_definition pinj_upd :: "('a, 'b) pinj \<Rightarrow> 'a \<Rightarrow> 'b \<Rightarrow> ('a, 'b) pinj"
-is "\<lambda> f k v. if (v \<in> pran f) then f else pfun_upd f k v"
-  by (auto simp add: pfun_inj_upd)
+is "\<lambda> f k v. pfun_upd (f \<rhd>\<^sub>p (- {v})) k v"
+  by (simp add: pfun_inj_rres pfun_inj_upd)
 
 lift_definition pinj_dres :: "'a set \<Rightarrow> ('a, 'b) pinj \<Rightarrow> ('a, 'b) pinj" (infixr "\<lhd>\<^sub>\<rho>" 85) is pdom_res
   by (simp add: pfun_inj_dres)
@@ -53,12 +56,17 @@ translations
   "_Pinj (_Maplets ms1 ms2)"     <= "_PinjUpd (_Pinj ms1) ms2"
   "_Pinj ms"                     <= "_PinjUpd (CONST pempty) ms"
 
+lemma pinj_app_upd [simp]: "(f(k \<mapsto> v)\<^sub>\<rho>)(x)\<^sub>\<rho> = (if (k = x) then v else (f \<rhd>\<^sub>\<rho> (-{v})) (x)\<^sub>\<rho>)"
+  by (transfer, simp)
+  
 lemma pinv_pinv: "pinv (pinv f) = f"
   by (transfer, simp add: pfun_inj_inv_inv)
 
 fun pinj_of_alist :: "('a \<times> 'b) list \<Rightarrow> 'a \<Zpinj> 'b" where
 "pinj_of_alist [] = {}\<^sub>\<rho>" |
-"pinj_of_alist ((k, v) # m) = (pinj_of_alist m \<rhd>\<^sub>\<rho> (- {v}))(k \<mapsto> v)\<^sub>\<rho>" 
+"pinj_of_alist ((k, v) # m) = (pinj_of_alist m)(k \<mapsto> v)\<^sub>\<rho>" 
+
+hide_fact pinj_of_alist.simps
 
 
 end
