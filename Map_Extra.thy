@@ -714,6 +714,9 @@ qed
 lemma map_comp_apply [simp]: "(f \<circ>\<^sub>m g) x = g(x) >>= f"
   by (auto simp add: map_comp_def option.case_eq_if)
 
+lemma map_graph_map_inv: "inj_on f (dom f) \<Longrightarrow> map_graph (map_inv f) = (map_graph f)\<inverse>"
+  by (auto simp add: map_graph_def, metis dom_map_inv inj_map_inv map_inv_f_f map_inv_map_inv)
+
 subsection \<open> Merging of compatible maps \<close>
 
 definition comp_map :: "('a \<rightharpoonup> 'b) \<Rightarrow> ('a \<rightharpoonup> 'b) \<Rightarrow> bool" (infixl "\<parallel>\<^sub>m" 60) where

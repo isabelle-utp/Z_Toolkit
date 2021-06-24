@@ -478,6 +478,9 @@ lemma pfun_inj_dres: "pfun_inj f \<Longrightarrow> pfun_inj (A \<lhd>\<^sub>p f)
 lemma pfun_inj_rres: "pfun_inj f \<Longrightarrow> pfun_inj (f \<rhd>\<^sub>p A)"
   by (transfer, auto simp add: inj_on_def ran_restrict_map_def, metis domI option.simps(3))
 
+lemma pfun_inj_comp: "\<lbrakk> pfun_inj f; pfun_inj g \<rbrakk> \<Longrightarrow> pfun_inj (f \<circ>\<^sub>p g)"
+  by (transfer, auto simp add: inj_on_def map_comp_def option.case_eq_if dom_def)
+
 lemma pfun_inv_dres: "pfun_inj f \<Longrightarrow> pfun_inv (A \<lhd>\<^sub>p f) = (pfun_inv f) \<rhd>\<^sub>p A"
   by (transfer, simp add: map_inv_dom_res)
 
@@ -653,6 +656,9 @@ subsection \<open> Graph laws \<close>
 lemma pfun_graph_inv: "graph_pfun (pfun_graph f) = f"
   by (transfer, simp)
 
+lemma pfun_eq_graph: "f = g \<longleftrightarrow> pfun_graph f = pfun_graph g"
+  by (metis pfun_graph_inv)
+
 lemma Dom_pfun_graph [simp]: "Domain (pfun_graph f) = pdom f"
   by (transfer, simp add: dom_map_graph)
 
@@ -682,6 +688,9 @@ lemma pfun_graph_override: "pfun_graph (f + g) = pfun_graph f +\<^sub>r pfun_gra
 
 lemma pfun_graph_comp: "pfun_graph (f \<circ>\<^sub>p g) = pfun_graph g O pfun_graph f"
   by (transfer, simp add: map_graph_comp)
+
+lemma pfun_graph_pfun_inv: "pfun_inj f \<Longrightarrow> pfun_graph (pfun_inv f) = (pfun_graph f)\<inverse>"
+  by (transfer, simp add: map_graph_map_inv)
 
 lemma pfun_graph_pabs: "pfun_graph (\<lambda> x \<in> A | P x \<bullet> f x) = {(x, f x) | x. x \<in> A \<and> P x}"
   unfolding pabs_def
