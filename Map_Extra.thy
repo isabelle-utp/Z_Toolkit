@@ -15,7 +15,7 @@ theory Map_Extra
   "HOL-Library.AList"
 begin
 
-subsection \<open> Extensionality \<close>
+subsection \<open> Extensionality and Update \<close>
 
 lemma map_eq_iff: "f = g \<longleftrightarrow> (\<forall> x \<in> dom(f) \<union> dom(g). f x = g x)"
   by (auto simp add: fun_eq_iff)
@@ -252,6 +252,16 @@ lemma ran_restrict_finite_dom [intro]:
 lemma dom_Some [simp]: "dom (Some \<circ> f) = UNIV"
   by (auto)
 
+lemma map_dres_rres_commute: "f\<upharpoonleft>\<^bsub>B\<^esub> |` A = (f |` A)\<upharpoonleft>\<^bsub>B\<^esub>"
+  by (auto simp add: restrict_map_def ran_restrict_map_def)
+
+lemma ran_restrict_map_twice [simp]: "(f\<upharpoonleft>\<^bsub>A\<^esub>)\<upharpoonleft>\<^bsub>B\<^esub> = f\<upharpoonleft>\<^bsub>(A \<inter> B)\<^esub>"
+  apply (auto simp add: ran_restrict_map_def fun_eq_iff option.case_eq_if)
+  apply (rename_tac x)
+  apply (case_tac "f x")
+   apply (auto)
+  done
+
 lemma dom_left_map_add [simp]: "x \<in> dom g \<Longrightarrow> (f ++ g) x = g x"
   by (auto simp add:map_add_def dom_def)
 
@@ -290,6 +300,10 @@ lemma map_id_on_UNIV[simp]: "map_id_on UNIV = Some"
 lemma map_id_on_inj [simp]:
   "inj_on (map_id_on xs) xs"
   by (simp add:inj_on_def)
+
+lemma restrict_map_inj_on:
+  "inj_on f (dom f) \<Longrightarrow> inj_on (f |` A) (dom f \<inter> A)"
+  by (auto simp add:inj_on_def)
 
 lemma map_inv_empty [simp]: "map_inv Map.empty = Map.empty"
   by (simp add:map_inv_def)
@@ -461,10 +475,10 @@ lemma inj_map_add:
   apply (metis domI)
   done
 
-lemma map_inv_add [simp]:
+lemma map_inv_add':
   assumes "inj_on f (dom f)" "inj_on g (dom g)"
           "dom f \<inter> dom g = {}" "ran f \<inter> ran g = {}"
-  shows "map_inv (f ++ g) = map_inv f ++ map_inv g"
+ shows "map_inv (f ++ g) = map_inv f ++ map_inv g"
 proof (rule ext)
 
   from assms have minj: "inj_on (f ++ g) (dom (f ++ g))"
@@ -509,6 +523,21 @@ proof (rule ext)
      apply (simp_all)
     done
 qed
+
+lemma map_inv_dom_res:
+  assumes "inj_on f (dom f)"
+  shows "map_inv (f |` A) = (map_inv f) \<upharpoonleft>\<^bsub>A\<^esub>"
+  using assms
+  by (auto intro!: some_equality simp add: map_inv_def restrict_map_def ran_restrict_map_def dom_def ran_def fun_eq_iff inj_on_def)
+     (metis (mono_tags, lifting) option.simps(3) someI_ex)+
+
+lemma map_inv_ran_res:
+  assumes "inj_on f (dom f)"
+  shows "map_inv (f \<upharpoonleft>\<^bsub>A\<^esub>) = (map_inv f) |` A"
+  using assms someI_ex by (force intro!: some_equality simp add: map_inv_def restrict_map_def ran_restrict_map_def dom_def ran_def fun_eq_iff inj_on_def)
+
+lemma map_update_as_add: "f(x \<mapsto> y) = f ++ [x \<mapsto> y]"
+  by (auto simp add: map_add_def)
 
 lemma map_add_lookup [simp]:
   "x \<notin> dom f \<Longrightarrow> ([x \<mapsto> y] ++ f) x = Some y"
@@ -566,6 +595,36 @@ lemma maplets_distinct_inj [intro]:
 lemma map_inv_maplet[simp]: "map_inv [x \<mapsto> y] = [y \<mapsto> x]"
   by (auto simp add:map_inv_def)
 
+lemma map_inv_add:
+  assumes "inj_on f (dom f)" "inj_on g (dom g)"
+          "ran f \<inter> ran g = {}"
+  shows "map_inv (f ++ g) = map_inv f\<upharpoonleft>\<^bsub>(- dom g)\<^esub> ++ map_inv g"
+proof -
+  have "map_inv (f ++ g) = map_inv (f |` (- dom(g))  ++ g)"
+    by (metis map_add_restrict)
+  also have "... = map_inv (f |` (- dom g)) ++ map_inv g"
+    by (rule map_inv_add', auto simp add: assms restrict_map_inj_on)
+       (metis assms(3) disjoint_iff ranI ran_restrictD)
+  also have "... = map_inv f\<upharpoonleft>\<^bsub>(- dom g)\<^esub> ++ map_inv g"
+    by (simp add: map_inv_dom_res assms) 
+  finally show ?thesis .
+qed
+
+lemma map_inv_upd:
+  assumes "inj_on f (dom f)" "inj_on g (dom g)" "v \<notin> ran f"
+  shows "map_inv (f(k \<mapsto> v)) = (map_inv (f |` (- {k})))(v \<mapsto> k)"
+proof -
+  have "map_inv (f(k \<mapsto> v)) = map_inv (f ++ [k \<mapsto> v])"
+    by (auto)
+  also have "... = map_inv f\<upharpoonleft>\<^bsub>(- dom [k \<mapsto> v])\<^esub> ++ map_inv [k \<mapsto> v]"
+    by (rule map_inv_add, simp_all add: assms)
+  also have "... = (map_inv f\<upharpoonleft>\<^bsub>(- {k})\<^esub>)(v \<mapsto> k)"
+    by (simp)
+  also have "... = (map_inv (f |` (- {k})))(v \<mapsto> k)"
+    by (simp add: assms(1) map_inv_dom_res)
+  finally show ?thesis .
+qed
+  
 lemma map_inv_maplets [simp]:
   "\<lbrakk> length xs = length ys; distinct xs; distinct ys; set xs \<inter> set ys = {} \<rbrakk> \<Longrightarrow>
   map_inv [xs [\<mapsto>] ys] = [ys [\<mapsto>] xs]"
@@ -574,7 +633,7 @@ lemma map_inv_maplets [simp]:
   apply (rename_tac x xs y ys)
   apply (subgoal_tac "map_inv ([xs [\<mapsto>] ys] ++ [x \<mapsto> y]) = map_inv [xs [\<mapsto>] ys] ++ map_inv [x \<mapsto> y]")
    apply (simp)
-  apply (rule map_inv_add)
+  apply (rule map_inv_add')
      apply (auto)
   done
 
@@ -596,7 +655,7 @@ theorem inv_map_inv:
   "\<lbrakk> inj_on f (dom f); ran f = dom f \<rbrakk>
   \<Longrightarrow> inv (the \<circ> (Some ++ f)) = the \<circ> map_inv (Some ++ f)"
   apply (rule ext)
-  apply (simp add:map_add_Some)
+  apply (simp add:map_add_Some map_inv_add')
   apply (simp add:inv_def)
   apply (rename_tac x)
   apply (case_tac "\<exists> y. f y = Some x")

@@ -75,7 +75,7 @@ abbreviation pId :: "('a, 'a) pfun" where
 lift_definition pdom_res :: "'a set \<Rightarrow> ('a, 'b) pfun \<Rightarrow> ('a, 'b) pfun" (infixr "\<lhd>\<^sub>p" 85)
 is "\<lambda> A f. restrict_map f A" .
 
-lift_definition pran_res :: "('a, 'b) pfun \<Rightarrow> 'b set \<Rightarrow> ('a, 'b) pfun" (infixl "\<rhd>\<^sub>p" 85)
+lift_definition pran_res :: "('a, 'b) pfun \<Rightarrow> 'b set \<Rightarrow> ('a, 'b) pfun" (infixl "\<rhd>\<^sub>p" 86)
 is ran_restrict_map .
 
 lift_definition pfun_graph :: "('a, 'b) pfun \<Rightarrow> ('a \<times> 'b) set" is map_graph .
@@ -318,6 +318,9 @@ lemma pfun_upd_comm_linorder [simp]:
   shows "f(y \<mapsto> u, x \<mapsto> v)\<^sub>p = f(x \<mapsto> v, y \<mapsto> u)\<^sub>p"
   using assms by (transfer, auto)
 
+lemma pfun_upd_as_ovrd: "f(k \<mapsto> v)\<^sub>p = f + {k \<mapsto> v}\<^sub>p"
+  by (transfer, simp)
+
 lemma pfun_ovrd_single_upd: "x \<in> pdom(g) \<Longrightarrow> f + ({x} \<lhd>\<^sub>p g) = f(x \<mapsto> g(x)\<^sub>p)\<^sub>p"
   by (transfer, auto simp add: map_add_def restrict_map_def fun_eq_iff)
 
@@ -475,6 +478,28 @@ lemma pfun_inj_dres: "pfun_inj f \<Longrightarrow> pfun_inj (A \<lhd>\<^sub>p f)
 lemma pfun_inj_rres: "pfun_inj f \<Longrightarrow> pfun_inj (f \<rhd>\<^sub>p A)"
   by (transfer, auto simp add: inj_on_def ran_restrict_map_def, metis domI option.simps(3))
 
+lemma pfun_inv_dres: "pfun_inj f \<Longrightarrow> pfun_inv (A \<lhd>\<^sub>p f) = (pfun_inv f) \<rhd>\<^sub>p A"
+  by (transfer, simp add: map_inv_dom_res)
+
+lemma pfun_inv_rres: "pfun_inj f \<Longrightarrow> pfun_inv (f \<rhd>\<^sub>p A) = A \<lhd>\<^sub>p (pfun_inv f)"
+  by (transfer, simp add: map_inv_ran_res)
+
+lemma pfun_inv_empty [simp]: "pfun_inv {}\<^sub>p = {}\<^sub>p"
+  by (transfer, simp)
+
+lemma pdom_pfun_inv [simp]: "pdom (pfun_inv f) = pran f"
+  by (simp add: pran_rep_eq, transfer, simp)
+
+lemma pfun_inv_add:
+  assumes "pfun_inj f" "pfun_inj g" "pran f \<inter> pran g = {}"
+  shows "pfun_inv (f + g) = (pfun_inv f \<rhd>\<^sub>p (- pdom g)) + pfun_inv g"
+  using assms by (simp add: pran_rep_eq, transfer, auto, meson map_inv_add)
+
+lemma pfun_inv_upd:
+  assumes "pfun_inj f" "v \<notin> pran f"
+  shows "pfun_inv (f(k \<mapsto> v)\<^sub>p) = (pfun_inv ((- {k}) \<lhd>\<^sub>p f))(v \<mapsto> k)\<^sub>p"
+  using assms by (simp add: pran_rep_eq, transfer, meson map_inv_upd)
+
 subsection \<open> Domain restriction laws \<close>
 
 lemma pdom_res_zero [simp]: "A \<lhd>\<^sub>p {}\<^sub>p = {}\<^sub>p"
@@ -533,6 +558,9 @@ lemma pdom_res_frame_update [simp]:
   "\<lbrakk> x \<in> pdom(f); (-{x}) \<lhd>\<^sub>p f = (-{x}) \<lhd>\<^sub>p g \<rbrakk> \<Longrightarrow> g(x \<mapsto> f(x)\<^sub>p)\<^sub>p = f"
   by (transfer, auto, metis fun_upd_triv fun_upd_upd restrict_complement_singleton_eq)
 
+lemma pdres_rres_commute: "A \<lhd>\<^sub>p (P \<rhd>\<^sub>p B) = (A \<lhd>\<^sub>p P) \<rhd>\<^sub>p B"
+  by (transfer, simp add: map_dres_rres_commute)
+
 subsection \<open> Range restriction laws \<close>
 
 lemma pran_res_UNIV [simp]: "f \<rhd>\<^sub>p UNIV = f"
@@ -546,6 +574,9 @@ lemma pran_res_upd_1 [simp]: "v \<in> A \<Longrightarrow> f(x \<mapsto> v)\<^sub
 
 lemma pran_res_upd_2 [simp]: "v \<notin> A \<Longrightarrow> f(x \<mapsto> v)\<^sub>p \<rhd>\<^sub>p A = ((- {x}) \<lhd>\<^sub>p f) \<rhd>\<^sub>p A"
   by (transfer, auto simp add: ran_restrict_map_def)
+
+lemma pran_res_twice [simp]: "f \<rhd>\<^sub>p A \<rhd>\<^sub>p B = f \<rhd>\<^sub>p (A \<inter> B)"
+  by (transfer, simp)
 
 lemma pran_res_alt_def: "f \<rhd>\<^sub>p A = pId_on A \<circ>\<^sub>p f"
   by (transfer, rule ext, auto simp add: ran_restrict_map_def)
