@@ -564,6 +564,9 @@ lemma pdom_res_frame_update [simp]:
 lemma pdres_rres_commute: "A \<lhd>\<^sub>p (P \<rhd>\<^sub>p B) = (A \<lhd>\<^sub>p P) \<rhd>\<^sub>p B"
   by (transfer, simp add: map_dres_rres_commute)
 
+lemma pdom_nres_disjoint: "pdom(f) \<inter> A = {} \<Longrightarrow> (- A) \<lhd>\<^sub>p f = f"
+  by (metis disjoint_eq_subset_Compl inf.absorb2 pdom_res_pdom pdom_res_twice)
+
 subsection \<open> Range restriction laws \<close>
 
 lemma pran_res_UNIV [simp]: "f \<rhd>\<^sub>p UNIV = f"
