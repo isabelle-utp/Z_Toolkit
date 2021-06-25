@@ -881,6 +881,9 @@ lemma pcombine_alist [code]:
     done
   done
 
+lemma pfun_comp_alist [code]: "pfun_of_alist ys \<circ>\<^sub>p pfun_of_alist xs = pfun_of_alist (AList.compose xs ys)"
+  by (transfer, simp add: compose_conv')
+
 lemma equal_pfun [code]:
   "HOL.equal (pfun_of_alist xs) (pfun_of_alist ys) \<longleftrightarrow>
     (let ks = map fst xs; ls = map fst ys
@@ -890,6 +893,7 @@ lemma equal_pfun [code]:
   apply (metis domI domIff map_of_eq_None_iff weak_map_of_SomeI)
   apply (metis (no_types, lifting) image_iff map_of_eq_None_iff)
   done
+
 
 
 lemma set_inter_Collect: "set xs \<inter> Collect P = set (filter P xs)"

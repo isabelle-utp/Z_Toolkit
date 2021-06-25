@@ -11,6 +11,9 @@ typedef ('a, 'b) pinj = "{f :: ('a, 'b) pfun. pfun_inj f}"
 lemma pinj_eq_pfun: "f = g \<longleftrightarrow> pfun_of_pinj f = pfun_of_pinj g"
   by (simp add: pfun_of_pinj_inject)
 
+lemma pfun_inj_pinj [simp]: "pfun_inj (pfun_of_pinj f)"
+  using pfun_of_pinj by auto
+
 type_notation pinj (infixr "\<Zpinj>" 1)
 
 setup_lifting type_definition_pinj
@@ -46,7 +49,7 @@ lift_definition piran :: "'a \<Zpinj> 'b \<Rightarrow> 'b set" is pran .
 lift_definition pinj_dres :: "'a set \<Rightarrow> ('a, 'b) pinj \<Rightarrow> ('a, 'b) pinj" (infixr "\<lhd>\<^sub>\<rho>" 85) is pdom_res
   by (simp add: pfun_inj_dres)
 
-lift_definition pinj_rres :: "('a, 'b) pinj \<Rightarrow> 'b set \<Rightarrow> ('a, 'b) pinj" (infixl "\<rhd>\<^sub>\<rho>" 85) is pran_res
+lift_definition pinj_rres :: "('a, 'b) pinj \<Rightarrow> 'b set \<Rightarrow> ('a, 'b) pinj" (infixl "\<rhd>\<^sub>\<rho>" 86) is pran_res
   by (simp add: pfun_inj_rres)
 
 lift_definition pinj_comp :: "'b \<Zpinj> 'c \<Rightarrow> 'a \<Zpinj> 'b \<Rightarrow> 'a \<Zpinj> 'c" (infixl "\<circ>\<^sub>\<rho>" 55) is "(\<circ>\<^sub>p)"
@@ -81,6 +84,41 @@ lemma pinv_pinv: "pinv (pinv f) = f"
 lemma pinv_pcomp: "pinv (f \<circ>\<^sub>\<rho> g) = pinv g \<circ>\<^sub>\<rho> pinv f"
   by (transfer, simp add: pfun_eq_graph pfun_graph_pfun_inv pfun_graph_comp pfun_inj_comp converse_relcomp)
 
+lemmas pidom_empty [simp] = pdom_zero[Transfer.transferred]
+
+lemmas pinj_dres_empty [simp] = pdom_res_zero[Transfer.transferred]
+lemmas pinj_rres_empty [simp] = pran_res_zero[Transfer.transferred]
+
+lemma pidom_res_upd: "A \<lhd>\<^sub>\<rho> f(k \<mapsto> v)\<^sub>\<rho> = (if k \<in> A then (A \<lhd>\<^sub>\<rho> f)(k \<mapsto> v)\<^sub>\<rho> else A \<lhd>\<^sub>\<rho> (f \<rhd>\<^sub>\<rho> (- {v})))"
+  by (transfer, simp, metis pdom_res_swap)
+
+thm pdom_res_upd_out[Transfer.transferred]
+
+lemma piran_res_upd: "f(x \<mapsto> v)\<^sub>\<rho> \<rhd>\<^sub>\<rho> A = (if v \<in> A then (f \<rhd>\<^sub>\<rho> A)(x \<mapsto> v)\<^sub>\<rho> else ((- {x}) \<lhd>\<^sub>\<rho> f) \<rhd>\<^sub>\<rho> A)"
+  by (transfer, simp add: inf.commute)
+     (metis (no_types, hide_lams) ComplI Compl_Un double_compl insert_absorb insert_is_Un pdom_res_swap pran_res_twice)
+
+lemma pinj_upd_with_dres_rres: "((-{x}) \<lhd>\<^sub>\<rho> f \<rhd>\<^sub>\<rho> (-{y}))(x \<mapsto> y)\<^sub>\<rho> = f(x \<mapsto> y)\<^sub>\<rho>"
+  by (transfer, simp add: pdom_res_swap)
+
+lemma pidres_twice: "A \<lhd>\<^sub>\<rho> B \<lhd>\<^sub>\<rho> f = (A \<inter> B) \<lhd>\<^sub>\<rho> f"
+  by (transfer, metis pdom_res_twice)
+
+lemma pidres_commute: "A \<lhd>\<^sub>\<rho> B \<lhd>\<^sub>\<rho> f = B \<lhd>\<^sub>\<rho> A \<lhd>\<^sub>\<rho> f"
+  by (metis (no_types, hide_lams) inf_commute pidres_twice)
+
+lemma pidres_rres_commute: "A \<lhd>\<^sub>\<rho> (P \<rhd>\<^sub>\<rho> B) = (A \<lhd>\<^sub>\<rho> P) \<rhd>\<^sub>\<rho> B"
+  by (transfer, simp, metis (mono_tags, hide_lams) pdres_rres_commute)
+
+lemma pirres_twice: "f \<rhd>\<^sub>\<rho> A \<rhd>\<^sub>\<rho> B = f \<rhd>\<^sub>\<rho> (A \<inter> B)"
+  by (transfer, metis (no_types, hide_lams) pran_res_twice)
+
+lemma pirres_commute: "f \<rhd>\<^sub>\<rho> A \<rhd>\<^sub>\<rho> B = f \<rhd>\<^sub>\<rho> B \<rhd>\<^sub>\<rho> A"
+  by (metis inf_commute pirres_twice)
+
+lemma pidom_upd: "pidom (f(k \<mapsto> v)\<^sub>\<rho>) = insert k (pidom (f \<rhd>\<^sub>\<rho> (- {v})))"
+  by (transfer, simp)
+
 fun pinj_of_alist :: "('a \<times> 'b) list \<Rightarrow> 'a \<Zpinj> 'b" where
 "pinj_of_alist [] = {}\<^sub>\<rho>" |
 "pinj_of_alist (p # ps) = (pinj_of_alist ps)(fst p \<mapsto> snd p)\<^sub>\<rho>" 
@@ -93,13 +131,62 @@ lemma pinj_upd_alist [code]: "(pinj_of_alist xs)(k \<mapsto> v)\<^sub>\<rho> = p
 
 context begin
 
+text \<open> Injective associative lists \<close>
+
+definition ialist :: "('a \<times> 'b) list \<Rightarrow> bool" where
+"ialist xs = (distinct (map fst xs) \<and> distinct (map snd xs))"
+
+text \<open> Remove pairs where either the key or value appeared in a previous pair \<close>
+
 qualified fun clearjunk :: "('a \<times> 'b) list \<Rightarrow> ('a \<times> 'b) list" where
 "clearjunk [] = []" |
 "clearjunk (p#ps) = p # filter (\<lambda> (k', v'). k' \<noteq> fst p \<and> v' \<noteq> snd p) (clearjunk ps)"
 
-lemma "pinj_of_alist (clearjunk xs) = pinj_of_alist xs"
-  apply (induct xs rule:clearjunk.induct, simp add: pinj_eq_iff, auto simp add: pinj_eq_iff)
-  oops
+lemma ialist_clearjunk: "ialist (clearjunk xs)"
+  by (induct xs rule:clearjunk.induct, auto simp add: ialist_def, (meson distinct_map_filter)+)
+
+lemma ialist_clearjunk_fp: "ialist xs \<Longrightarrow> clearjunk xs = xs"
+  by (induct xs, auto simp add: ialist_def filter_id_conv rev_image_eqI)
+
+lemma clearjunk_idem [simp]: "clearjunk (clearjunk xs) = clearjunk xs"
+  using ialist_clearjunk ialist_clearjunk_fp by blast
+
+lemma pinj_of_alist_ndres: "k \<notin> fst ` set xs \<Longrightarrow> (-{k}) \<lhd>\<^sub>\<rho> (pinj_of_alist xs) = pinj_of_alist xs"
+  by (induct xs, auto simp add: pidom_res_upd)
+
+lemma pinj_of_alist_nrres: "v \<notin> snd ` set xs \<Longrightarrow> (pinj_of_alist xs) \<rhd>\<^sub>\<rho> (- {v}) = pinj_of_alist xs"
+  by (induct xs, auto simp add: piran_res_upd)
+
+lemma pidom_ialist: "ialist xs \<Longrightarrow> pidom (pinj_of_alist xs) = set (map fst xs)"
+  by (induct xs, auto simp add: ialist_def pidom_upd)
+     (metis (no_types, lifting) fst_conv image_eqI pinj_of_alist_nrres)+
+
+lemma pinj_of_alist_filter_as_dres_rres:
+  "ialist xs \<Longrightarrow> pinj_of_alist (filter (\<lambda>(k', v'). k' \<noteq> fst p \<and> v' \<noteq> snd p) xs) = (-{fst p}) \<lhd>\<^sub>\<rho> pinj_of_alist xs \<rhd>\<^sub>\<rho> (-{snd p})"
+  by (induct xs rule: pinj_of_alist.induct)
+     (auto simp add: ialist_def piran_res_upd pinj_of_alist_ndres pidom_res_upd
+     ,metis (no_types, lifting) pinj_of_alist_nrres pirres_commute)
+  
+lemma pinj_of_alist_clearjunk: "pinj_of_alist (clearjunk xs) = pinj_of_alist xs"
+  by (induct xs rule:clearjunk.induct, simp add: pinj_eq_iff)
+     (simp add: ialist_clearjunk pinj_of_alist_filter_as_dres_rres pinj_upd_with_dres_rres)
+
+lemma pinv_pinj_of_ialist:
+  "ialist xs \<Longrightarrow> pinv (pinj_of_alist xs) = pinj_of_alist (map (\<lambda> (x, y). (y, x)) xs)"
+  by (induct xs rule: pinj_of_alist.induct, auto simp add: ialist_def simp add: pinj_of_alist_ndres)
+
+lemma pinv_pinj_of_alist [code]: "pinv (pinj_of_alist xs) = pinj_of_alist (map (\<lambda> (x, y). (y, x)) (clearjunk xs))"
+  by (metis ialist_clearjunk pinj_of_alist_clearjunk pinv_pinj_of_ialist)
+
+lemma pfun_of_ialist: "ialist xs \<Longrightarrow> pfun_of_pinj (pinj_of_alist xs) = pfun_of_alist xs"
+  by (induct xs rule: pinj_of_alist.induct, auto simp add: zero_pinj.rep_eq ialist_def pinj_upd.rep_eq )
+     (metis pinj_of_alist_nrres pinj_rres.rep_eq)
+
+lemma pfun_of_pinj_of_alist [code]: 
+  "pfun_of_pinj (pinj_of_alist xs) = pfun_of_alist (clearjunk xs)"
+  by (metis ialist_clearjunk pfun_of_ialist pinj_of_alist_clearjunk)
+
+declare clearjunk.simps [simp del]
 
 end
 
