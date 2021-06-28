@@ -623,6 +623,9 @@ lemma pfuse_app [simp]:
   "\<lbrakk> e \<in> pdom F; e \<in> pdom G \<rbrakk> \<Longrightarrow> (pfuse F G)(e)\<^sub>p = (F(e)\<^sub>p, G(e)\<^sub>p)"
   by (metis (no_types, lifting) IntI pfun_entries_apply_1 pfuse_def)
 
+lemma pdom_pfuse [simp]: "pdom (pfuse f g) = pdom(f) \<inter> pdom(g)"
+  by (metis (no_types, lifting) pdom_pfun_entries pfuse_def)
+
 subsection \<open> Lambda abstraction \<close>
 
 lemma pabs_cong:
