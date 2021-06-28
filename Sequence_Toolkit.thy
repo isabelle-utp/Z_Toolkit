@@ -67,7 +67,7 @@ definition "seq (a::'a itself) = lists (UNIV :: 'a set)"
 syntax "_seq" :: "type \<Rightarrow> logic" ("seq'(_')")
 translations "seq('a)" == "CONST seq TYPE('a)"
 
-lemma seq_ffun_set: "range list_ffun = {f :: \<nat> \<Rightarrow>\<^sub>f 'X. dom(f) = {1..#f}}"
+lemma seq_ffun_set: "range list_ffun = {f :: \<nat> \<Zffun> 'X. dom(f) = {1..#f}}"
   by (simp add: range_list_ffun, force)
 
 subsection \<open> Non-empty finite sequences \<close>

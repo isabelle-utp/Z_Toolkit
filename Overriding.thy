@@ -61,7 +61,7 @@ end
 
 instantiation ffun :: (type, type) override
 begin
-definition oplus_ffun :: "('a \<Rightarrow>\<^sub>f 'b) \<Rightarrow> ('a \<Rightarrow>\<^sub>f 'b) \<Rightarrow> 'a \<Rightarrow>\<^sub>f 'b" where [simp]: "oplus_ffun = (+)"
+definition oplus_ffun :: "('a \<Zffun> 'b) \<Rightarrow> ('a \<Zffun> 'b) \<Rightarrow> 'a \<Zffun> 'b" where [simp]: "oplus_ffun = (+)"
 instance by (intro_classes, simp_all add: add.assoc)
 end
 
