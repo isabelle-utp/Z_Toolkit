@@ -304,6 +304,9 @@ lemma pfun_upd_add [simp]: "f + g(x \<mapsto> v)\<^sub>p = (f + g)(x \<mapsto> v
 lemma pfun_upd_add_left [simp]: "x \<notin> pdom(g) \<Longrightarrow> f(x \<mapsto> v)\<^sub>p + g = (f + g)(x \<mapsto> v)\<^sub>p"
   by (transfer, auto, metis domD map_add_upd_left)
 
+lemma pfun_app_add' [simp]: "\<lbrakk> e \<in> pdom f; e \<notin> pdom g \<rbrakk> \<Longrightarrow> (f + g)(e)\<^sub>p = f(e)\<^sub>p"
+  by (metis (no_types, lifting) pfun_app_upd_1 pfun_upd_add_left pfun_upd_ext)
+
 lemma pfun_upd_twice [simp]: "f(x \<mapsto> u, x \<mapsto> v)\<^sub>p = f(x \<mapsto> v)\<^sub>p"
   by (transfer, simp)
 
@@ -615,6 +618,10 @@ lemma pfun_entries_apply_2 [simp]:
 
 lemma pdom_res_entries: "A \<lhd>\<^sub>p pfun_entries B f = pfun_entries (A \<inter> B) f"
   by (transfer, auto simp add: fun_eq_iff restrict_map_def)
+
+lemma pfuse_app [simp]:
+  "\<lbrakk> e \<in> pdom F; e \<in> pdom G \<rbrakk> \<Longrightarrow> (pfuse F G)(e)\<^sub>p = (F(e)\<^sub>p, G(e)\<^sub>p)"
+  by (metis (no_types, lifting) IntI pfun_entries_apply_1 pfuse_def)
 
 subsection \<open> Lambda abstraction \<close>
 
