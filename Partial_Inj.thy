@@ -175,20 +175,22 @@ lemma pinv_pinj_of_ialist:
   "ialist xs \<Longrightarrow> pinv (pinj_of_alist xs) = pinj_of_alist (map (\<lambda> (x, y). (y, x)) xs)"
   by (induct xs rule: pinj_of_alist.induct, auto simp add: ialist_def simp add: pinj_of_alist_ndres)
 
-lemma pinv_pinj_of_alist [code]: "pinv (pinj_of_alist xs) = pinj_of_alist (map (\<lambda> (x, y). (y, x)) (clearjunk xs))"
-  by (metis ialist_clearjunk pinj_of_alist_clearjunk pinv_pinj_of_ialist)
 
 lemma pfun_of_ialist: "ialist xs \<Longrightarrow> pfun_of_pinj (pinj_of_alist xs) = pfun_of_alist xs"
   by (induct xs rule: pinj_of_alist.induct, auto simp add: zero_pinj.rep_eq ialist_def pinj_upd.rep_eq )
      (metis pinj_of_alist_nrres pinj_rres.rep_eq)
 
-lemma pfun_of_pinj_of_alist [code]: 
-  "pfun_of_pinj (pinj_of_alist xs) = pfun_of_alist (clearjunk xs)"
-  by (metis ialist_clearjunk pfun_of_ialist pinj_of_alist_clearjunk)
 
 declare clearjunk.simps [simp del]
 
 end
+
+lemma pinv_pinj_of_alist [code]: "pinv (pinj_of_alist xs) = pinj_of_alist (map (\<lambda> (x, y). (y, x)) (Partial_Inj.clearjunk xs))"
+  by (metis ialist_clearjunk pinj_of_alist_clearjunk pinv_pinj_of_ialist)
+
+lemma pfun_of_pinj_of_alist [code]: 
+  "pfun_of_pinj (pinj_of_alist xs) = pfun_of_alist (Partial_Inj.clearjunk xs)"
+  by (metis ialist_clearjunk pfun_of_ialist pinj_of_alist_clearjunk)
 
 declare pinj_of_alist.simps [simp del]
 
