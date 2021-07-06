@@ -192,6 +192,23 @@ lemma functional_fun_rel: "functional (fun_rel f)"
 lemma rel_apply_fun [simp]: "(fun_rel f)(x)\<^sub>r = f x"
   by (simp add: fun_rel_def rel_apply_def)
 
+text \<open> Make a relation functional by removing any pairs that have duplicate distinct values. \<close>
+
+definition mk_functional :: "('a \<leftrightarrow> 'b) \<Rightarrow> ('a \<leftrightarrow> 'b)" where
+"mk_functional R = {(x, y) \<in> R. \<forall> y'. (x, y') \<in> R \<longrightarrow> y = y'}"
+
+lemma mk_functional [simp]: "functional (mk_functional R)"
+  by (auto simp add: mk_functional_def single_valued_def)
+
+lemma mk_functional_fp: "functional R \<Longrightarrow> mk_functional R = R"
+  by (auto simp add: mk_functional_def single_valued_def)
+
+lemma mk_functional_idem: "mk_functional (mk_functional R) = mk_functional R"
+  using mk_functional mk_functional_fp by blast
+
+lemma mk_functional_subset [simp]: "mk_functional R \<subseteq> R"
+  by (auto simp add: mk_functional_def)
+
 subsection \<open> Left-Total Relations\<close>
 
 definition left_totalr_on :: "'a set \<Rightarrow> ('a \<leftrightarrow> 'b) \<Rightarrow> bool" where
