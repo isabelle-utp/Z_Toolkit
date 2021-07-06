@@ -264,6 +264,9 @@ lemma rel_pfun_override [rclos]: "\<lbrakk> R \<in> A \<rightarrow>\<^sub>p B; S
 
 subsection \<open> Code Generation \<close>
 
+lemma rel_conv_alist [code]: "(set xs)\<inverse> = set (map (\<lambda>(x, y). (y, x)) xs)"
+  by (induct xs, auto)
+
 lemma rel_domres_alist [code]: "A \<lhd>\<^sub>r set xs = set (AList.restrict A xs)"
   by (induct xs, simp_all, safe, simp_all)
 
