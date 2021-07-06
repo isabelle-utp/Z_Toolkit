@@ -666,7 +666,7 @@ lemma pcomp_pabs:
 
 subsection \<open> Graph laws \<close>
 
-lemma pfun_graph_inv: "graph_pfun (pfun_graph f) = f"
+lemma pfun_graph_inv [code_unfold]: "graph_pfun (pfun_graph f) = f"
   by (transfer, simp)
 
 lemma pfun_eq_graph: "f = g \<longleftrightarrow> pfun_graph f = pfun_graph g"
@@ -861,6 +861,9 @@ lemma map_of_Cons_code [code]:
 lemma map_pfun_alist [code]: 
   "map_pfun f (pfun_of_alist m) = pfun_of_alist (map (\<lambda> (k, v). (k, f v)) m)"
   by (transfer, simp add: map_of_map)
+
+lemma map_pfun_of_map [code]: "map_pfun f (pfun_of_map g) = pfun_of_map (\<lambda> x. map_option f (g x))"
+  by (auto simp add: map_pfun_def pfun_of_map_inject fun_eq_iff)
 
 lemma pdom_res_alist [code]:
   "A \<lhd>\<^sub>p (pfun_of_alist m) = pfun_of_alist (AList.restrict A m)"

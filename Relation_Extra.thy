@@ -1,7 +1,7 @@
 section \<open> Relational Universe \<close>
 
 theory Relation_Extra
-  imports "HOL-Library.FuncSet"
+  imports "HOL-Library.FuncSet" "HOL-Library.AList"
 begin
 
 text \<open> This theory develops a universe for a Z-like relational language, including the core 
@@ -112,6 +112,10 @@ lemma rel_domres_compl_disj: "A \<inter> Domain P = {} \<Longrightarrow> (- A) \
 
 lemma rel_domres_Id_on: "A \<lhd>\<^sub>r R = Id_on A O R"
   by (auto simp add: rel_domres_def Id_on_def relcomp_unfold)
+
+lemma rel_domres_insert [simp]:
+ "A \<lhd>\<^sub>r insert (k, v) R = (if (k \<in> A) then insert (k, v) (A \<lhd>\<^sub>r R) else A \<lhd>\<^sub>r R)"
+  by (auto simp add: rel_domres_def)
 
 subsection \<open> Relational Override \<close>
 
@@ -257,5 +261,10 @@ lemma rel_pfun_override [rclos]: "\<lbrakk> R \<in> A \<rightarrow>\<^sub>p B; S
   apply (auto simp add: rel_pfun_def rel_typed_def)
   apply (metis (no_types, hide_lams) Range.simps Range_Un_eq Range_rel_override Un_iff rev_subsetD)
   done
+
+subsection \<open> Code Generation \<close>
+
+lemma rel_domres_alist [code]: "A \<lhd>\<^sub>r set xs = set (AList.restrict A xs)"
+  by (induct xs, simp_all, safe, simp_all)
 
 end
