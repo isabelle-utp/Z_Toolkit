@@ -80,7 +80,7 @@ is ran_restrict_map .
 
 lift_definition pfun_graph :: "('a, 'b) pfun \<Rightarrow> ('a \<times> 'b) set" is map_graph .
 
-lift_definition graph_pfun :: "('a \<times> 'b) set \<Rightarrow> ('a, 'b) pfun" is graph_map .
+lift_definition graph_pfun :: "('a \<times> 'b) set \<Rightarrow> ('a, 'b) pfun" is "graph_map \<circ> mk_functional" .
 
 lift_definition pfun_entries :: "'k set \<Rightarrow> ('k \<Rightarrow> 'v) \<Rightarrow> ('k, 'v) pfun" is
 "\<lambda> d f x. if (x \<in> d) then Some (f x) else None" .
@@ -421,8 +421,12 @@ lemma pdom_upd [simp]: "pdom (f(k \<mapsto> v)\<^sub>p) = insert k (pdom f)"
 lemma pdom_pdom_res [simp]: "pdom (A \<lhd>\<^sub>p f) = A \<inter> pdom(f)"
   by (transfer, auto)
 
-lemma pdom_graph_pfun [simp]: "pdom (graph_pfun R) = Domain R"
-  by (transfer, simp add: Domain_fst graph_map_dom)
+lemma pdom_graph_pfun: "pdom (graph_pfun R) \<subseteq> Domain R"
+  by (transfer, simp add: graph_map_dom fst_eq_Domain Domain_mk_functional)
+
+lemma pdom_functional_graph_pfun [simp]: 
+  "functional R \<Longrightarrow> pdom (graph_pfun R) = Domain R"
+  by (transfer, simp add: dom_map_graph mk_functional_fp)
 
 lemma pdom_pran_res_finite [simp]:
   "finite (pdom f) \<Longrightarrow> finite (pdom (f \<rhd>\<^sub>p A))"
@@ -667,7 +671,7 @@ lemma pcomp_pabs:
 subsection \<open> Graph laws \<close>
 
 lemma pfun_graph_inv [code_unfold]: "graph_pfun (pfun_graph f) = f"
-  by (transfer, simp)
+  by (transfer, simp add: mk_functional_fp)
 
 lemma pfun_eq_graph: "f = g \<longleftrightarrow> pfun_graph f = pfun_graph g"
   by (metis pfun_graph_inv)
@@ -909,8 +913,6 @@ lemma equal_pfun [code]:
   apply (metis domI domIff map_of_eq_None_iff weak_map_of_SomeI)
   apply (metis (no_types, lifting) image_iff map_of_eq_None_iff)
   done
-
-
 
 lemma set_inter_Collect: "set xs \<inter> Collect P = set (filter P xs)"
   by (auto)

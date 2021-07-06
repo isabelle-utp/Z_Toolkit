@@ -43,7 +43,7 @@ lift_definition ffun_graph :: "'a \<Zffun> 'b \<Rightarrow> ('a \<times> 'b) set
 
 lift_definition graph_ffun :: "('a \<times> 'b) set \<Rightarrow> 'a \<Zffun> 'b" is
   "\<lambda> R. if (finite (Domain R)) then graph_pfun R else pempty"
-  by (simp add: finite_Domain)
+  by (simp add: finite_Domain) (meson pdom_graph_pfun rev_finite_subset)
 
 instantiation ffun :: (type, type) zero
 begin
@@ -63,7 +63,7 @@ end
 instantiation ffun :: (type, type) minus
 begin
 lift_definition minus_ffun :: "'a \<Zffun> 'b \<Rightarrow> 'a \<Zffun> 'b \<Rightarrow> 'a \<Zffun> 'b" is "(-)"
-  by (metis finite_Diff finite_Domain pdom_graph_pfun pdom_pfun_graph_finite pfun_graph_inv pfun_graph_minus)
+  by (metis Dom_pfun_graph finite_Diff finite_Domain pdom_pfun_graph_finite pfun_graph_minus)
 instance ..
 end
 
@@ -268,7 +268,7 @@ lemma fdom_fdom_res [simp]: "fdom (A \<lhd>\<^sub>f f) = A \<inter> fdom(f)"
   by (transfer, auto)
 
 lemma fdom_graph_ffun [simp]:
-  "finite (Domain R) \<Longrightarrow> fdom (graph_ffun R) = Domain R"
+  "\<lbrakk> functional R; finite (Domain R) \<rbrakk> \<Longrightarrow> fdom (graph_ffun R) = Domain R"
   by (transfer, simp add: Domain_fst graph_map_dom)
 
 lemma pdom_pfun_of [simp]: "pdom (pfun_of f) = fdom f"
