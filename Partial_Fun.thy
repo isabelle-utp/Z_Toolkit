@@ -920,6 +920,11 @@ lemma set_inter_Collect: "set xs \<inter> Collect P = set (filter P xs)"
 lemma pabs_set [code]: "pabs (set xs) P f = pfun_of_alist (map (\<lambda>k. (k, f k)) (filter P xs))"
   by (simp only: pabs_def pfun_entries_alist pdom_res_entries set_inter_Collect Int_UNIV_right)
 
+lemma graph_pfun_set [code]: 
+  "graph_pfun (set xs) = pfun_of_alist (filter (\<lambda>(x, y). length (remdups (map snd (AList.restrict {x} xs))) = 1) xs)"
+  by (transfer, simp only: comp_def mk_functional_alist)
+     (metis graph_map_set mk_functional mk_functional_alist)
+
 text \<open> Hide implementation details for partial functions \<close>
 
 lifting_update pfun.lifting

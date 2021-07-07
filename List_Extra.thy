@@ -1017,4 +1017,16 @@ lemma Nil_less_Cons [simp]: "[] <\<^sub>l a # x"
 lemma Cons_less_Cons [simp]: "a # x <\<^sub>l b # y \<longleftrightarrow> a < b \<or> a = b \<and> x <\<^sub>l y"
   by (simp add: list_lex_less_def)
 
+subsection \<open> Code Generation \<close>
+
+lemma set_singleton_iff: "set xs = {x} \<longleftrightarrow> remdups xs = [x]"
+  apply (auto)
+  apply (metis card_set empty_set insert_not_empty length_0_conv length_Suc_conv list.simps(15) remdups.simps(1) remdups.simps(2) set_remdups the_elem_set)
+  apply (metis empty_iff empty_set set_ConsD set_remdups)
+  apply (metis list.set_intros(1) set_remdups)
+  done
+
+lemma list_singleton_iff: "(\<exists> x. xs = [x]) \<longleftrightarrow> (length xs = 1)"
+  by (auto simp add: length_Suc_conv)
+
 end

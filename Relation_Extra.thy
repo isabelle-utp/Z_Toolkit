@@ -1,7 +1,7 @@
 section \<open> Relational Universe \<close>
 
 theory Relation_Extra
-  imports "HOL-Library.FuncSet" "HOL-Library.AList"
+  imports "HOL-Library.FuncSet" "HOL-Library.AList" List_Extra
 begin
 
 text \<open> This theory develops a universe for a Z-like relational language, including the core 
@@ -82,6 +82,9 @@ lemma Domain_Preimage: "Domain P = P\<inverse> `` UNIV"
 lemma Domain_relcomp: "Domain (P O Q) = (P\<inverse> `` Domain(Q))"
   by (simp add: Domain_Preimage converse_relcomp relcomp_Image)
 
+lemma Domain_set: "Domain (set xs) = set (map fst xs)"
+  by (simp add: Domain_fst)
+
 subsection \<open> Range laws \<close>
 
 lemma Range_Image: "Range P = P `` UNIV"
@@ -115,6 +118,9 @@ lemma rel_domres_Id_on: "A \<lhd>\<^sub>r R = Id_on A O R"
 
 lemma rel_domres_insert [simp]:
  "A \<lhd>\<^sub>r insert (k, v) R = (if (k \<in> A) then insert (k, v) (A \<lhd>\<^sub>r R) else A \<lhd>\<^sub>r R)"
+  by (auto simp add: rel_domres_def)
+
+lemma Image_as_rel_domres: "R `` A = Range (A \<lhd>\<^sub>r R)"
   by (auto simp add: rel_domres_def)
 
 subsection \<open> Relational Override \<close>
@@ -209,6 +215,16 @@ lemma mk_functional_idem: "mk_functional (mk_functional R) = mk_functional R"
 lemma mk_functional_subset [simp]: "mk_functional R \<subseteq> R"
   by (auto simp add: mk_functional_def)
 
+lemma Domain_mk_functional: "Domain (mk_functional R) \<subseteq> Domain R"
+  by (auto simp add: mk_functional_def)
+
+definition single_valued_dom :: "('a \<times> 'b) set \<Rightarrow> 'a set" where
+"single_valued_dom R = {x \<in> Domain(R). \<exists> y. R `` {x} = {y}}"
+
+lemma mk_functional_single_valued_dom: "mk_functional R = single_valued_dom R \<lhd>\<^sub>r R"
+  by (auto simp add: mk_functional_def single_valued_dom_def rel_domres_def)
+     (metis Image_singleton_iff singletonD)
+
 subsection \<open> Left-Total Relations\<close>
 
 definition left_totalr_on :: "'a set \<Rightarrow> ('a \<leftrightarrow> 'b) \<Rightarrow> bool" where
@@ -286,5 +302,22 @@ lemma rel_conv_alist [code]: "(set xs)\<inverse> = set (map (\<lambda>(x, y). (y
 
 lemma rel_domres_alist [code]: "A \<lhd>\<^sub>r set xs = set (AList.restrict A xs)"
   by (induct xs, simp_all, safe, simp_all)
+
+lemma Image_alist [code]: "set xs `` A = set (map snd (AList.restrict A xs))"
+  by (simp add: Image_as_rel_domres rel_domres_alist Range_snd)
+
+lemma Collect_set: "{x \<in> set xs. P x} = set (filter P xs)"
+  by auto
+
+lemma single_valued_dom_alist [code]:
+  "single_valued_dom (set xs) = set (filter (\<lambda>x. length (remdups (map snd (AList.restrict {x} xs))) = 1) (map fst xs))"
+  by (simp only: single_valued_dom_def set_map[THEN sym] Image_alist Domain_set set_singleton_iff list_singleton_iff Collect_set)
+
+lemma AList_restrict_in_dom: "AList.restrict (set (filter P (map fst xs))) xs = filter (\<lambda> (x, y). P x) xs"
+  by (auto intro: filter_cong simp add: Domain.intros fst_eq_Domain AList.restrict_eq)
+
+lemma mk_functional_alist [code]:
+  "mk_functional (set xs) = set (filter (\<lambda> (x,y). length (remdups (map snd (AList.restrict {x} xs))) = 1) xs)"
+  by (simp only: mk_functional_single_valued_dom rel_domres_alist single_valued_dom_alist AList_restrict_in_dom)
 
 end

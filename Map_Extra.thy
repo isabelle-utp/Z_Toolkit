@@ -60,6 +60,9 @@ lemma dom_map_graph: "dom f = Domain(map_graph f)"
 lemma ran_map_graph: "ran f = Range(map_graph f)"
   by (simp add: map_graph_def ran_def image_def)
 
+lemma graph_map_set: "functional (set xs) \<Longrightarrow> graph_map (set xs) = map_of xs"
+  by (induct xs; force)
+
 lemma rel_apply_map_graph:
   "x \<in> dom(f) \<Longrightarrow> (map_graph f)(x)\<^sub>r = the (f x)"
   by (auto simp add: rel_apply_def map_graph_def)
