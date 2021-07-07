@@ -8,7 +8,7 @@
 section \<open> Finite Functions \<close>
 
 theory Finite_Fun
-imports Map_Extra Partial_Fun FSet_Extra
+imports Map_Extra Partial_Fun
 begin
 
 subsection \<open> Finite function type and operations \<close>

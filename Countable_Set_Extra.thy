@@ -11,7 +11,7 @@ theory Countable_Set_Extra
 imports
   "HOL-Library.Countable_Set_Type"
   Infinite_Sequence
-  FSet_Extra
+  
 begin
 
 subsection \<open> Extra syntax \<close>
@@ -153,9 +153,6 @@ lemma CCollect_ext_Some [simp]:
   done
 
 lift_definition list_of_cset :: "'a :: linorder cset \<Rightarrow> 'a list" is sorted_list_of_set .
-
-lift_definition fset_cset :: "'a fset \<Rightarrow> 'a cset" is id
-  using uncountable_infinite by auto
 
 definition cset_count :: "'a cset \<Rightarrow> 'a \<Rightarrow> nat" where
 "cset_count A =
