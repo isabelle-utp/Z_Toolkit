@@ -877,6 +877,17 @@ lemma length_list_minus:
   shows "length(t - s) = length(t) - length(s)"
   using assms by (simp add: minus_list_def prefix_order.dual_order.strict_implies_order)
 
+lemma length_minus_le: "length (ys - xs) \<le> length ys"
+  by (simp add: minus_list_def)
+
+lemma length_minus_less: "\<lbrakk> xs \<le> ys; xs \<noteq> [] \<rbrakk> \<Longrightarrow> length (ys - xs) < length ys"
+  by (auto simp add: minus_list_def less_eq_list_def)
+     (metis diff_less length_greater_0_conv prefix_bot.bot.extremum_uniqueI)
+
+lemma filter_minus [simp]: "ys \<le> xs \<Longrightarrow> filter P (xs - ys) = filter P xs - filter P ys"
+  by (simp add: minus_list_def less_eq_list_def filter_mono_prefix)
+     (metis filter_append filter_mono_prefix prefix_drop same_append_eq)
+
 subsection \<open> Laws on @{term take}, @{term drop}, and @{term nths} \<close>
 
 lemma take_prefix: "m \<le> n \<Longrightarrow> take m xs \<le> take n xs"

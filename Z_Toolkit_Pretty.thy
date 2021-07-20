@@ -20,7 +20,6 @@ no_notation funcset (infixr "\<rightarrow>" 60)
 subsection \<open> Types \<close>
 
 type_notation set ("\<bbbP> _" [999] 999)
-type_notation fset ("\<bbbF> _" [999] 999)
 
 type_notation tfun (infixr "\<rightarrow>" 0)
 type_notation pfun (infixr "\<Zpfun>" 0)
@@ -55,7 +54,7 @@ typ "\<bbbP> \<nat> \<rightarrow> \<nat>"
 typ "\<bbbP> \<nat> \<Zpfun> \<bool>"
 term "{}"
 term "P \<Zcomp> Q"
-term "A \<Zdres> B \<Zndres> (P :: \<bbbF>(\<nat>) \<Zpfun> \<bool>)"
+term "A \<Zdres> B \<Zndres> (P :: \<bbbP>(\<nat>) \<Zpfun> \<bool>)"
 
 term "\<bbbP> \<nat> \<rightarrow> \<nat>"
 term "\<nat> \<Zffun> \<nat>"
