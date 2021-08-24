@@ -2,7 +2,7 @@ section \<open> Meta-theory for Relation Library \<close>
 
 theory Relation_Lib
   imports
-    Countable_Set_Extra Positive Infinity 
+    Countable_Set_Extra Positive Infinity Enum_Type
     Relation_Extra Partial_Fun Partial_Inj Finite_Fun Finite_Inj Total_Fun List_Extra
 begin 
 
