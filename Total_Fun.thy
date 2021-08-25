@@ -7,7 +7,7 @@ subsection \<open> Total function type and operations \<close>
 text \<open> It may seem a little strange to create this, given we already have @{type fun}, but it's
   necessary to implement Z's type hierarchy. \<close>
 
-typedef ('a, 'b) tfun = "{f :: 'a \<Rightarrow>\<^sub>p 'b. pdom(f) = UNIV}" 
+typedef ('a, 'b) tfun = "{f :: 'a \<Zpfun> 'b. pdom(f) = UNIV}" 
   morphisms pfun_of_tfun Abs_tfun
   by (rule_tac x="pfun_entries UNIV undefined" in exI, simp)
 

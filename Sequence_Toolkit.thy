@@ -103,7 +103,7 @@ text \<open> Provided by the HOL function @{const rev}. \<close>
 
 subsection \<open> Head of a sequence \<close>
 
-definition head :: "'a list \<Rightarrow>\<^sub>p 'a" where
+definition head :: "'a list \<Zpfun> 'a" where
 "head = (\<lambda> xs :: 'a list | #xs > 0 \<bullet> hd xs)"
 
 lemma dom_head: "dom head = {xs. #xs > 0}"
@@ -119,7 +119,7 @@ subsection \<open> Last of a sequence \<close>
 
 hide_const (open) last
 
-definition last :: "'a list \<Rightarrow>\<^sub>p 'a" where
+definition last :: "'a list \<Zpfun> 'a" where
 "last = (\<lambda> xs :: 'a list | #xs > 0 \<bullet> List.last xs)"
 
 lemma dom_last: "dom last = {xs. #xs > 0}"
@@ -133,7 +133,7 @@ lemma last_eq: "#s > 0 \<Longrightarrow> last s = s (#s)"
 
 subsection \<open> Tail of a sequence \<close>
 
-definition tail :: "'a list \<Rightarrow>\<^sub>p 'a list" where
+definition tail :: "'a list \<Zpfun> 'a list" where
 "tail = (\<lambda> xs :: 'a list | #xs > 0 \<bullet> tl xs)"
 
 lemma dom_tail: "dom tail = {xs. #xs > 0}"

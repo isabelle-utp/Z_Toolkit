@@ -55,7 +55,7 @@ end
 
 instantiation pfun :: (type, type) override
 begin
-definition oplus_pfun :: "('a \<Rightarrow>\<^sub>p 'b) \<Rightarrow> ('a \<Rightarrow>\<^sub>p 'b) \<Rightarrow> 'a \<Rightarrow>\<^sub>p 'b" where [simp]: "oplus_pfun = (+)"
+definition oplus_pfun :: "('a \<Zpfun> 'b) \<Rightarrow> ('a \<Zpfun> 'b) \<Rightarrow> 'a \<Zpfun> 'b" where [simp]: "oplus_pfun = (+)"
 instance by (intro_classes, simp_all add: add.assoc)
 end
 

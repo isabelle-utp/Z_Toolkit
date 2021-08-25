@@ -22,8 +22,6 @@ subsection \<open> Types \<close>
 type_notation set ("\<bbbP> _" [999] 999)
 
 type_notation tfun (infixr "\<rightarrow>" 0)
-type_notation pfun (infixr "\<Zpfun>" 0)
-type_notation ffun (infixr "\<Zffun>" 0)
 
 notation rel_tfun (infixr "\<rightarrow>" 60)
 notation rel_pfun (infixr "\<Zpfun>" 60)

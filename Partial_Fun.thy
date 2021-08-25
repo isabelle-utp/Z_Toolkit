@@ -20,7 +20,7 @@ subsection \<open> Partial function type and operations \<close>
 typedef ('a, 'b) pfun = "UNIV :: ('a \<rightharpoonup> 'b) set"
   morphisms pfun_lookup pfun_of_map ..
 
-type_notation pfun (infixr "\<Rightarrow>\<^sub>p" 0)
+type_notation pfun (infixr "\<Zpfun>" 1)
 
 setup_lifting type_definition_pfun
 
@@ -85,7 +85,7 @@ lift_definition graph_pfun :: "('a \<times> 'b) set \<Rightarrow> ('a, 'b) pfun"
 lift_definition pfun_entries :: "'k set \<Rightarrow> ('k \<Rightarrow> 'v) \<Rightarrow> ('k, 'v) pfun" is
 "\<lambda> d f x. if (x \<in> d) then Some (f x) else None" .
 
-definition pfuse :: "('a \<Rightarrow>\<^sub>p 'b) \<Rightarrow> ('a \<Rightarrow>\<^sub>p 'c) \<Rightarrow> ('a \<Rightarrow>\<^sub>p 'b \<times> 'c)"
+definition pfuse :: "('a \<Zpfun> 'b) \<Rightarrow> ('a \<Zpfun> 'c) \<Rightarrow> ('a \<Zpfun> 'b \<times> 'c)"
   where "pfuse f g = pfun_entries (pdom(f) \<inter> pdom(g)) (\<lambda> x. (pfun_app f x, pfun_app g x))"
 
 lift_definition ptabulate :: "'a list \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> ('a, 'b) pfun"
@@ -99,7 +99,7 @@ abbreviation "fun_pfun \<equiv> pfun_entries UNIV"
 
 no_notation disj (infixr "|" 30)
 
-definition pabs :: "'a set \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> 'a \<Rightarrow>\<^sub>p 'b" where
+definition pabs :: "'a set \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> 'a \<Zpfun> 'b" where
 "pabs A P f = (A \<inter> Collect P) \<lhd>\<^sub>p fun_pfun f"
 
 definition pcard :: "('a, 'b) pfun \<Rightarrow> nat"
@@ -229,7 +229,7 @@ lemma pfun_minus_self [simp]:
   shows "f - f = 0"
   by (transfer, simp add: map_minus_def)
 
-lemma pfun_plus_idem [simp]: "(f :: 'a \<Rightarrow>\<^sub>p 'b) + f = f"
+lemma pfun_plus_idem [simp]: "(f :: 'a \<Zpfun> 'b) + f = f"
   by (transfer, simp add: map_add_subsumed2)
 
 lemma pfun_plus_commute:
@@ -768,7 +768,7 @@ lemma pfun_sum_pdom_antires [simp]:
 
 subsection \<open> Conversions \<close>
 
-definition list_pfun :: "'a list \<Rightarrow> nat \<Rightarrow>\<^sub>p 'a" where
+definition list_pfun :: "'a list \<Rightarrow> nat \<Zpfun> 'a" where
 "list_pfun xs = (\<lambda> i | 0 < i \<and> i \<le> length xs \<bullet> xs ! (i-1))"
 
 lemma pdom_list_pfun [simp]: "pdom (list_pfun xs) = {1..length xs}"
@@ -821,7 +821,7 @@ lemma relt_pfun_iff:
   "relt_pfun R f g \<longleftrightarrow> (pdom(f) = pdom(g) \<and> (\<forall> x\<in>pdom(f). R (f(x)\<^sub>p) (g(x)\<^sub>p)))"
   by (transfer, auto simp add: rel_map_iff)
 
-lift_definition pfun_of_alist :: "('a \<times> 'b) list \<Rightarrow> 'a \<Rightarrow>\<^sub>p 'b" is map_of .
+lift_definition pfun_of_alist :: "('a \<times> 'b) list \<Rightarrow> 'a \<Zpfun> 'b" is map_of .
 
 lemma pfun_of_alist_Nil [simp]: "pfun_of_alist [] = {}\<^sub>p"
   by (transfer, simp)
