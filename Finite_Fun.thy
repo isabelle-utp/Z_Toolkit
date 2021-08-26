@@ -267,6 +267,13 @@ lemma fdom_upd [simp]: "fdom (f(k \<mapsto> v)\<^sub>f) = insert k (fdom f)"
 lemma fdom_fdom_res [simp]: "fdom (A \<lhd>\<^sub>f f) = A \<inter> fdom(f)"
   by (transfer, auto)
 
+lemma ffun_fdom_antires_upd [simp]:
+  "k \<in> A \<Longrightarrow> ((- A) \<lhd>\<^sub>f m)(k \<mapsto> v)\<^sub>f = ((- (A - {k})) \<lhd>\<^sub>f m)(k \<mapsto> v)\<^sub>f"
+  by (transfer, simp)
+
+lemma fdom_res_UNIV [simp]: "UNIV \<lhd>\<^sub>f f = f"
+  by (transfer, simp)
+
 lemma fdom_graph_ffun [simp]:
   "\<lbrakk> functional R; finite (Domain R) \<rbrakk> \<Longrightarrow> fdom (graph_ffun R) = Domain R"
   by (transfer, simp add: Domain_fst graph_map_dom)
