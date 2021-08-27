@@ -167,6 +167,7 @@ class restrict = pre_restrict +
   and res_lzero: "res {} P = P"
   and res_comm: "cmpt P Q \<Longrightarrow> res P Q = res Q P"
   and res_cmpt: "\<lbrakk> cmpt P Q; cmpt (res P Q) R \<rbrakk> \<Longrightarrow> cmpt P R"
+  and res_cmptI: "\<lbrakk> cmpt P Q; cmpt P R; cmpt Q R \<rbrakk> \<Longrightarrow> cmpt (res P Q) R"
 
 lemma res_cmpt_rel: "cmpt (P :: 'a \<leftrightarrow> 'b) Q \<Longrightarrow> cmpt (res P Q) R \<Longrightarrow> cmpt P R"
   by (fastforce simp add: rel_domres_def Domain_iff)
@@ -180,7 +181,7 @@ definition compatible_set :: "'a set \<Rightarrow> 'a set \<Rightarrow> bool" wh
 "compatible_set = cmpt"
 
 instance 
-  apply (intro_classes, simp_all add: oplus_set_def compatible_set_def res_idem res_assoc res_lzero cmpt_sym cmpt_empty res_comm)
+  apply (intro_classes, simp_all add: oplus_set_def compatible_set_def res_idem res_assoc res_lzero cmpt_sym cmpt_empty res_comm res_cmptI)
   using res_cmpt apply blast
   done
 end

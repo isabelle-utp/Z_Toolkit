@@ -237,10 +237,21 @@ lemma pfun_compat_add: "(P :: 'a \<Zpfun> 'b) ## Q \<Longrightarrow> P \<oplus> 
   using map_compat_add apply auto
   done
 
-instance  
-  by (intro_classes, simp_all add: pfun_compat_add) 
-     (simp_all add: compatible_pfun_def oplus_pfun_def,
-     (transfer, auto simp add: map_add_subsumed2 map_add_comm_weak')+)
+lemma pfun_compat_addI: "\<lbrakk> (P :: 'a \<Zpfun> 'b) ## Q; P ## R; Q ## R \<rbrakk> \<Longrightarrow> P \<oplus> Q ## R"
+  apply (simp add: compatible_pfun_def oplus_pfun_def)
+  apply (transfer)
+  apply (auto simp add: restrict_map_def fun_eq_iff dom_def map_add_def option.case_eq_if)
+  apply (metis option.inject)+
+  done
+
+instance proof
+  fix P Q R :: "'a \<Zpfun> 'b"
+  show "P ## Q \<Longrightarrow> P \<oplus> Q ## R \<Longrightarrow> P ## R"
+    by (simp add: pfun_compat_add)
+  show "P ## Q \<Longrightarrow> P ## R \<Longrightarrow> Q ## R \<Longrightarrow> P \<oplus> Q ## R"
+    by (simp add: pfun_compat_addI)
+qed (simp_all add: compatible_pfun_def oplus_pfun_def,
+    (transfer, auto simp add: map_add_subsumed2 map_add_comm_weak')+)
 
 end
 
