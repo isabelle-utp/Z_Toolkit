@@ -114,9 +114,9 @@ end
 abbreviation pempty :: "('a, 'b) pfun" ("{}\<^sub>p")
 where "pempty \<equiv> 0"
 
-instantiation pfun :: (type, type) plus
+instantiation pfun :: (type, type) oplus
 begin
-lift_definition plus_pfun :: "('a, 'b) pfun \<Rightarrow> ('a, 'b) pfun \<Rightarrow> ('a, 'b) pfun" is "(++)" .
+lift_definition oplus_pfun :: "('a, 'b) pfun \<Rightarrow> ('a, 'b) pfun \<Rightarrow> ('a, 'b) pfun" is "(++)" .
 instance ..
 end
 
@@ -125,9 +125,6 @@ begin
 lift_definition minus_pfun :: "('a, 'b) pfun \<Rightarrow> ('a, 'b) pfun \<Rightarrow> ('a, 'b) pfun" is "(--)" .
 instance ..
 end
-
-instance pfun :: (type, type) monoid_add
-  by (intro_classes, (transfer, auto)+)
 
 instantiation pfun :: (type, type) inf
 begin
@@ -202,7 +199,7 @@ lemma pfun_comp_right_zero [simp]: "f \<circ>\<^sub>p {}\<^sub>p = {}\<^sub>p"
   by (transfer, auto)
 
 lemma pfun_override_dist_comp:
-  "(f + g) \<circ>\<^sub>p h = (f \<circ>\<^sub>p h) + (g \<circ>\<^sub>p h)"
+  "(f \<oplus> g) \<circ>\<^sub>p h = (f \<circ>\<^sub>p h) \<oplus> (g \<circ>\<^sub>p h)"
   apply (transfer)
   apply (rule ext)
   apply (auto simp add: map_add_def)
@@ -228,39 +225,50 @@ lemma pfun_minus_self [simp]:
   fixes f :: "('a, 'b) pfun"
   shows "f - f = 0"
   by (transfer, simp add: map_minus_def)
+  
+instantiation pfun :: (type, type) override
+begin
+  definition compatible_pfun :: "'a \<Zpfun> 'b \<Rightarrow> 'a \<Zpfun> 'b \<Rightarrow> bool" where
+  "compatible_pfun R S = ((pdom R) \<lhd>\<^sub>p S = (pdom S) \<lhd>\<^sub>p R)"
 
-lemma pfun_plus_idem [simp]: "(f :: 'a \<Zpfun> 'b) + f = f"
-  by (transfer, simp add: map_add_subsumed2)
+instance
+  by (intro_classes, simp_all add: compatible_pfun_def oplus_pfun_def)
+     (transfer, auto simp add: map_add_subsumed2 map_add_comm_weak')+
+end
 
-lemma pfun_plus_commute:
-  "pdom(f) \<inter> pdom(g) = {} \<Longrightarrow> f + g = g + f"
+lemma pfun_indep_compat: "pdom(f) \<inter> pdom(g) = {} \<Longrightarrow> f ## g"
+  unfolding compatible_pfun_def
+  by (transfer, auto simp add: restrict_map_def fun_eq_iff)
+
+lemma pfun_override_commute:
+  "pdom(f) \<inter> pdom(g) = {} \<Longrightarrow> f \<oplus> g = g \<oplus> f"
   by (transfer, metis map_add_comm)
 
-lemma pfun_plus_commute_weak:
-  "(\<forall> k \<in> pdom(f) \<inter> pdom(g). f(k)\<^sub>p = g(k)\<^sub>p) \<Longrightarrow> f + g = g + f"
+lemma pfun_override_commute_weak:
+  "(\<forall> k \<in> pdom(f) \<inter> pdom(g). f(k)\<^sub>p = g(k)\<^sub>p) \<Longrightarrow> f \<oplus> g = g \<oplus> f"
   by (transfer, simp, metis IntD1 IntD2 domD map_add_comm_weak option.sel)
 
-lemma pfun_minus_plus_commute:
-  "pdom(g) \<inter> pdom(h) = {} \<Longrightarrow> (f - g) + h = (f + h) - g"
+lemma pfun_minus_override_commute:
+  "pdom(g) \<inter> pdom(h) = {} \<Longrightarrow> (f - g) \<oplus> h = (f \<oplus> h) - g"
   by (transfer, simp add: map_minus_plus_commute)
 
-lemma pfun_plus_minus:
-  "f \<subseteq>\<^sub>p g \<Longrightarrow> (g - f) + f = g"
+lemma pfun_override_minus:
+  "f \<subseteq>\<^sub>p g \<Longrightarrow> (g - f) \<oplus> f = g"
   by (transfer, rule ext, auto simp add: map_le_def map_minus_def map_add_def option.case_eq_if)
 
 lemma pfun_minus_common_subset:
   "\<lbrakk> h \<subseteq>\<^sub>p f; h \<subseteq>\<^sub>p g \<rbrakk> \<Longrightarrow> (f - h = g - h) = (f = g)"
   by (transfer, simp add: map_minus_common_subset)
 
-lemma pfun_minus_plus:
-  "pdom(f) \<inter> pdom(g) = {} \<Longrightarrow> (f + g) - g = f"
+lemma pfun_minus_override:
+  "pdom(f) \<inter> pdom(g) = {} \<Longrightarrow> (f \<oplus> g) - g = f"
   by (transfer, simp add: map_add_def map_minus_def option.case_eq_if, rule ext, auto)
      (metis Int_commute domIff insert_disjoint(1) insert_dom)
 
-lemma pfun_plus_pos: "x + y = {}\<^sub>p \<Longrightarrow> x = {}\<^sub>p"
+lemma pfun_override_pos: "x \<oplus> y = {}\<^sub>p \<Longrightarrow> x = {}\<^sub>p"
   by (transfer, simp)
 
-lemma pfun_le_plus: "pdom x \<inter> pdom y = {} \<Longrightarrow> x \<le> x + y"
+lemma pfun_le_override: "pdom x \<inter> pdom y = {} \<Longrightarrow> x \<le> x \<oplus> y"
   by (transfer, auto simp add: map_le_iff_add)
 
 subsection \<open> Membership, application, and update \<close>
@@ -272,8 +280,8 @@ lemma pfun_member_alt_def:
   "(x, y) \<in>\<^sub>p f \<longleftrightarrow> (x \<in> pdom f \<and> f(x)\<^sub>p = y)"
   by (transfer, auto simp add: map_member_alt_def map_apply_def)
 
-lemma pfun_member_plus:
-  "(x, y) \<in>\<^sub>p f + g \<longleftrightarrow> ((x \<notin> pdom(g) \<and> (x, y) \<in>\<^sub>p f) \<or> (x, y) \<in>\<^sub>p g)"
+lemma pfun_member_override:
+  "(x, y) \<in>\<^sub>p f \<oplus> g \<longleftrightarrow> ((x \<notin> pdom(g) \<and> (x, y) \<in>\<^sub>p f) \<or> (x, y) \<in>\<^sub>p g)"
   by (transfer, simp add: map_member_plus)
 
 lemma pfun_member_minus:
@@ -295,16 +303,16 @@ lemma pfun_graph_apply [simp]: "rel_apply (pfun_graph f) x = f(x)\<^sub>p"
 lemma pfun_upd_ext [simp]: "x \<in> pdom(f) \<Longrightarrow> f(x \<mapsto> f(x)\<^sub>p)\<^sub>p = f"
   by (transfer, simp add: domIff)
 
-lemma pfun_app_add [simp]: "x \<in> pdom(g) \<Longrightarrow> (f + g)(x)\<^sub>p = g(x)\<^sub>p"
+lemma pfun_app_add [simp]: "x \<in> pdom(g) \<Longrightarrow> (f \<oplus> g)(x)\<^sub>p = g(x)\<^sub>p"
   by (transfer, auto)
 
-lemma pfun_upd_add [simp]: "f + g(x \<mapsto> v)\<^sub>p = (f + g)(x \<mapsto> v)\<^sub>p"
+lemma pfun_upd_add [simp]: "f \<oplus> g(x \<mapsto> v)\<^sub>p = (f \<oplus> g)(x \<mapsto> v)\<^sub>p"
   by (transfer, simp)
 
-lemma pfun_upd_add_left [simp]: "x \<notin> pdom(g) \<Longrightarrow> f(x \<mapsto> v)\<^sub>p + g = (f + g)(x \<mapsto> v)\<^sub>p"
+lemma pfun_upd_add_left [simp]: "x \<notin> pdom(g) \<Longrightarrow> f(x \<mapsto> v)\<^sub>p \<oplus> g = (f \<oplus> g)(x \<mapsto> v)\<^sub>p"
   by (transfer, auto, metis domD map_add_upd_left)
 
-lemma pfun_app_add' [simp]: "\<lbrakk> e \<in> pdom f; e \<notin> pdom g \<rbrakk> \<Longrightarrow> (f + g)(e)\<^sub>p = f(e)\<^sub>p"
+lemma pfun_app_add' [simp]: "\<lbrakk> e \<in> pdom f; e \<notin> pdom g \<rbrakk> \<Longrightarrow> (f \<oplus> g)(e)\<^sub>p = f(e)\<^sub>p"
   by (metis (no_types, lifting) pfun_app_upd_1 pfun_upd_add_left pfun_upd_ext)
 
 lemma pfun_upd_twice [simp]: "f(x \<mapsto> u, x \<mapsto> v)\<^sub>p = f(x \<mapsto> v)\<^sub>p"
@@ -321,10 +329,10 @@ lemma pfun_upd_comm_linorder [simp]:
   shows "f(y \<mapsto> u, x \<mapsto> v)\<^sub>p = f(x \<mapsto> v, y \<mapsto> u)\<^sub>p"
   using assms by (transfer, auto)
 
-lemma pfun_upd_as_ovrd: "f(k \<mapsto> v)\<^sub>p = f + {k \<mapsto> v}\<^sub>p"
+lemma pfun_upd_as_ovrd: "f(k \<mapsto> v)\<^sub>p = f \<oplus> {k \<mapsto> v}\<^sub>p"
   by (transfer, simp)
 
-lemma pfun_ovrd_single_upd: "x \<in> pdom(g) \<Longrightarrow> f + ({x} \<lhd>\<^sub>p g) = f(x \<mapsto> g(x)\<^sub>p)\<^sub>p"
+lemma pfun_ovrd_single_upd: "x \<in> pdom(g) \<Longrightarrow> f \<oplus> ({x} \<lhd>\<^sub>p g) = f(x \<mapsto> g(x)\<^sub>p)\<^sub>p"
   by (transfer, auto simp add: map_add_def restrict_map_def fun_eq_iff)
 
 lemma pfun_app_minus [simp]: "x \<notin> pdom g \<Longrightarrow> (f - g)(x)\<^sub>p = f(x)\<^sub>p"
@@ -385,7 +393,7 @@ lemma map_pfun_apply [simp]: "x \<in> pdom G \<Longrightarrow> (map_pfun F G)(x)
 lemma map_pfun_as_pabs: "map_pfun f g = (\<lambda> x \<in> pdom(g) \<bullet> f(g(x)\<^sub>p))"
   by (simp add: pabs_def, transfer, auto simp add: fun_eq_iff restrict_map_def)
 
-lemma map_pfun_ovrd [simp]: "map_pfun f (g + h) = (map_pfun f g) + (map_pfun f h)"
+lemma map_pfun_ovrd [simp]: "map_pfun f (g \<oplus> h) = (map_pfun f g) \<oplus> (map_pfun f h)"
   by (simp add: map_pfun_def, transfer, auto simp add: map_add_def fun_eq_iff)
      (metis bind.bind_lunit comp_apply map_conv_bind_option option.case_eq_if)
 
@@ -400,7 +408,7 @@ lemma pdom_zero [simp]: "pdom 0 = {}"
 lemma pdom_pId_on [simp]: "pdom (pId_on A) = A"
   by (transfer, auto)
 
-lemma pdom_plus [simp]: "pdom (f + g) = pdom f \<union> pdom g"
+lemma pdom_plus [simp]: "pdom (f \<oplus> g) = pdom f \<union> pdom g"
   by (transfer, auto)
 
 lemma pdom_minus [simp]: "g \<le> f \<Longrightarrow> pdom (f - g) = pdom f - pdom g"
@@ -502,7 +510,7 @@ lemma pdom_pfun_inv [simp]: "pdom (pfun_inv f) = pran f"
 
 lemma pfun_inv_add:
   assumes "pfun_inj f" "pfun_inj g" "pran f \<inter> pran g = {}"
-  shows "pfun_inv (f + g) = (pfun_inv f \<rhd>\<^sub>p (- pdom g)) + pfun_inv g"
+  shows "pfun_inv (f \<oplus> g) = (pfun_inv f \<rhd>\<^sub>p (- pdom g)) \<oplus> pfun_inv g"
   using assms by (simp add: pran_rep_eq, transfer, auto, meson map_inv_add)
 
 lemma pfun_inv_upd:
@@ -545,7 +553,7 @@ lemma pdom_antires_insert_notin [simp]:
   "k \<notin> pdom(f) \<Longrightarrow> (- insert k A) \<lhd>\<^sub>p f = (- A) \<lhd>\<^sub>p f"
   by (transfer, auto simp add: restrict_map_def)
  
-lemma pdom_res_override [simp]: "A \<lhd>\<^sub>p (f + g) = (A \<lhd>\<^sub>p f) + (A \<lhd>\<^sub>p g)"
+lemma pdom_res_override [simp]: "A \<lhd>\<^sub>p (f \<oplus> g) = (A \<lhd>\<^sub>p f) \<oplus> (A \<lhd>\<^sub>p g)"
   by (simp add: pdom_res_alt_def pfun_override_dist_comp)
 
 lemma pdom_res_minus [simp]: "A \<lhd>\<^sub>p (f - g) = (A \<lhd>\<^sub>p f) - g"
@@ -594,7 +602,7 @@ lemma pran_res_twice [simp]: "f \<rhd>\<^sub>p A \<rhd>\<^sub>p B = f \<rhd>\<^s
 lemma pran_res_alt_def: "f \<rhd>\<^sub>p A = pId_on A \<circ>\<^sub>p f"
   by (transfer, rule ext, auto simp add: ran_restrict_map_def)
 
-lemma pran_res_override: "(f + g) \<rhd>\<^sub>p A \<subseteq>\<^sub>p (f \<rhd>\<^sub>p A) + (g \<rhd>\<^sub>p A)"
+lemma pran_res_override: "(f \<oplus> g) \<rhd>\<^sub>p A \<subseteq>\<^sub>p (f \<rhd>\<^sub>p A) \<oplus> (g \<rhd>\<^sub>p A)"
   apply (transfer, auto simp add: map_add_def ran_restrict_map_def map_le_def)
   apply (rename_tac f g A a y x)
   apply (case_tac "g a")
@@ -699,8 +707,8 @@ lemma pfun_graph_inter: "pfun_graph (f \<inter>\<^sub>p g) = pfun_graph f \<inte
 lemma pfun_graph_domres: "pfun_graph (A \<lhd>\<^sub>p f) = (A \<lhd>\<^sub>r pfun_graph f)"
   by (transfer, simp add: rel_domres_def map_graph_def restrict_map_def, metis option.simps(3))
 
-lemma pfun_graph_override: "pfun_graph (f + g) = pfun_graph f +\<^sub>r pfun_graph g"
-  by (transfer, auto simp add: map_add_def rel_override_def rel_domres_def map_graph_def option.case_eq_if)
+lemma pfun_graph_override: "pfun_graph (f \<oplus> g) = pfun_graph f \<oplus> pfun_graph g"
+  by (transfer, auto simp add: map_add_def oplus_set_def rel_domres_def map_graph_def option.case_eq_if)
      (metis option.collapse)+
 
 lemma pfun_graph_comp: "pfun_graph (f \<circ>\<^sub>p g) = pfun_graph g O pfun_graph f"
@@ -810,7 +818,7 @@ lemma pfun_lens_src: "\<S>\<^bsub>pfun_lens i\<^esub> = {f. i \<in> pdom(f)}"
   by (auto simp add: lens_defs lens_source_def, transfer, force)
 
 lemma lens_override_pfun_lens:
-  "x \<in> pdom(g) \<Longrightarrow> f \<oplus>\<^sub>L g on pfun_lens x = f + ({x} \<lhd>\<^sub>p g)"
+  "x \<in> pdom(g) \<Longrightarrow> f \<oplus>\<^sub>L g on pfun_lens x = f \<oplus> ({x} \<lhd>\<^sub>p g)"
   by (simp add: lens_defs pfun_ovrd_single_upd)
 
 subsection \<open> Code Generator \<close>
@@ -873,7 +881,7 @@ lemma pdom_res_alist [code]:
   "A \<lhd>\<^sub>p (pfun_of_alist m) = pfun_of_alist (AList.restrict A m)"
   by (transfer, simp add: restr_conv')
 
-lemma plus_pfun_alist [code]: "pfun_of_alist f + pfun_of_alist g = pfun_of_alist (g @ f)"
+lemma plus_pfun_alist [code]: "pfun_of_alist f \<oplus> pfun_of_alist g = pfun_of_alist (g @ f)"
   by (transfer, simp)
 
 lemma pfun_entries_alist [code]: "pfun_entries (set ks) f = pfun_of_alist (map (\<lambda> k. (k, f k)) ks)"

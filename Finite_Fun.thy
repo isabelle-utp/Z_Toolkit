@@ -54,9 +54,9 @@ end
 abbreviation fempty :: "'a \<Zffun> 'b" ("{}\<^sub>f")
 where "fempty \<equiv> 0"
 
-instantiation ffun :: (type, type) plus
+instantiation ffun :: (type, type) oplus
 begin
-lift_definition plus_ffun :: "'a \<Zffun> 'b \<Rightarrow> 'a \<Zffun> 'b \<Rightarrow> 'a \<Zffun> 'b" is "(+)" by simp
+lift_definition oplus_ffun :: "'a \<Zffun> 'b \<Rightarrow> 'a \<Zffun> 'b \<Rightarrow> 'a \<Zffun> 'b" is "(\<oplus>)" by simp
 instance ..
 end
 
@@ -66,9 +66,6 @@ lift_definition minus_ffun :: "'a \<Zffun> 'b \<Rightarrow> 'a \<Zffun> 'b \<Rig
   by (metis Dom_pfun_graph finite_Diff finite_Domain pdom_pfun_graph_finite pfun_graph_minus)
 instance ..
 end
-
-instance ffun :: (type, type) monoid_add
-  by (intro_classes, (transfer, simp add: add.assoc)+)
 
 instantiation ffun :: (type, type) inf
 begin
@@ -119,8 +116,8 @@ subsection \<open> Algebraic laws \<close>
 lemma ffun_comp_assoc: "f \<circ>\<^sub>f (g \<circ>\<^sub>f h) = (f \<circ>\<^sub>f g) \<circ>\<^sub>f h"
   by (transfer, simp add: pfun_comp_assoc)
 
-lemma pfun_override_dist_comp:
-  "(f + g) \<circ>\<^sub>f h = (f \<circ>\<^sub>f h) + (g \<circ>\<^sub>f h)"
+lemma ffun_override_dist_comp:
+  "(f \<oplus> g) \<circ>\<^sub>f h = (f \<circ>\<^sub>f h) \<oplus> (g \<circ>\<^sub>f h)"
   by (transfer, simp add: pfun_override_dist_comp)
 
 lemma ffun_minus_unit [simp]:
@@ -138,34 +135,47 @@ lemma ffun_minus_self [simp]:
   shows "f - f = 0"
   by (transfer, simp)
 
-lemma ffun_plus_idem [simp]: "(f :: 'a \<Zffun> 'b) + f = f"
-  by (transfer, simp)
+instantiation ffun :: (type, type) override
+begin
+  lift_definition compatible_ffun :: "'a \<Zffun> 'b \<Rightarrow> 'a \<Zffun> 'b \<Rightarrow> bool" is compatible .
 
-lemma ffun_plus_commute:
-  "fdom(f) \<inter> fdom(g) = {} \<Longrightarrow> f + g = g + f"
-  by (transfer, metis pfun_plus_commute)
 
-lemma ffun_minus_plus_commute:
-  "fdom(g) \<inter> fdom(h) = {} \<Longrightarrow> (f - g) + h = (f + h) - g"
-  by (transfer, simp add: pfun_minus_plus_commute)
+instance
+  by (intro_classes, (transfer, simp add: compatible_sym override_assoc override_comm)+)
 
-lemma ffun_plus_minus:
-  "f \<subseteq>\<^sub>f g \<Longrightarrow> (g - f) + f = g"
-  by (transfer, simp add: pfun_plus_minus)
+end
+  
+lemma compatible_ffun_alt_def: "R ## S = ((fdom R) \<lhd>\<^sub>f S = (fdom S) \<lhd>\<^sub>f R)"
+  by (transfer, simp add: compatible_pfun_def)
+
+lemma ffun_indep_compat: "fdom(f) \<inter> fdom(g) = {} \<Longrightarrow> f ## g"
+  by (transfer, simp add: pfun_indep_compat)
+
+lemma ffun_override_commute:
+  "fdom(f) \<inter> fdom(g) = {} \<Longrightarrow> f \<oplus> g = g \<oplus> f"
+  by (meson ffun_indep_compat override_comm)
+
+lemma ffun_minus_override_commute:
+  "fdom(g) \<inter> fdom(h) = {} \<Longrightarrow> (f - g) \<oplus> h = (f \<oplus> h) - g"
+  by (transfer, simp add: pfun_minus_override_commute)
+
+lemma ffun_override_minus:
+  "f \<subseteq>\<^sub>f g \<Longrightarrow> (g - f) \<oplus> f = g"
+  by (transfer, simp add: pfun_override_minus)
 
 lemma ffun_minus_common_subset:
   "\<lbrakk> h \<subseteq>\<^sub>f f; h \<subseteq>\<^sub>f g \<rbrakk> \<Longrightarrow> (f - h = g - h) = (f = g)"
   by (transfer, simp add: pfun_minus_common_subset)
 
-lemma ffun_minus_plus:
-  "fdom(f) \<inter> fdom(g) = {} \<Longrightarrow> (f + g) - g = f"
-  by (transfer, simp add: pfun_minus_plus)
+lemma ffun_minus_override:
+  "fdom(f) \<inter> fdom(g) = {} \<Longrightarrow> (f \<oplus> g) - g = f"
+  by (transfer, simp add: pfun_minus_override)
 
-lemma ffun_plus_pos: "x + y = {}\<^sub>f \<Longrightarrow> x = {}\<^sub>f"
-  by (transfer, simp add: pfun_plus_pos)
+lemma ffun_override_pos: "x \<oplus> y = {}\<^sub>f \<Longrightarrow> x = {}\<^sub>f"
+  by (transfer, simp add: pfun_override_pos)
 
-lemma ffun_le_plus: "fdom x \<inter> fdom y = {} \<Longrightarrow> x \<le> x + y"
-  by (transfer, simp add: pfun_le_plus)
+lemma ffun_le_override: "fdom x \<inter> fdom y = {} \<Longrightarrow> x \<le> x \<oplus> y"
+  by (transfer, simp add: pfun_le_override)
 
 subsection \<open> Membership, application, and update \<close>
 
@@ -176,9 +186,9 @@ lemma ffun_member_alt_def:
   "(x, y) \<in>\<^sub>f f \<longleftrightarrow> (x \<in> fdom f \<and> f(x)\<^sub>f = y)"
   by (transfer, simp add: pfun_member_alt_def)
 
-lemma ffun_member_plus:
-  "(x, y) \<in>\<^sub>f f + g \<longleftrightarrow> ((x \<notin> fdom(g) \<and> (x, y) \<in>\<^sub>f f) \<or> (x, y) \<in>\<^sub>f g)"
-  by (transfer, simp add: pfun_member_plus)
+lemma ffun_member_override:
+  "(x, y) \<in>\<^sub>f f \<oplus> g \<longleftrightarrow> ((x \<notin> fdom(g) \<and> (x, y) \<in>\<^sub>f f) \<or> (x, y) \<in>\<^sub>f g)"
+  by (transfer, simp add: pfun_member_override)
 
 lemma ffun_member_minus:
   "(x, y) \<in>\<^sub>f f - g \<longleftrightarrow> (x, y) \<in>\<^sub>f f \<and> (\<not> (x, y) \<in>\<^sub>f g)"
@@ -193,10 +203,10 @@ lemma ffun_app_upd_2 [simp]: "x \<noteq> y \<Longrightarrow> (f(x \<mapsto> v)\<
 lemma ffun_upd_ext [simp]: "x \<in> fdom(f) \<Longrightarrow> f(x \<mapsto> f(x)\<^sub>f)\<^sub>f = f"
   by (transfer, simp)
 
-lemma ffun_app_add [simp]: "x \<in> fdom(g) \<Longrightarrow> (f + g)(x)\<^sub>f = g(x)\<^sub>f"
+lemma ffun_app_add [simp]: "x \<in> fdom(g) \<Longrightarrow> (f \<oplus> g)(x)\<^sub>f = g(x)\<^sub>f"
   by (transfer, simp)
 
-lemma ffun_upd_add [simp]: "f + g(x \<mapsto> v)\<^sub>f = (f + g)(x \<mapsto> v)\<^sub>f"
+lemma ffun_upd_add [simp]: "f \<oplus> g(x \<mapsto> v)\<^sub>f = (f \<oplus> g)(x \<mapsto> v)\<^sub>f"
   by (transfer, simp)
 
 lemma ffun_upd_twice [simp]: "f(x \<mapsto> u, x \<mapsto> v)\<^sub>f = f(x \<mapsto> v)\<^sub>f"
@@ -252,7 +262,7 @@ lemma fdom_finite [simp]: "finite(fdom(f))"
 lemma fdom_zero [simp]: "fdom 0 = {}"
   by (transfer, simp)
 
-lemma fdom_plus [simp]: "fdom (f + g) = fdom f \<union> fdom g"
+lemma fdom_plus [simp]: "fdom (f \<oplus> g) = fdom f \<union> fdom g"
   by (transfer, auto)
 
 lemma fdom_inter: "fdom (f \<inter>\<^sub>f g) \<subseteq> fdom f \<inter> fdom g"
@@ -319,8 +329,8 @@ lemma fdom_res_upd_out [simp]:
   "k \<notin> A \<Longrightarrow> A \<lhd>\<^sub>f f(k \<mapsto> v)\<^sub>f = A \<lhd>\<^sub>f f"
   by (transfer, auto)
 
-lemma fdom_res_override [simp]: "A \<lhd>\<^sub>f (f + g) = (A \<lhd>\<^sub>f f) + (A \<lhd>\<^sub>f g)"
-  by (metis fdom_res.rep_eq pdom_res_override pfun_of_inject plus_ffun.rep_eq)
+lemma fdom_res_override [simp]: "A \<lhd>\<^sub>f (f \<oplus> g) = (A \<lhd>\<^sub>f f) \<oplus> (A \<lhd>\<^sub>f g)"
+  by (metis fdom_res.rep_eq pdom_res_override pfun_of_inject oplus_ffun.rep_eq)
 
 lemma fdom_res_minus [simp]: "A \<lhd>\<^sub>f (f - g) = (A \<lhd>\<^sub>f f) - g"
   by (transfer, auto)
@@ -345,7 +355,7 @@ lemma fran_res_upd_1 [simp]: "v \<in> A \<Longrightarrow> f(x \<mapsto> v)\<^sub
 lemma fran_res_upd_2 [simp]: "v \<notin> A \<Longrightarrow> f(x \<mapsto> v)\<^sub>f \<rhd>\<^sub>f A = ((- {x}) \<lhd>\<^sub>f f) \<rhd>\<^sub>f A"
   by (transfer, auto)
 
-lemma fran_res_override: "(f + g) \<rhd>\<^sub>f A \<subseteq>\<^sub>f (f \<rhd>\<^sub>f A) + (g \<rhd>\<^sub>f A)"
+lemma fran_res_override: "(f \<oplus> g) \<rhd>\<^sub>f A \<subseteq>\<^sub>f (f \<rhd>\<^sub>f A) \<oplus> (g \<rhd>\<^sub>f A)"
   by (transfer, simp add: pran_res_override)
 
 subsection \<open> Graph laws \<close>

@@ -907,6 +907,9 @@ lemma map_add_comm_weak: "(\<forall> k \<in> dom m1 \<inter> dom m2. m1(k) = m2(
   by (auto simp add: map_add_def option.case_eq_if fun_eq_iff)
      (metis IntI domI option.inject)
 
+lemma map_add_comm_weak': "Q |` dom P = P |` dom Q \<Longrightarrow> P ++ Q = Q ++ P"
+  by (metis IntD1 IntD2 map_add_comm_weak restrict_in)
+
 abbreviation "rel_map R \<equiv> rel_fun (=) (rel_option R)"
 
 lemma rel_map_iff: 

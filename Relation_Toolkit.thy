@@ -104,7 +104,7 @@ lemma Image_eq: "r\<lparr>a\<rparr> = {p.2 | p. p \<in> r \<and> p.1 \<in> a}"
 subsection \<open> Overriding \<close>
 
 lemma override_eq: "r \<oplus> s = ((- dom s) \<lhd> r) \<union> s"
-  by (simp add: oplus_set_def rel_override_def)
+  by (simp add: oplus_set_def)
 
 lemma dom_override: "dom (Q \<oplus> R) = (dom Q) \<union> (dom R)"
   by (simp add: override_eq Domain_Un_eq Un_Int_distrib2)

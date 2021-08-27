@@ -1,7 +1,7 @@
 section \<open> Relational Universe \<close>
 
 theory Relation_Extra
-  imports "HOL-Library.FuncSet" "HOL-Library.AList" List_Extra
+  imports "HOL-Library.FuncSet" "HOL-Library.AList" List_Extra Overriding
 begin
 
 text \<open> This theory develops a universe for a Z-like relational language, including the core 
@@ -58,21 +58,50 @@ text \<open> Domain restriction (@{term "A \<lhd>\<^sub>r R"} contains the set o
 definition rel_ranres :: "('a \<leftrightarrow> 'b) \<Rightarrow> 'b set \<Rightarrow> 'a \<leftrightarrow> 'b" (infixl "\<rhd>\<^sub>r" 85) where
 "rel_ranres R A = {(k, v) \<in> R. v \<in> A}"
 
-definition rel_override :: "('a \<leftrightarrow> 'b) \<Rightarrow> ('a \<leftrightarrow> 'b) \<Rightarrow> 'a \<leftrightarrow> 'b" (infixl "+\<^sub>r" 65) where
-"rel_override R S = ((- Domain S) \<lhd>\<^sub>r R) \<union> S"
+text \<open> We employ some type class trickery to enable a polymorphic operator for override that can
+  instantiate @{typ "'a set"}, which is needed for relational overriding. The following class's
+  sole purpose is to allow pairs to be the only valid instantiation element for the set type. \<close>
 
-text \<open> Relational override (@{term "R +\<^sub>r S"}) combines the pairs of @{term S} with the pairs of
-  @{term S} that do not have a first element also in @{term S}. \<close>
+class pre_restrict =
+  fixes cmpt :: "'a set \<Rightarrow> 'a set \<Rightarrow> bool"
+  and res :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set"
+
+instantiation prod :: (type, type) pre_restrict
+begin
+
+text \<open> Relations are compatible is they agree on the values for maplets they both possess. \<close>
+
+definition cmpt_prod :: "('a \<leftrightarrow> 'b) \<Rightarrow> ('a \<leftrightarrow> 'b) \<Rightarrow> bool"
+  where [simp]: "cmpt_prod R S = ((Domain R) \<lhd>\<^sub>r S = (Domain S) \<lhd>\<^sub>r R)"
+definition res_prod :: "('a \<leftrightarrow> 'b) \<Rightarrow> ('a \<leftrightarrow> 'b) \<Rightarrow> 'a \<leftrightarrow> 'b" 
+  where [simp]: "res_prod R S = ((- Domain S) \<lhd>\<^sub>r R) \<union> S"
+instance ..
+end
+
+instantiation set :: (type) zero
+begin
+
+definition zero_set :: "'a set" where
+[simp]: "zero_set = {}"
+
+instance ..
+end
+
+instantiation set :: (pre_restrict) oplus
+begin
+
+definition oplus_set :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set" where
+"oplus_set = res"
+
+instance ..
+
+end
 
 definition rel_update :: "('a \<leftrightarrow> 'b) \<Rightarrow> 'a \<Rightarrow> 'b \<Rightarrow> 'a \<leftrightarrow> 'b" where
-"rel_update R k v = rel_override R {(k, v)}"
+"rel_update R k v = R \<oplus> {(k, v)}"
 
 text \<open> Relational update adds a new pair to a relation. \<close>
 
-definition rel_compat :: "('a \<leftrightarrow> 'b) \<Rightarrow> ('a \<leftrightarrow> 'b) \<Rightarrow> bool" (infix "\<approx>\<^sub>r" 50) where
-"R \<approx>\<^sub>r S \<longleftrightarrow> (Domain R) \<lhd>\<^sub>r S = (Domain S) \<lhd>\<^sub>r R"
-
-text \<open> Relations are compatible is they agree on the values for maplets they both possess. \<close>
 
 subsection \<open> Domain laws \<close>
 
@@ -125,17 +154,31 @@ lemma Image_as_rel_domres: "R `` A = Range (A \<lhd>\<^sub>r R)"
 
 subsection \<open> Relational Override \<close>
 
-interpretation rel_override_monoid: monoid_add "(+\<^sub>r)" "{}"
-  by (unfold_locales, simp_all add: rel_override_def, auto simp add: rel_domres_def)
+class restrict = pre_restrict +
+  assumes cmpt_sym: "cmpt P Q \<Longrightarrow> cmpt Q P"
+  and cmpt_empty: "cmpt {} P"
+  assumes res_idem: "res P P = P"
+  and res_assoc: "res P (res Q R) = res (res P Q) R"
+  and res_lzero: "res {} P = P"
+  and res_rzero: "res P {} = P"
+  and res_comm: "cmpt P Q \<Longrightarrow> res P Q = res Q P"
 
-lemma rel_override_idem [simp]: "P +\<^sub>r P = P"
-  by (auto simp add: rel_override_def rel_domres_def)
+instance prod :: (type, type) restrict
+  by (intro_classes, auto simp add: rel_domres_def)
 
-lemma Domain_rel_override [simp]: "Domain (R +\<^sub>r S) = Domain(R) \<union> Domain(S)"
-  by (auto simp add: rel_override_def Domain_Un_eq)
+instantiation set :: (restrict) override
+begin
+definition compatible_set :: "'a set \<Rightarrow> 'a set \<Rightarrow> bool" where
+"compatible_set = cmpt"
 
-lemma Range_rel_override: "Range(R +\<^sub>r S) \<subseteq> Range(R) \<union> Range(S)"
-  by (auto simp add: rel_override_def rel_domres_def)
+instance by (intro_classes, simp_all add: oplus_set_def compatible_set_def res_idem res_assoc res_lzero res_rzero cmpt_sym cmpt_empty res_comm)
+end
+
+lemma Domain_rel_override [simp]: "Domain (R \<oplus> S) = Domain(R) \<union> Domain(S)"
+  by (auto simp add: oplus_set_def Domain_Un_eq)
+
+lemma Range_rel_override: "Range(R \<oplus> S) \<subseteq> Range(R) \<union> Range(S)"
+  by (auto simp add: oplus_set_def rel_domres_def)
 
 subsection \<open> Functional Relations \<close>
 
@@ -161,8 +204,8 @@ lemma functional_elem:
   shows "(x, R(x)\<^sub>r) \<in> R"
   using assms(1) assms(2) functional_apply by fastforce
 
-lemma functional_override [intro]: "\<lbrakk> functional R; functional S \<rbrakk> \<Longrightarrow> functional (R +\<^sub>r S)"
-  by (auto simp add: functional_algebraic rel_override_def rel_domres_def)
+lemma functional_override [intro]: "\<lbrakk> functional R; functional S \<rbrakk> \<Longrightarrow> functional (R \<oplus> S)"
+  by (auto simp add: functional_algebraic oplus_set_def rel_domres_def)
 
 definition functional_list :: "('a \<times> 'b) list \<Rightarrow> bool" where
 "functional_list xs = (\<forall> x y z. ListMem (x,y) xs \<and> ListMem (x,z) xs \<longrightarrow> y = z)"
@@ -288,7 +331,7 @@ lemma rel_typed_insert [rclos]: "\<lbrakk> R \<in> A \<leftrightarrow> B; x \<in
 lemma rel_pfun_insert [rclos]: "\<lbrakk> R \<in> A \<rightarrow>\<^sub>p B; x \<in> A; y \<in> B; x \<notin> Domain(R) \<rbrakk> \<Longrightarrow> insert (x, y) R \<in> A \<rightarrow>\<^sub>p B"
   by (auto intro: rclos simp add: rel_pfun_def)
 
-lemma rel_pfun_override [rclos]: "\<lbrakk> R \<in> A \<rightarrow>\<^sub>p B; S \<in> A \<rightarrow>\<^sub>p B \<rbrakk> \<Longrightarrow> (R +\<^sub>r S) \<in> A \<rightarrow>\<^sub>p B"
+lemma rel_pfun_override [rclos]: "\<lbrakk> R \<in> A \<rightarrow>\<^sub>p B; S \<in> A \<rightarrow>\<^sub>p B \<rbrakk> \<Longrightarrow> (R \<oplus> S) \<in> A \<rightarrow>\<^sub>p B"
   apply (rule rel_pfun_intro)
    apply (rule rel_typed_intro)
   apply (auto simp add: rel_pfun_def rel_typed_def)
