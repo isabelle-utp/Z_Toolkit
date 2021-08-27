@@ -225,15 +225,23 @@ lemma pfun_minus_self [simp]:
   fixes f :: "('a, 'b) pfun"
   shows "f - f = 0"
   by (transfer, simp add: map_minus_def)
-  
+
 instantiation pfun :: (type, type) override
 begin
   definition compatible_pfun :: "'a \<Zpfun> 'b \<Rightarrow> 'a \<Zpfun> 'b \<Rightarrow> bool" where
   "compatible_pfun R S = ((pdom R) \<lhd>\<^sub>p S = (pdom S) \<lhd>\<^sub>p R)"
 
-instance
-  by (intro_classes, simp_all add: compatible_pfun_def oplus_pfun_def)
-     (transfer, auto simp add: map_add_subsumed2 map_add_comm_weak')+
+lemma pfun_compat_add: "(P :: 'a \<Zpfun> 'b) ## Q \<Longrightarrow> P \<oplus> Q ## R \<Longrightarrow> P ## R"
+  apply (simp add: compatible_pfun_def oplus_pfun_def)
+  apply (transfer)
+  using map_compat_add apply auto
+  done
+
+instance  
+  by (intro_classes, simp_all add: pfun_compat_add) 
+     (simp_all add: compatible_pfun_def oplus_pfun_def,
+     (transfer, auto simp add: map_add_subsumed2 map_add_comm_weak')+)
+
 end
 
 lemma pfun_indep_compat: "pdom(f) \<inter> pdom(g) = {} \<Longrightarrow> f ## g"

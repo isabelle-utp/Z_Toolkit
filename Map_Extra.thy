@@ -910,6 +910,9 @@ lemma map_add_comm_weak: "(\<forall> k \<in> dom m1 \<inter> dom m2. m1(k) = m2(
 lemma map_add_comm_weak': "Q |` dom P = P |` dom Q \<Longrightarrow> P ++ Q = Q ++ P"
   by (metis IntD1 IntD2 map_add_comm_weak restrict_in)
 
+lemma map_compat_add: "Q |` dom P = P |` dom Q \<Longrightarrow> R |` (dom Q \<union> dom P) = (P ++ Q) |` dom R \<Longrightarrow> R |` dom P = P |` dom R"
+  by (metis Int_commute Map.restrict_restrict Un_Int_eq(2) map_add_comm_weak' map_le_iff_map_add_commute map_le_via_restrict)
+
 abbreviation "rel_map R \<equiv> rel_fun (=) (rel_option R)"
 
 lemma rel_map_iff: 

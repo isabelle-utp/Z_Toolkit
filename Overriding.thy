@@ -19,7 +19,16 @@ class override = oplus + zero + compatible +
   assumes override_idem [simp]: "P \<oplus> P = P"
   and override_assoc: "P \<oplus> (Q \<oplus> R) = (P \<oplus> Q) \<oplus> R"
   and override_lzero [simp]: "0 \<oplus> P = P"
-  and override_rzero [simp]: "P \<oplus> 0 = P"
   and override_comm: "P ## Q \<Longrightarrow> P \<oplus> Q = Q \<oplus> P" 
+  and override_compat: "\<lbrakk> P ## Q; (P \<oplus> Q) ## R \<rbrakk> \<Longrightarrow> P ## R"
+begin
+
+lemma override_rzero [simp]: "P \<oplus> 0 = P"
+  by (metis compatible_zero override_comm override_lzero)
+
+lemma override_compat': "\<lbrakk> P ## Q; (P \<oplus> Q) ## R \<rbrakk> \<Longrightarrow> Q ## R"
+  by (metis compatible_sym override_comm override_compat)
+
+end
 
 end

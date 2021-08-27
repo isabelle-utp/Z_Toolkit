@@ -152,6 +152,11 @@ lemma rel_domres_insert [simp]:
 lemma Image_as_rel_domres: "R `` A = Range (A \<lhd>\<^sub>r R)"
   by (auto simp add: rel_domres_def)
 
+lemma rel_domres_Un: "A \<lhd>\<^sub>r (S \<union> R) = (A \<lhd>\<^sub>r S) \<union> (A \<lhd>\<^sub>r R)"
+  by (auto simp add: rel_domres_def)
+
+find_theorems Domain "(\<union>)"
+
 subsection \<open> Relational Override \<close>
 
 class restrict = pre_restrict +
@@ -160,18 +165,24 @@ class restrict = pre_restrict +
   assumes res_idem: "res P P = P"
   and res_assoc: "res P (res Q R) = res (res P Q) R"
   and res_lzero: "res {} P = P"
-  and res_rzero: "res P {} = P"
   and res_comm: "cmpt P Q \<Longrightarrow> res P Q = res Q P"
+  and res_cmpt: "\<lbrakk> cmpt P Q; cmpt (res P Q) R \<rbrakk> \<Longrightarrow> cmpt P R"
+
+lemma res_cmpt_rel: "cmpt (P :: 'a \<leftrightarrow> 'b) Q \<Longrightarrow> cmpt (res P Q) R \<Longrightarrow> cmpt P R"
+  by (fastforce simp add: rel_domres_def Domain_iff)
 
 instance prod :: (type, type) restrict
-  by (intro_classes, auto simp add: rel_domres_def)
+  by (intro_classes, simp_all only: res_cmpt_rel, auto simp add: rel_domres_def)
 
 instantiation set :: (restrict) override
 begin
 definition compatible_set :: "'a set \<Rightarrow> 'a set \<Rightarrow> bool" where
 "compatible_set = cmpt"
 
-instance by (intro_classes, simp_all add: oplus_set_def compatible_set_def res_idem res_assoc res_lzero res_rzero cmpt_sym cmpt_empty res_comm)
+instance 
+  apply (intro_classes, simp_all add: oplus_set_def compatible_set_def res_idem res_assoc res_lzero cmpt_sym cmpt_empty res_comm)
+  using res_cmpt apply blast
+  done
 end
 
 lemma Domain_rel_override [simp]: "Domain (R \<oplus> S) = Domain(R) \<union> Domain(S)"

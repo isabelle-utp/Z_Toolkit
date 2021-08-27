@@ -141,8 +141,8 @@ begin
 
 
 instance
-  by (intro_classes, (transfer, simp add: compatible_sym override_assoc override_comm)+)
-
+  by (intro_classes; transfer, simp_all add: compatible_sym override_assoc override_comm)
+     (transfer, simp add: override_compat)
 end
   
 lemma compatible_ffun_alt_def: "R ## S = ((fdom R) \<lhd>\<^sub>f S = (fdom S) \<lhd>\<^sub>f R)"
