@@ -12,6 +12,19 @@ theory Z_Toolkit_Pretty
     and "PP" = "\<bbbP>" and "FF" = "\<bbbF>"
 begin
 
+declare [[coercion_enabled]]
+
+text \<open> Code generation set up \<close>
+
+code_datatype pfun_of_alist
+
+text \<open> Allow partial functions to be written with braces \<close>
+
+syntax
+  "_Pfun"     :: "maplets => ('a, 'b) pfun"            ("(1{_})")
+
+notation pempty ("{\<mapsto>}")
+
 bundle Z_Syntax
 begin
   
