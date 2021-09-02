@@ -900,6 +900,18 @@ lemma pdom_res_alist [code]:
   "A \<lhd>\<^sub>p (pfun_of_alist m) = pfun_of_alist (AList.restrict A m)"
   by (transfer, simp add: restr_conv')
 
+lemma pdom_res_set_map [code]:
+  "set xs \<lhd>\<^sub>p (pfun_of_map m) = pfun_of_alist (map (\<lambda> x. (x, the (m x))) (filter (\<lambda> x. m x \<noteq> None) xs))"
+proof (induct xs)
+  case Nil
+  then show ?case by auto
+next
+  case (Cons a xs)
+  then show ?case 
+      by (auto; transfer)
+         (simp add: restrict_map_insert, metis Int_insert_right_if0 Map.restrict_restrict domIff map_restrict_dom)
+qed
+
 lemma plus_pfun_alist [code]: "pfun_of_alist f \<oplus> pfun_of_alist g = pfun_of_alist (g @ f)"
   by (transfer, simp)
 
