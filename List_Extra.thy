@@ -1028,6 +1028,90 @@ lemma Nil_less_Cons [simp]: "[] <\<^sub>l a # x"
 lemma Cons_less_Cons [simp]: "a # x <\<^sub>l b # y \<longleftrightarrow> a < b \<or> a = b \<and> x <\<^sub>l y"
   by (simp add: list_lex_less_def)
 
+subsection \<open> Bounded List Universe \<close>
+
+text \<open> Analogous to @{const List.n_lists}, but includes all lists with a length up to the given number. \<close>
+
+definition b_lists :: "nat \<Rightarrow> 'a list \<Rightarrow> 'a list list" where
+"b_lists n xs = concat (map (\<lambda> n. List.n_lists n xs) [0..<Suc n])"
+
+lemma b_lists_Nil [simp]: "b_lists n [] = [[]]"
+  unfolding b_lists_def by (induct n) simp_all 
+
+lemma length_b_lists_elem: "ys \<in> set (b_lists n xs) \<Longrightarrow> length ys \<le> n"
+  unfolding b_lists_def
+  by (auto simp add: length_n_lists_elem)
+
+lemma b_lists_in_lists: "ys \<in> set (b_lists n xs) \<Longrightarrow> ys \<in> lists (set xs)"
+  by (auto simp add: b_lists_def in_mono set_n_lists)
+
+lemma in_blistsI: "\<lbrakk> length xs \<le> n; xs \<in> lists (set A) \<rbrakk> \<Longrightarrow> xs \<in> set (b_lists n A)"
+  apply (auto simp add: b_lists_def)
+  apply (rule_tac x="length xs" in bexI)
+   apply (auto simp add: set_n_lists subsetI)
+  done
+
+lemma ex_list_nonempty_carrier:
+  assumes "A \<noteq> {}"
+  obtains xs where "length xs = n" "set xs \<subseteq> A"
+proof -
+  obtain a where a: "a \<in> A"
+    using assms by blast
+  hence "set (replicate n a) \<subseteq> A"
+    by (simp add: set_replicate_conv_if)
+  with that show ?thesis
+    by (meson length_replicate)
+qed
+
+lemma n_lists_inj:
+  assumes "xs \<noteq> []" "List.n_lists m xs = List.n_lists n xs"
+  shows "m = n"
+proof (rule ccontr)
+  assume mn: "m \<noteq> n"
+  hence "m < n \<or> m > n"
+    by auto
+  moreover have "m < n \<longrightarrow> False"
+  proof
+    assume "m < n"
+    then obtain ys where ys: "length ys = n" "set ys \<subseteq> set xs"
+      by (metis all_not_in_conv assms(1) ex_list_nonempty_carrier length_0_conv neq0_conv nth_mem)
+    hence "ys \<in> set (List.n_lists n xs)"
+      by (simp add: set_n_lists)
+    moreover have "ys \<notin> set (List.n_lists m xs)"
+      using length_n_lists_elem mn ys(1) by blast
+    ultimately show False
+      by (simp add: assms(2))
+  qed
+  moreover have "m > n \<longrightarrow> False"
+  proof
+    assume "n < m"
+    then obtain ys where ys: "length ys = m" "set ys \<subseteq> set xs"
+      by (metis all_not_in_conv assms(1) ex_list_nonempty_carrier length_0_conv neq0_conv nth_mem)
+    hence "ys \<in> set (List.n_lists m xs)"
+      by (simp add: set_n_lists)
+    moreover have "ys \<notin> set (List.n_lists n xs)"
+      using length_n_lists_elem mn ys(1) by blast
+    ultimately show False
+      by (simp add: assms(2))
+  qed
+  ultimately show False
+    by blast
+qed 
+
+lemma distinct_b_lists: "distinct xs \<Longrightarrow> distinct (b_lists n xs)"
+  apply (cases "xs = []")
+  apply (simp)
+  apply (auto simp add: b_lists_def)
+    apply (rule distinct_concat)
+  apply (simp add: distinct_map)
+  apply (simp add: inj_onI n_lists_inj)
+  using distinct_n_lists apply auto[1]
+  apply (auto)
+  using length_n_lists_elem apply blast
+  apply (simp add: distinct_n_lists)
+  using length_n_lists_elem apply blast
+  done
+
 subsection \<open> Code Generation \<close>
 
 lemma set_singleton_iff: "set xs = {x} \<longleftrightarrow> remdups xs = [x]"
