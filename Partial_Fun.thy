@@ -75,12 +75,36 @@ abbreviation pId :: "('a, 'a) pfun" where
 lift_definition pdom_res :: "'a set \<Rightarrow> ('a, 'b) pfun \<Rightarrow> ('a, 'b) pfun" (infixr "\<lhd>\<^sub>p" 85)
 is "\<lambda> A f. restrict_map f A" .
 
+abbreviation pdom_nres (infixr "-\<lhd>\<^sub>p" 85) where "pdom_nres A P \<equiv> (- A) \<lhd>\<^sub>p P"
+
 lift_definition pran_res :: "('a, 'b) pfun \<Rightarrow> 'b set \<Rightarrow> ('a, 'b) pfun" (infixl "\<rhd>\<^sub>p" 86)
 is ran_restrict_map .
+
+abbreviation pran_nres (infixr "\<rhd>\<^sub>p-" 66) where "pran_nres A P \<equiv> P \<rhd>\<^sub>p (- A)"
 
 lift_definition pfun_graph :: "('a, 'b) pfun \<Rightarrow> ('a \<times> 'b) set" is map_graph .
 
 lift_definition graph_pfun :: "('a \<times> 'b) set \<Rightarrow> ('a, 'b) pfun" is "graph_map \<circ> mk_functional" .
+
+definition pfun_pfun :: "'a set \<Rightarrow> 'b set \<Rightarrow> ('a \<Zpfun> 'b) set" where
+"pfun_pfun A B = {f :: 'a \<Zpfun> 'b. pdom(f) \<subseteq> A \<and> pran(f) \<subseteq> B}"
+
+definition pfun_tfun :: "'a set \<Rightarrow> 'b set \<Rightarrow> ('a \<Zpfun> 'b) set" where
+"pfun_tfun A B = {f \<in> pfun_pfun A B. pdom(f) = UNIV}"
+
+definition pfun_ffun :: "'a set \<Rightarrow> 'b set \<Rightarrow> ('a \<Zpfun> 'b) set" where
+"pfun_ffun A B = {f \<in> pfun_pfun A B. finite(pdom(f))}"
+
+definition pfun_pinj :: "'a set \<Rightarrow> 'b set \<Rightarrow> ('a \<Zpfun> 'b) set" where
+"pfun_pinj A B = {f \<in> pfun_pfun A B. pfun_inj f}"
+
+definition pfun_psurj :: "'a set \<Rightarrow> 'b set \<Rightarrow> ('a \<Zpfun> 'b) set" where
+"pfun_psurj A B = {f \<in> pfun_pfun A B. pran(f) = UNIV}"
+
+definition "pfun_finj A B = pfun_ffun A B \<inter> pfun_pinj A B"
+definition "pfun_tinj A B = pfun_tfun A B \<inter> pfun_pinj A B"
+definition "pfun_tsurj A B = pfun_tfun A B \<inter> pfun_psurj A B"
+definition "pfun_bij A B = pfun_tfun A B \<inter> pfun_pinj A B \<inter> pfun_psurj A B"
 
 lift_definition pfun_entries :: "'k set \<Rightarrow> ('k \<Rightarrow> 'v) \<Rightarrow> ('k, 'v) pfun" is
 "\<lambda> d f x. if (x \<in> d) then Some (f x) else None" .
@@ -963,6 +987,32 @@ lemma graph_pfun_set [code]:
   "graph_pfun (set xs) = pfun_of_alist (filter (\<lambda>(x, y). length (remdups (map snd (AList.restrict {x} xs))) = 1) xs)"
   by (transfer, simp only: comp_def mk_functional_alist)
      (metis graph_map_set mk_functional mk_functional_alist)
+
+subsection \<open> Notation \<close>
+
+bundle Z_Pfun_Notation
+begin
+
+no_notation funcset (infixr "\<rightarrow>" 60)
+
+notation pfun_tfun (infixr "\<rightarrow>" 60)
+notation pfun_pfun (infixr "\<Zpfun>" 60)
+notation pfun_ffun (infixr "\<Zffun>" 60)
+notation pfun_pinj (infixr "\<Zpinj>" 60)
+notation pfun_finj (infixr "\<Zfinj>" 60)
+notation pfun_psurj (infixr "\<Zpsurj>" 60)
+notation pfun_tinj (infixr "\<Zinj>" 60)
+notation pfun_bij (infixr "\<Zbij>" 60)
+
+notation pdom_res (infixr "\<Zdres>" 86)
+notation pdom_nres (infixr "\<Zndres>" 86)
+
+notation pran_res (infixl "\<Zrres>" 86)
+notation pran_nres (infixl "\<Znrres>" 86)
+
+notation pempty ("{\<mapsto>}")
+
+end
 
 text \<open> Hide implementation details for partial functions \<close>
 

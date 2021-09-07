@@ -23,37 +23,30 @@ text \<open> Allow partial functions to be written with braces \<close>
 syntax
   "_Pfun"     :: "maplets => ('a, 'b) pfun"            ("(1{_})")
 
-notation pempty ("{\<mapsto>}")
-
 bundle Z_Syntax
 begin
-  
+
+unbundle Z_Type_Syntax
+
+subsection \<open> Functions \<close>
+
 no_notation funcset (infixr "\<rightarrow>" 60)
-
-subsection \<open> Types \<close>
-
-type_notation set ("\<bbbP> _" [999] 999)
-
-type_notation tfun (infixr "\<rightarrow>" 0)
 
 notation rel_tfun (infixr "\<rightarrow>" 60)
 notation rel_pfun (infixr "\<Zpfun>" 60)
 notation rel_ffun (infixr "\<Zffun>" 60)
 
-subsection \<open> Functions \<close>
-
-notation Pow ("\<bbbP>")
-notation Fpow ("\<bbbF>")
-
 notation relcomp (infixr "\<Zcomp>" 75)
 
-notation dom_res (infixr "\<Zdres>" 65)
-notation ndres (infixr "\<Zndres>" 65)
+notation dom_res (infixr "\<Zdres>" 66)
+notation ndres (infixr "\<Zndres>" 66)
 
 notation ran_res (infixr "\<Zrres>" 65)
 notation nrres (infixr "\<Znrres>" 65)
 
 end
+
+
 
 context
   includes Z_Syntax

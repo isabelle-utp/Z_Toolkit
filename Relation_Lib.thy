@@ -7,6 +7,24 @@ theory Relation_Lib
 begin 
 
 text \<open> This theory marks the boundary between reusable library utilities and the creation of the
-  Z notation. We avoid overriding any HOL syntax up until this point. \<close>
+  Z notation. We avoid overriding any HOL syntax up until this point, but we do supply some optional 
+  bundles. \<close>
+
+bundle Z_Type_Syntax
+begin
+
+type_notation nat ("\<nat>")
+type_notation int ("\<int>")
+type_notation rat ("\<rat>")
+type_notation real ("\<real>")
+
+type_notation set ("\<bbbP> _" [999] 999)
+
+type_notation tfun (infixr "\<rightarrow>" 0)
+
+notation Pow ("\<bbbP>")
+notation Fpow ("\<bbbF>")
+
+end
 
 end
