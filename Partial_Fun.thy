@@ -748,7 +748,7 @@ lemma pfun_graph_inter: "pfun_graph (f \<inter>\<^sub>p g) = pfun_graph f \<inte
   done
 
 lemma pfun_graph_domres: "pfun_graph (A \<lhd>\<^sub>p f) = (A \<lhd>\<^sub>r pfun_graph f)"
-  by (transfer, simp add: rel_domres_def map_graph_def restrict_map_def, metis option.simps(3))
+  by (transfer, simp add: rel_domres_math_def map_graph_def restrict_map_def, metis option.simps(3))
 
 lemma pfun_graph_override: "pfun_graph (f \<oplus> g) = pfun_graph f \<oplus> pfun_graph g"
   by (transfer, auto simp add: map_add_def oplus_set_def rel_domres_def map_graph_def option.case_eq_if)

@@ -50,13 +50,16 @@ text \<open> If there exists a unique @{term "e\<^sub>3"} such that @{term "(e\<
   unknown value (i.e. @{const undefined}). \<close>
 
 definition rel_domres :: "'a set \<Rightarrow> ('a \<leftrightarrow> 'b) \<Rightarrow> 'a \<leftrightarrow> 'b" (infixr "\<lhd>\<^sub>r" 85) where
-"rel_domres A R = {(k, v) \<in> R. k \<in> A}"
+"rel_domres A R = {p \<in> R. fst p \<in> A}"
+
+lemma rel_domres_math_def: "A \<lhd>\<^sub>r R = {(k, v) \<in> R. k \<in> A}"
+  by (auto simp add: rel_domres_def)
 
 text \<open> Domain restriction (@{term "A \<lhd>\<^sub>r R"} contains the set of pairs in @{term R}, such that the
   first element of every such pair in in @{term A}. \<close>
 
 definition rel_ranres :: "('a \<leftrightarrow> 'b) \<Rightarrow> 'b set \<Rightarrow> 'a \<leftrightarrow> 'b" (infixl "\<rhd>\<^sub>r" 85) where
-"rel_ranres R A = {(k, v) \<in> R. v \<in> A}"
+"rel_ranres R A = {p \<in> R. snd p \<in> A}"
 
 text \<open> We employ some type class trickery to enable a polymorphic operator for override that can
   instantiate @{typ "'a set"}, which is needed for relational overriding. The following class's
@@ -173,8 +176,8 @@ lemma res_cmpt_rel: "cmpt (P :: 'a \<leftrightarrow> 'b) Q \<Longrightarrow> cmp
   by (fastforce simp add: rel_domres_def Domain_iff)
 
 instance prod :: (type, type) restrict
-  by (intro_classes, simp_all only: res_cmpt_rel, auto simp add: rel_domres_def)
-
+  by (intro_classes, simp_all only: res_cmpt_rel, auto simp add: rel_domres_def Domain_unfold)
+  
 instantiation set :: (restrict) override
 begin
 definition compatible_set :: "'a set \<Rightarrow> 'a set \<Rightarrow> bool" where
@@ -277,9 +280,9 @@ definition single_valued_dom :: "('a \<times> 'b) set \<Rightarrow> 'a set" wher
 "single_valued_dom R = {x \<in> Domain(R). \<exists> y. R `` {x} = {y}}"
 
 lemma mk_functional_single_valued_dom: "mk_functional R = single_valued_dom R \<lhd>\<^sub>r R"
-  by (auto simp add: mk_functional_def single_valued_dom_def rel_domres_def)
+  by (auto simp add: mk_functional_def single_valued_dom_def rel_domres_math_def Domain_unfold)
      (metis Image_singleton_iff singletonD)
-
+  
 subsection \<open> Left-Total Relations\<close>
 
 definition left_totalr_on :: "'a set \<Rightarrow> ('a \<leftrightarrow> 'b) \<Rightarrow> bool" where
