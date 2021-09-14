@@ -37,12 +37,26 @@ subsection \<open> Maplet \<close>
 subsection \<open> Domain \<close>
 
 hide_const (open) dom
-abbreviation (input) "dom \<equiv> Domain"
+
+consts dom :: "'f \<Rightarrow> 'a set"
+
+adhoc_overloading
+  dom Map.dom and
+  dom Relation.Domain and
+  dom Partial_Fun.pdom and
+  dom Finite_Fun.fdom
 
 subsection \<open> Range \<close>
 
 hide_const (open) ran
-abbreviation (input) "ran \<equiv> Range"
+
+consts ran :: "'f \<Rightarrow> 'a set"
+
+adhoc_overloading
+  ran Map.ran and
+  ran Relation.Range and
+  ran Partial_Fun.pran and
+  ran Finite_Fun.fran
 
 subsection \<open> Identity relation \<close>
 
@@ -54,19 +68,34 @@ notation relcomp (infixr "\<^bold>;" 75)
 
 subsection \<open> Functional composition \<close>
 
-text \<open> We take the liberty of assuming that if a function composition is being applied, then
-  probably we want to compose two partial functions, rather than two relations. This makes sense,
-  given that relational composition and functional composition are semantically identical 
-  (but reversed). \<close>
+text \<open> Composition is probably the most difficult of the Z functions to implement correctly. Firstly,
+  the notation @{term "(\<circ>)"} is already defined for HOL functions, and we need to respect that
+  in order to use the HOL library functions. Secondly, Z composition can be used to compose 
+  heterogeneous relations and functions, which is not easy to type infer. Consequently, we opt
+  to use adhoc overloading here. \<close>
 
-no_notation comp (infixl "\<circ>" 55)
-notation pfun_comp (infixl "\<circ>" 55)
+hide_const (open) comp
+
+consts comp :: "'f \<Rightarrow> 'g \<Rightarrow> 'h" 
+
+adhoc_overloading
+  comp Fun.comp and
+  comp pfun_comp and
+  comp ffun_comp
+
+bundle Z_Relation_Syntax
+begin
+
+no_notation Fun.comp (infixl "\<circ>" 55)
+notation comp (infixl "\<circ>" 55)
+
+end
 
 subsection \<open> Domain restriction and subtraction \<close>
 
-consts dom_res :: "'a set \<Rightarrow> 'r \<Rightarrow> 'r" (infixr "\<lhd>" 65)
+consts dom_res :: "'a set \<Rightarrow> 'r \<Rightarrow> 'r" (infixr "\<Zdres>" 85)
 
-abbreviation ndres (infixr "-\<lhd>" 65) where "ndres A P \<equiv> CONST dom_res (- A) P" 
+abbreviation ndres (infixr "\<Zndres>" 85) where "ndres A P \<equiv> CONST dom_res (- A) P" 
 
 adhoc_overloading 
   dom_res rel_domres
@@ -78,9 +107,9 @@ translations "_ndres A P" == "CONST dom_res (- A) P"
 
 subsection \<open> Range restriction and subtraction \<close>
 
-consts ran_res :: "'r \<Rightarrow> 'a set \<Rightarrow> 'r" (infixl "\<rhd>" 65)
+consts ran_res :: "'r \<Rightarrow> 'a set \<Rightarrow> 'r" (infixl "\<Zrres>" 86)
 
-abbreviation nrres (infixl "\<rhd>-" 65) where "nrres P A \<equiv> CONST ran_res P (- A)"
+abbreviation nrres (infixl "\<Znrres>" 86) where "nrres P A \<equiv> CONST ran_res P (- A)"
 
 adhoc_overloading 
   ran_res rel_ranres
@@ -96,17 +125,25 @@ lemma relational_inverse: "r\<^sup>\<sim> = {(p.2, p.1) | p. p \<in> r}"
 
 subsection \<open> Relational image \<close>
 
-notation Image ("_\<lparr>_\<rparr>" [990] 990)
+hide_const (open) Set.image
 
-lemma Image_eq: "r\<lparr>a\<rparr> = {p.2 | p. p \<in> r \<and> p.1 \<in> a}"
+consts image :: "'f \<Rightarrow> 'a set \<Rightarrow> 'b set"
+
+notation image ("_\<lparr>_\<rparr>" [990] 990)
+
+adhoc_overloading
+  image Set.image and
+  image Relation.Image
+
+lemma Image_eq: "Image r a = {p.2 | p. p \<in> r \<and> p.1 \<in> a}"
   by (auto simp add: Image_def)
 
 subsection \<open> Overriding \<close>
 
-lemma override_eq: "r \<oplus> s = ((- dom s) \<lhd> r) \<union> s"
+lemma override_eq: "r \<oplus> s = ((- dom s) \<Zdres> r) \<union> s"
   by (simp add: oplus_set_def)
 
-lemma dom_override: "dom (Q \<oplus> R) = (dom Q) \<union> (dom R)"
+lemma dom_override: "dom ((Q :: 'a \<leftrightarrow> 'b) \<oplus> R) = (dom Q) \<union> (dom R)"
   by (simp add: override_eq Domain_Un_eq Un_Int_distrib2)
 
 lemma override_Un: "dom Q \<inter> dom R = {} \<Longrightarrow> Q \<oplus> R = Q \<union> R"

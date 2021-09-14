@@ -13,6 +13,7 @@ text \<open> This theory marks the boundary between reusable library utilities a
 bundle Z_Type_Syntax
 begin
 
+type_notation bool ("\<bool>")
 type_notation nat ("\<nat>")
 type_notation int ("\<int>")
 type_notation rat ("\<rat>")

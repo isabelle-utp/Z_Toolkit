@@ -100,6 +100,16 @@ lemma ffun_subset_eq_least [simp]:
   "{}\<^sub>f \<subseteq>\<^sub>f f"
   by (transfer, auto)
 
+instantiation ffun :: (type, type) size
+begin
+
+definition size_ffun :: "'a \<Zffun> 'b \<Rightarrow> nat" where
+[simp]: "size_ffun f = card (fdom f)"
+
+instance ..
+
+end
+
 syntax
   "_FfunUpd"  :: "['a \<Zffun> 'b, maplets] => 'a \<Zffun> 'b" ("_'(_')\<^sub>f" [900,0]900)
   "_Ffun"     :: "maplets => 'a \<Zffun> 'b"            ("(1{_}\<^sub>f)")

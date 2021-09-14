@@ -27,6 +27,7 @@ bundle Z_Syntax
 begin
 
 unbundle Z_Type_Syntax
+unbundle Z_Relation_Syntax
 
 subsection \<open> Functions \<close>
 
@@ -38,15 +39,7 @@ notation rel_ffun (infixr "\<Zffun>" 60)
 
 notation relcomp (infixr "\<Zcomp>" 75)
 
-notation dom_res (infixr "\<Zdres>" 66)
-notation ndres (infixr "\<Zndres>" 66)
-
-notation ran_res (infixr "\<Zrres>" 65)
-notation nrres (infixr "\<Znrres>" 65)
-
 end
-
-
 
 context
   includes Z_Syntax
