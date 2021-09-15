@@ -62,30 +62,27 @@ text \<open> Implemented by the function @{const Max}. \<close>
 
 subsection \<open> Finite sequences \<close>
 
-definition "seq (a::'a itself) = lists (UNIV :: 'a set)"
+definition "seq A = lists A"
 
-syntax "_seq" :: "type \<Rightarrow> logic" ("seq'(_')")
-translations "seq('a)" == "CONST seq TYPE('a)"
-
+lemma seq_iff [simp]: "xs \<in> seq A \<longleftrightarrow> set xs \<subseteq> A"
+  by (simp add: in_lists_conv_set seq_def subset_code(1))
+  
 lemma seq_ffun_set: "range list_ffun = {f :: \<nat> \<Zffun> 'X. dom(f) = {1..#f}}"
   by (simp add: range_list_ffun, force)
 
 subsection \<open> Non-empty finite sequences \<close>
 
-definition "seq1 X = seq X - {[]}"
+definition "seq\<^sub>1 A = seq A - {[]}"
 
-syntax "_seq1" :: "type \<Rightarrow> logic" ("seq\<^sub>1'(_')")
-translations "seq\<^sub>1('a)" == "CONST seq1 TYPE('a)"
-
-lemma seq1 [simp]: "xs \<in> seq\<^sub>1('a) \<Longrightarrow> #xs > 0"
-  by (simp add: seq1_def)
+lemma seq\<^sub>1_iff [simp]: "xs \<in> seq\<^sub>1(A) \<longleftrightarrow> (xs \<in> seq A \<and> #xs > 0)"
+  by (simp add: seq\<^sub>1_def)
 
 subsection \<open> Injective sequences \<close>
 
-definition "iseq X = seq X \<inter> Collect distinct"
+definition "iseq A = seq A \<inter> Collect distinct"
 
-syntax "_iseq" :: "type \<Rightarrow> logic" ("iseq'(_')")
-translations "iseq('a)" == "CONST iseq TYPE('a)"
+lemma iseq_iff [simp]: "xs \<in> iseq(A) \<longleftrightarrow> (xs \<in> seq A \<and> distinct xs)"
+  by (simp add: iseq_def)
 
 (* Proof that this corresponds to the Z definition required *)
 
@@ -112,8 +109,8 @@ lemma dom_head: "dom head = {xs. #xs > 0}"
 lemma head_app: "#xs > 0 \<Longrightarrow> head xs = hd xs"
   by (simp add: head_def)
 
-lemma head_z_def: "xs \<in> seq\<^sub>1('a) \<Longrightarrow> head xs = xs 1"
-  by (simp add: hd_conv_nth head_app seq1_def)
+lemma head_z_def: "xs \<in> seq\<^sub>1(A) \<Longrightarrow> head xs = xs 1"
+  by (simp add: hd_conv_nth head_app seq\<^sub>1_def)
 
 subsection \<open> Last of a sequence \<close>
 
@@ -141,6 +138,20 @@ lemma dom_tail: "dom tail = {xs. #xs > 0}"
 
 lemma tail_app: "#xs > 0 \<Longrightarrow> tail xs = tl xs"
   by (simp add: tail_def)
+
+subsection \<open> Domain \<close>
+
+definition dom_seq :: "'a list \<Rightarrow> \<nat> set" where
+[simp]: "dom_seq xs = {0..<#xs}"
+
+adhoc_overloading dom dom_seq
+
+subsection \<open> Range \<close>
+
+definition ran_seq :: "'a list \<Rightarrow> 'a set" where
+[simp]: "ran_seq xs = set xs"
+
+adhoc_overloading ran ran_seq
 
 subsection \<open> Examples \<close>
 
