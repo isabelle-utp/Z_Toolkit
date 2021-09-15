@@ -19,6 +19,11 @@ subsection \<open> Useful Abbreviations \<close>
 
 abbreviation "list_sum xs \<equiv> foldr (+) xs 0"
 
+subsection \<open> Sets \<close>
+
+lemma set_Fpow [simp]: "set xs \<in> Fpow A \<longleftrightarrow> set xs \<subseteq> A"
+  by (auto simp add: Fpow_def)
+
 subsection \<open> Folds \<close>
 
 context abel_semigroup
