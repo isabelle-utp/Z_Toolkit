@@ -43,7 +43,7 @@ subsection \<open> Relational Function Operations \<close>
 text \<open> These functions are all adapted from their ISO Z counterparts. \<close>
 
 definition rel_apply :: "('a \<leftrightarrow> 'b) \<Rightarrow> 'a \<Rightarrow> 'b" ("_'(_')\<^sub>r" [999,0] 999) where
-"rel_apply R x = (if x \<in> Domain(R) then THE y. (x, y) \<in> R else undefined)"
+"rel_apply R x = (if (\<exists>! y. (x, y) \<in> R) then THE y. (x, y) \<in> R else undefined)"
 
 text \<open> If there exists a unique @{term "e\<^sub>3"} such that @{term "(e\<^sub>2, e\<^sub>3)"} is in @{term "e\<^sub>1"}, then 
   the value of @{term "e\<^sub>1(e\<^sub>2)\<^sub>r"} is @{term e\<^sub>3}, otherwise each @{term "e\<^sub>1(e\<^sub>2)\<^sub>r"} has a fixed but 
@@ -382,5 +382,19 @@ lemma AList_restrict_in_dom: "AList.restrict (set (filter P (map fst xs))) xs = 
 lemma mk_functional_alist [code]:
   "mk_functional (set xs) = set (filter (\<lambda> (x,y). length (remdups (map snd (AList.restrict {x} xs))) = 1) xs)"
   by (simp only: mk_functional_single_valued_dom rel_domres_alist single_valued_dom_alist AList_restrict_in_dom)
+
+lemma rel_apply_set [code]:
+  "rel_apply (set xs) k = 
+  (let ys = filter (\<lambda> (k', v). k = k') xs in
+   if (length ys > 0 \<and> ys = replicate (length ys) (hd ys)) then snd (hd ys) else undefined)"
+  apply (auto simp add: rel_apply_def Let_unfold)
+  apply (rule the_equality)
+  using case_prod_beta hd_in_set apply fastforce
+  apply (metis (mono_tags, lifting) case_prod_beta filter_set hd_in_set member_filter prod.exhaust_sel)
+  apply (metis (mono_tags, lifting) case_prodI filter_empty_conv)
+  apply (smt (z3) case_prodE filter_set hd_in_set length_0_conv length_replicate member_filter replicate_length_same)
+  using hd_in_set apply fastforce
+  apply (smt (z3) case_prod_beta filter_set fst_conv imageE map_replicate_const member_filter set_map snd_conv)
+  done
 
 end
