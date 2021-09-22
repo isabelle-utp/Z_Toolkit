@@ -121,6 +121,12 @@ lift_definition pcombine ::
 
 abbreviation "fun_pfun \<equiv> pfun_entries UNIV"
 
+definition pfun_disjoint :: "'a \<Zpfun> 'b set \<Rightarrow> bool" where
+"pfun_disjoint S = (\<forall> i \<in> pdom S. \<forall> j \<in> pdom S. i \<noteq> j \<longrightarrow> pfun_app S i \<inter> pfun_app S j = {})"
+
+definition pfun_partitions :: "'a \<Zpfun> 'b set \<Rightarrow> 'b set \<Rightarrow> bool" where
+"pfun_partitions S T = (pfun_disjoint S \<and> \<Union> (pran S) = T)"
+
 no_notation disj (infixr "|" 30)
 
 definition pabs :: "'a set \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> 'a \<Zpfun> 'b" where

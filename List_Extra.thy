@@ -1117,6 +1117,28 @@ lemma distinct_b_lists: "distinct xs \<Longrightarrow> distinct (b_lists n xs)"
   using length_n_lists_elem apply blast
   done
 
+subsection \<open> Disjointness and Partitions \<close>
+
+definition list_disjoint :: "'a set list \<Rightarrow> bool" where
+"list_disjoint xs = (\<forall> i < length xs. \<forall> j < length xs. i \<noteq> j \<longrightarrow> xs!i \<inter> xs!j = {})"
+
+definition list_partitions :: "'a set list \<Rightarrow> 'a set \<Rightarrow> bool" where
+"list_partitions xs T = (list_disjoint xs \<and> \<Union> (set xs) = T)"
+
+lemma list_disjoint_Nil [simp]: "list_disjoint []"
+  by (simp add: list_disjoint_def)
+
+lemma list_disjoint_Cons [simp]: "list_disjoint (A # Bs) = ((\<forall> B \<in> set Bs. A \<inter> B = {}) \<and> list_disjoint Bs)"
+  apply (simp add: list_disjoint_def disjoint_iff)
+  apply (auto)
+  apply (metis Suc_less_eq in_set_conv_nth nat.distinct(1) neq0_conv nth_Cons_0 nth_Cons_Suc)
+   apply (metis lessI lift_Suc_mono_less_iff nat.inject nth_Cons_Suc)
+  apply (rename_tac i j x)
+  apply (case_tac i)
+  apply (simp_all)
+  apply (metis less_Suc_eq_0_disj list.sel(3) nth_Cons' nth_mem nth_tl)
+  done
+
 subsection \<open> Code Generation \<close>
 
 lemma set_singleton_iff: "set xs = {x} \<longleftrightarrow> remdups xs = [x]"

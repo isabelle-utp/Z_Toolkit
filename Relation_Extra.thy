@@ -105,6 +105,11 @@ definition rel_update :: "('a \<leftrightarrow> 'b) \<Rightarrow> 'a \<Rightarro
 
 text \<open> Relational update adds a new pair to a relation. \<close>
 
+definition rel_disjoint :: "('a \<leftrightarrow> 'b set) \<Rightarrow> bool" where
+"rel_disjoint f = (\<forall> p \<in> f. \<forall> q \<in> f. p \<noteq> q \<longrightarrow> snd p \<inter> snd q = {})"
+
+definition rel_partitions :: "('a \<leftrightarrow> 'b set) \<Rightarrow> 'b set \<Rightarrow> bool" where
+"rel_partitions f a = (rel_disjoint f \<and> \<Union> (Range f) = a)"
 
 subsection \<open> Domain laws \<close>
 
