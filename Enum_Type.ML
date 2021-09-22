@@ -37,9 +37,9 @@ fun enum_type tname cs thy =
     val (thm3, ctx5) = define_overloaded ("enum_ex_" ^ tname, mk_def dummyT (@{const_name "enum_class.enum_ex"}) (Abs ("P", dummyT, foldl1 HOLogic.mk_disj (map (fn c => Bound 0 $ c) cs')))) ctx4
     val exhaust = Proof_Context.get_thm ctx5 (tname ^ ".exhaust");
     fun mk_def ty x v = Const ("Pure.eq", ty --> ty --> Term.propT) $ Free (x, ty) $ v;
-    (* FIXME: The following proof is very slow except for very small enumerations. Improve to avoid using metis. *)
+    (* FIXME: The following proof relies on the splitting variable being called "x"; if it breaks this is probably why *)
     val thy1 = Class.prove_instantiation_exit
-          (fn _ => EVERY [Class.intro_classes_tac ctx5 [], auto_tac (fold Simplifier.add_simp ([thm1, thm2, thm3]) ctx5), ALLGOALS (fn _ => Metis_Tactic.metis_tac ["full_types"] ATP_Problem_Generate.combsN ctx5 [exhaust] 1)]) ctx5;
+          (fn _ => EVERY [Class.intro_classes_tac ctx5 [], auto_tac (fold Simplifier.add_simp ([thm1, thm2, thm3]) ctx5), ALLGOALS (fn i => Induct_Tacs.case_tac ctx5 "x" [] NONE i THEN auto_tac ctx5)]) ctx5;
     val ctx6 = Class.instantiation_cmd ([tname], [], "default") thy1;
     val (_, ctx7) = Specification.definition (SOME (Binding.name ("default_" ^ tname), NONE, NoSyn)) [] [] ((Binding.empty, []), mk_def dummyT ("default_" ^ tname) (nth cs' 0)) ctx6
         
