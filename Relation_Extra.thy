@@ -113,10 +113,15 @@ definition rel_partitions :: "('a \<leftrightarrow> 'b set) \<Rightarrow> 'b set
 
 subsection \<open> Domain laws \<close>
 
+declare Domain_Un_eq [simp]
+
 lemma Domain_Preimage: "Domain P = P\<inverse> `` UNIV"
   by (simp add: Image_def Domain_unfold)
 
-lemma Domain_relcomp: "Domain (P O Q) = (P\<inverse> `` Domain(Q))"
+lemma Domain_relcomp [simp]: "Domain (P O Q) = Domain (P \<rhd>\<^sub>r Domain Q)"
+  by (force simp add: Domain_iff rel_ranres_def)
+
+lemma Domain_relcomp_conv: "Domain (P O Q) = (P\<inverse> `` Domain(Q))"
   by (simp add: Domain_Preimage converse_relcomp relcomp_Image)
 
 lemma Domain_set: "Domain (set xs) = set (map fst xs)"
@@ -163,7 +168,10 @@ lemma Image_as_rel_domres: "R `` A = Range (A \<lhd>\<^sub>r R)"
 lemma rel_domres_Un: "A \<lhd>\<^sub>r (S \<union> R) = (A \<lhd>\<^sub>r S) \<union> (A \<lhd>\<^sub>r R)"
   by (auto simp add: rel_domres_def)
 
-find_theorems Domain "(\<union>)"
+subsection \<open> Range Restriction \<close>
+
+lemma rel_ranres_relcomp [simp]: "(P O Q) \<rhd>\<^sub>r A = P O (Q \<rhd>\<^sub>r A)"
+  by (auto simp add: rel_ranres_def relcomp_unfold prod.case_eq_if)
 
 subsection \<open> Relational Override \<close>
 

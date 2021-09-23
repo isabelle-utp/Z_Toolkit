@@ -1129,6 +1129,15 @@ lemma distinct_b_lists: "distinct xs \<Longrightarrow> distinct (b_lists n xs)"
   using length_n_lists_elem apply blast
   done
 
+definition blists :: "nat \<Rightarrow> 'a set \<Rightarrow> 'a list set" where
+  "blists n A = {xs\<in>lists A. length xs \<le> n}"
+
+lemma blists_b_lists [code]: "blists n (set xs) = set (b_lists n xs)"
+  apply (auto simp add: blists_def in_blistsI in_listsI)
+  apply (meson b_lists_in_lists in_lists_conv_set)
+  apply (meson length_b_lists_elem)
+  done
+
 subsection \<open> Disjointness and Partitions \<close>
 
 definition list_disjoint :: "'a set list \<Rightarrow> bool" where

@@ -784,6 +784,12 @@ lemma pfun_graph_le_iff [simp]:
   "pfun_graph f \<subseteq> pfun_graph g \<longleftrightarrow> f \<subseteq>\<^sub>p g"
   by (simp add: inf.order_iff pfun_eq_graph pfun_graph_inter)
 
+lemma pfun_member_iff [simp]: "(k, v) \<in> pfun_graph f \<longleftrightarrow> (k \<in> pdom(f) \<and> pfun_app f k = v)"
+  by (transfer, auto simp add: map_graph_def)
+
+lemma pfun_graph_rres [simp]: "pfun_graph f \<rhd>\<^sub>r A = pfun_graph (f \<rhd>\<^sub>p A)"
+  by (transfer, auto simp add: map_graph_def rel_ranres_def ran_restrict_map_def)
+
 subsection \<open> Summation \<close>
     
 definition pfun_sum :: "('k, 'v::comm_monoid_add) pfun \<Rightarrow> 'v" where
