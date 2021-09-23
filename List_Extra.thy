@@ -473,6 +473,18 @@ proof -
   finally show ?thesis .
 qed
 
+lemma list_prefix_iff:
+  "(prefix xs ys \<longleftrightarrow> (length xs \<le> length ys \<and> (\<forall> i<length xs. xs!i = ys!i)))"
+  apply (auto)
+  apply (simp add: prefix_imp_length_lteq)
+  apply (metis nth_append prefix_def)
+  apply (metis nth_take_lemma order_refl take_all take_is_prefix)
+  done
+
+lemma list_le_prefix_iff:
+  "(xs \<le> ys \<longleftrightarrow> (length xs \<le> length ys \<and> (\<forall> i<length xs. xs!i = ys!i)))"
+  by (simp add: less_eq_list_def list_prefix_iff)
+
 text \<open> Greatest common prefix \<close>
 
 fun gcp :: "'a list \<Rightarrow> 'a list \<Rightarrow> 'a list" where
