@@ -425,6 +425,13 @@ lemma psubseteq_ran_subset:
 lemma pfun_eq_iff: "f = g \<longleftrightarrow> (pdom(f) = pdom(g) \<and> (\<forall> x \<in> pdom(f). f(x)\<^sub>p = g(x)\<^sub>p))"
   by (auto, transfer, simp add: map_eq_iff, metis domD option.sel)
 
+lemma pfun_leI: "\<lbrakk> pdom f \<subseteq> pdom g; \<forall>x\<in>pdom f. f(x)\<^sub>p = g(x)\<^sub>p \<rbrakk> \<Longrightarrow> f \<subseteq>\<^sub>p g"
+  by (transfer, auto simp add: map_le_def)
+     (metis domD domI option.sel subsetD)
+
+lemma pfun_le_iff: "(f \<subseteq>\<^sub>p g) = (pdom f \<subseteq> pdom g \<and> (\<forall>x\<in>pdom f. f(x)\<^sub>p = g(x)\<^sub>p))"
+  by (metis pfun_app_add pfun_leI pfun_override_minus psubseteq_dom_subset)
+
 subsection \<open> Map laws \<close>
 
 lemma map_pfun_empty [simp]: "map_pfun f {}\<^sub>p = {}\<^sub>p"
@@ -495,6 +502,9 @@ lemma pdom_pfun_graph_finite [simp]:
 
 lemma pdom_map_pfun [simp]: "pdom (map_pfun F G) = pdom G"
   unfolding map_pfun_def by (auto; metis dom_map_option_comp pdom.abs_eq pdom.rep_eq)
+
+lemma rel_comp_pfun: "R O pfun_graph f = (\<lambda> p. (fst p, pfun_app f (snd p))) ` (R \<rhd>\<^sub>r pdom(f))"
+  by (transfer, auto simp add: rel_comp_map rel_ranres_def)                      
 
 subsection \<open> Range laws \<close>
 
@@ -770,6 +780,10 @@ lemma pfun_graph_pabs: "pfun_graph (\<lambda> x \<in> A | P x \<bullet> f x) = {
   unfolding pabs_def
   by (transfer, auto simp add: map_graph_def restrict_map_def)
 
+lemma pfun_graph_le_iff [simp]:
+  "pfun_graph f \<subseteq> pfun_graph g \<longleftrightarrow> f \<subseteq>\<^sub>p g"
+  by (simp add: inf.order_iff pfun_eq_graph pfun_graph_inter)
+
 subsection \<open> Summation \<close>
     
 definition pfun_sum :: "('k, 'v::comm_monoid_add) pfun \<Rightarrow> 'v" where
@@ -854,7 +868,11 @@ lemma range_list_pfun:
   apply (metis Suc_le_mono Suc_pred atLeastAtMost_iff domIff le0 nat_int of_nat_Suc option.exhaust_sel)
   apply (metis One_nat_def atLeastAtMost_iff domIff le_zero_eq zero_neq_one)
   done
-  
+
+lemma list_pfun_le_iff_prefix [simp]: "list_pfun xs \<le> list_pfun ys \<longleftrightarrow> xs \<le> ys"
+  by (auto simp add: pfun_le_iff list_le_prefix_iff pfun_app_list_pfun)
+     (metis Suc_leI atLeastAtMost_iff diff_Suc_Suc diff_zero zero_less_Suc)
+
 subsection \<open> Partial Function Lens \<close>
 
 definition pfun_lens :: "'a \<Rightarrow> ('b \<Longrightarrow> ('a, 'b) pfun)" where
@@ -989,10 +1007,26 @@ lemma set_inter_Collect: "set xs \<inter> Collect P = set (filter P xs)"
 lemma pabs_set [code]: "pabs (set xs) P f = pfun_of_alist (map (\<lambda>k. (k, f k)) (filter P xs))"
   by (simp only: pabs_def pfun_entries_alist pdom_res_entries set_inter_Collect Int_UNIV_right)
 
+lemma pabs_coset [code]: 
+  "pabs (List.coset A) P f = pfun_of_map (\<lambda> x. if x \<in> List.coset A \<and> P x then Some (f x) else None)"
+  by (simp add: pabs_def, transfer, auto)
+
 lemma graph_pfun_set [code]: 
   "graph_pfun (set xs) = pfun_of_alist (filter (\<lambda>(x, y). length (remdups (map snd (AList.restrict {x} xs))) = 1) xs)"
   by (transfer, simp only: comp_def mk_functional_alist)
      (metis graph_map_set mk_functional mk_functional_alist)
+
+lemma pabs_pfun_entries [code_unfold]: "(\<lambda> x \<in> A \<bullet> f x) = pfun_entries A f"
+  by (simp add: pfun_entries_pabs)
+
+declare pdom_pfun_entries [code]
+
+lemma pfun_app_entries [code]: "pfun_app (pfun_entries A f) x = (if (x \<in> A) then f x else undefined)"
+  by auto
+
+text \<open> Useful for optimising relational compositions containing partial functions \<close>
+
+declare rel_comp_pfun [code_unfold]
 
 subsection \<open> Notation \<close>
 
