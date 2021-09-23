@@ -83,8 +83,6 @@ lemma functional_insert: "functional (insert a R) \<Longrightarrow> functional R
 lemma Domain_insert: "Domain (insert a R) = insert (fst a) (Domain R)"
   by (simp add: Domain_fst)
 
-find_theorems card insert
-
 lemma card_map_graph: "\<lbrakk> finite R; functional R \<rbrakk> \<Longrightarrow> card R = card (Domain R)"
   by (induct R rule: finite.induct, simp_all add: functional_insert card_insert_if Domain_insert finite_Domain)
      (metis DiffD1 Diff_insert_absorb DomainE Map_Extra.Domain_insert insertI1 insert_Diff prod.collapse single_valued_def)
@@ -134,6 +132,9 @@ lemma map_graph_comp: "map_graph (g \<circ>\<^sub>m f) = (map_graph f) O (map_gr
   apply (rename_tac a b)
   apply (case_tac "f a", auto)
   done
+
+lemma rel_comp_map: "R O map_graph f = (\<lambda> p. (fst p, the (f (snd p)))) ` (R \<rhd>\<^sub>r dom(f))"
+  by (force simp add: map_graph_def relcomp_unfold rel_ranres_def image_def dom_def)
 
 subsection \<open> Map Application \<close>
 
