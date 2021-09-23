@@ -735,6 +735,14 @@ lemma pcomp_pabs:
   apply (transfer, auto simp add: restrict_map_def map_comp_def ran_restrict_map_def fun_eq_iff)
   done
 
+lemma pabs_rres [simp]: "pabs A P f \<rhd>\<^sub>p B = pabs A (\<lambda> x. P x \<and> f x \<in> B) f"
+  by (simp add: pabs_def, transfer, auto simp add: ran_restrict_map_def restrict_map_def)
+
+(* This law should be generalised *)
+
+lemma pabs_simple_comp [simp]: "(\<lambda> x \<bullet> f x) \<circ>\<^sub>p g(k \<mapsto> v)\<^sub>p = ((\<lambda> x \<bullet> f x) \<circ>\<^sub>p g)(k \<mapsto> f v)\<^sub>p"
+  by (simp add: pabs_def, transfer, auto)
+
 subsection \<open> Graph laws \<close>
 
 lemma pfun_graph_inv [code_unfold]: "graph_pfun (pfun_graph f) = f"
@@ -772,6 +780,9 @@ lemma pfun_graph_override: "pfun_graph (f \<oplus> g) = pfun_graph f \<oplus> pf
 
 lemma pfun_graph_comp: "pfun_graph (f \<circ>\<^sub>p g) = pfun_graph g O pfun_graph f"
   by (transfer, simp add: map_graph_comp)
+
+lemma comp_pfun_graph [simp]: "pfun_graph f O pfun_graph g = pfun_graph (g \<circ> f)"
+  by (simp add: pfun_graph_comp)
 
 lemma pfun_graph_pfun_inv: "pfun_inj f \<Longrightarrow> pfun_graph (pfun_inv f) = (pfun_graph f)\<inverse>"
   by (transfer, simp add: map_graph_map_inv)

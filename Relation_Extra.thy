@@ -165,10 +165,16 @@ lemma rel_domres_insert [simp]:
 lemma Image_as_rel_domres: "R `` A = Range (A \<lhd>\<^sub>r R)"
   by (auto simp add: rel_domres_def)
 
-lemma rel_domres_Un: "A \<lhd>\<^sub>r (S \<union> R) = (A \<lhd>\<^sub>r S) \<union> (A \<lhd>\<^sub>r R)"
+lemma rel_domres_Un [simp]: "A \<lhd>\<^sub>r (S \<union> R) = (A \<lhd>\<^sub>r S) \<union> (A \<lhd>\<^sub>r R)"
   by (auto simp add: rel_domres_def)
 
 subsection \<open> Range Restriction \<close>
+
+lemma rel_ranres_UNIV [simp]: "P \<rhd>\<^sub>r UNIV = P"
+  by (auto simp add: rel_ranres_def)
+
+lemma rel_ranres_Un [simp]: "(P \<union> Q) \<rhd>\<^sub>r A = (P \<rhd>\<^sub>r A \<union> Q \<rhd>\<^sub>r A)"
+  by (auto simp add: rel_ranres_def)
 
 lemma rel_ranres_relcomp [simp]: "(P O Q) \<rhd>\<^sub>r A = P O (Q \<rhd>\<^sub>r A)"
   by (auto simp add: rel_ranres_def relcomp_unfold prod.case_eq_if)
