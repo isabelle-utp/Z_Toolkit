@@ -781,7 +781,7 @@ lemma pfun_graph_override: "pfun_graph (f \<oplus> g) = pfun_graph f \<oplus> pf
 lemma pfun_graph_comp: "pfun_graph (f \<circ>\<^sub>p g) = pfun_graph g O pfun_graph f"
   by (transfer, simp add: map_graph_comp)
 
-lemma comp_pfun_graph [simp]: "pfun_graph f O pfun_graph g = pfun_graph (g \<circ> f)"
+lemma comp_pfun_graph: "pfun_graph f O pfun_graph g = pfun_graph (g \<circ>\<^sub>p f)"
   by (simp add: pfun_graph_comp)
 
 lemma pfun_graph_pfun_inv: "pfun_inj f \<Longrightarrow> pfun_graph (pfun_inv f) = (pfun_graph f)\<inverse>"
