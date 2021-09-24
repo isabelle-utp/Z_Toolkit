@@ -644,6 +644,13 @@ lemma pdres_rres_commute: "A \<lhd>\<^sub>p (P \<rhd>\<^sub>p B) = (A \<lhd>\<^s
 lemma pdom_nres_disjoint: "pdom(f) \<inter> A = {} \<Longrightarrow> (- A) \<lhd>\<^sub>p f = f"
   by (metis disjoint_eq_subset_Compl inf.absorb2 pdom_res_pdom pdom_res_twice)
 
+lemma pranres_pdom [simp]: "pdom (f \<rhd>\<^sub>p A) \<lhd>\<^sub>p f = f \<rhd>\<^sub>p A"
+  by (transfer, auto simp add: restrict_map_def fun_eq_iff ran_restrict_map_def option.case_eq_if)
+     (metis not_None_eq)
+
+lemma pdom_pranres [simp]: "pdom (f \<rhd>\<^sub>p A) \<subseteq> pdom f"
+  by (metis inf.absorb_iff1 inf.commute pdom_pdom_res pdom_res_pdom pdom_res_swap)
+
 subsection \<open> Range restriction laws \<close>
 
 lemma pran_res_UNIV [simp]: "f \<rhd>\<^sub>p UNIV = f"
@@ -670,6 +677,9 @@ lemma pran_res_override: "(f \<oplus> g) \<rhd>\<^sub>p A \<subseteq>\<^sub>p (f
   apply (case_tac "g a")
    apply (auto)
   done
+
+lemma pcomp_ranres [simp]: "(f \<circ>\<^sub>p g) \<rhd>\<^sub>p A = (f \<rhd>\<^sub>p A) \<circ>\<^sub>p g"
+  by (simp add: pfun_comp_assoc pran_res_alt_def)
 
 subsection \<open> Entries \<close>
   
@@ -745,6 +755,9 @@ lemma pabs_rres [simp]: "pabs A P f \<rhd>\<^sub>p B = pabs A (\<lambda> x. P x 
 
 lemma pabs_simple_comp [simp]: "(\<lambda> x \<bullet> f x) \<circ>\<^sub>p g(k \<mapsto> v)\<^sub>p = ((\<lambda> x \<bullet> f x) \<circ>\<^sub>p g)(k \<mapsto> f v)\<^sub>p"
   by (simp add: pabs_def, transfer, auto)
+
+lemma pabs_comp: "(\<lambda> x \<in> A \<bullet> f x) \<circ>\<^sub>p g = (\<lambda> x \<in> pdom (g \<rhd>\<^sub>p A) \<bullet> f (pfun_app g x))"
+  by (metis pabs_eta pcomp_pabs pdom_pId_on pdom_pabs)
 
 subsection \<open> Graph laws \<close>
 
@@ -932,6 +945,10 @@ lemma pfun_of_alist_Cons [simp]: "pfun_of_alist (p # ps) = pfun_of_alist ps(fst 
 
 lemma dom_pfun_alist [simp, code]: "pdom (pfun_of_alist xs) = set (map fst xs)"
   by (transfer, simp add: dom_map_of_conv_image_fst)
+
+lemma ran_pfun_alist [simp, code]: "pran (pfun_of_alist xs) = set (map snd (AList.clearjunk xs))"
+  by (transfer, auto)
+     (metis ranI ran_map_of, metis distinct_clearjunk map_of_clearjunk map_of_eq_Some_iff)
 
 lemma map_graph_map_of: "map_graph (map_of xs) = set (AList.clearjunk xs)"
   apply (induct xs, simp_all)                 

@@ -18,7 +18,7 @@ text \<open> The following definition is semantically identical to @{const pfun_
   represent coercions with associated reasoning. \<close>
 
 definition rel_of_pfun :: "'a \<Zpfun> 'b \<Rightarrow> 'a \<leftrightarrow> 'b" ("[_]\<^sub>\<Zpfun>") where
-"rel_of_pfun = pfun_graph"
+[code_unfold]: "rel_of_pfun = pfun_graph"
 
 declare [[coercion rel_of_pfun]]
 declare [[coercion pfun_of_pinj]]
@@ -150,6 +150,12 @@ subsection \<open> Proof Support \<close>
 text \<open> The objective of these laws is to, as much as possible, convert relational constructions
   into functional ones. The benefit is better proof automation in the more type constrained setting. \<close>
 
+lemma rel_of_pfun_eq_iff [simp]: "[f]\<^sub>\<Zpfun> = [g]\<^sub>\<Zpfun> \<longleftrightarrow> f = g"
+  by (simp add: pfun_eq_graph rel_of_pfun_def)
+
+lemma rel_of_pfun_le_iff [simp]: "[f]\<^sub>\<Zpfun> \<subseteq> [g]\<^sub>\<Zpfun> \<longleftrightarrow> f \<le> g"
+  by (simp add: rel_of_pfun_def)
+
 lemma rel_of_pfun_apply [simp]: "[f]\<^sub>\<Zpfun> x = f x"
   by (simp add: rel_of_pfun_def)
 
@@ -180,5 +186,8 @@ lemma rel_of_pfun_image [simp]: "[f]\<^sub>\<Zpfun> \<lparr> A \<rparr> = pfun_i
 lemma rel_of_pfun_member_iff [simp]:
   "(k, v) \<in> [f]\<^sub>\<Zpfun> \<longleftrightarrow> (k \<in> dom f \<and> f k = v)"
   by (simp add: rel_of_pfun_def)
+
+lemma rel_of_pinj_conv [simp]: "[[f]\<^sub>\<Zpinj>]\<^sub>\<Zpfun>\<inverse> = [[pinv f]\<^sub>\<Zpinj>]\<^sub>\<Zpfun>"
+  by (simp add: pfun_graph_pfun_inv pinv.rep_eq rel_of_pfun_def)
 
 end
