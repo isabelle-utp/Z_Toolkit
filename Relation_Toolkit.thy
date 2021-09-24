@@ -12,11 +12,18 @@ text \<open> The majority of the relation toolkit is also part of HOL. We just n
 declare [[coercion rel_apply]]
 declare [[coercion pfun_app]]
 declare [[coercion pfun_of]]
-declare [[coercion pfun_graph]]
-(* declare [[coercion ffun_graph]] *)
 
-notation pfun_graph ("\<lbrakk>_\<rbrakk>\<^sub>p")
-notation ffun_graph ("\<lbrakk>_\<rbrakk>\<^sub>f")
+
+text \<open> The following definition is semantically identical to @{const pfun_graph}, but is used to 
+  represent coercions with associated reasoning. \<close>
+
+definition rel_of_pfun :: "'a \<Zpfun> 'b \<Rightarrow> 'a \<leftrightarrow> 'b" ("[_]\<^sub>\<Zpfun>") where
+"rel_of_pfun = pfun_graph"
+
+declare [[coercion rel_of_pfun]]
+declare [[coercion pfun_of_pinj]]
+
+notation pfun_of_pinj ("[_]\<^sub>\<Zpinj>")
 
 subsection \<open> First component projection \<close>
 
@@ -125,28 +132,53 @@ lemma relational_inverse: "r\<^sup>\<sim> = {(p.2, p.1) | p. p \<in> r}"
 
 subsection \<open> Relational image \<close>
 
-hide_const (open) Set.image
-
-consts image :: "'f \<Rightarrow> 'a set \<Rightarrow> 'b set"
-
-notation image ("_\<lparr>_\<rparr>" [990] 990)
-
-adhoc_overloading
-  image Set.image and
-  image Relation.Image
+notation Image ("_\<lparr>_\<rparr>" [990] 990)
 
 lemma Image_eq: "Image r a = {p.2 | p. p \<in> r \<and> p.1 \<in> a}"
   by (auto simp add: Image_def)
 
 subsection \<open> Overriding \<close>
 
-lemma override_eq: "r \<oplus> s = ((- dom s) \<Zdres> r) \<union> s"
-  by (simp add: oplus_set_def)
-
 lemma dom_override: "dom ((Q :: 'a \<leftrightarrow> 'b) \<oplus> R) = (dom Q) \<union> (dom R)"
-  by (simp add: override_eq Domain_Un_eq Un_Int_distrib2)
+  by (simp add: Un_Int_distrib2)
 
 lemma override_Un: "dom Q \<inter> dom R = {} \<Longrightarrow> Q \<oplus> R = Q \<union> R"
   by (simp add: override_eq Int_commute rel_domres_compl_disj)
+
+subsection \<open> Proof Support \<close>
+
+text \<open> The objective of these laws is to, as much as possible, convert relational constructions
+  into functional ones. The benefit is better proof automation in the more type constrained setting. \<close>
+
+lemma rel_of_pfun_apply [simp]: "[f]\<^sub>\<Zpfun> x = f x"
+  by (simp add: rel_of_pfun_def)
+
+lemma rel_of_pfun_functional [simp]: "functional [f]\<^sub>\<Zpfun>"
+  by (simp add: rel_of_pfun_def)
+
+lemma rel_of_pfun_override [simp]: "[f]\<^sub>\<Zpfun> \<oplus> [g]\<^sub>\<Zpfun> = [f \<oplus> g]\<^sub>\<Zpfun>"
+  by (simp add: pfun_graph_override rel_of_pfun_def)
+
+lemma rel_of_pfun_comp [simp]: "[f]\<^sub>\<Zpfun> O [g]\<^sub>\<Zpfun> = [g \<circ>\<^sub>p f]\<^sub>\<Zpfun>"
+  by (simp add: pfun_graph_comp rel_of_pfun_def)
+
+lemma rel_of_pfun_dom [simp]: "Domain [f]\<^sub>\<Zpfun> = pdom f"
+  by (simp add: rel_of_pfun_def)
+
+lemma rel_of_pfun_ran [simp]: "Range [f]\<^sub>\<Zpfun> = pran f"
+  by (simp add: rel_of_pfun_def)
+
+lemma rel_of_pfun_domres [simp]: "A \<Zdres> [f]\<^sub>\<Zpfun> = [A \<Zdres> f]\<^sub>\<Zpfun>"
+  by (simp add: pfun_graph_domres rel_of_pfun_def)
+
+lemma rel_of_pfun_ranres [simp]: "[f]\<^sub>\<Zpfun> \<Zrres> A = [f \<Zrres> A]\<^sub>\<Zpfun>"
+  by (simp add: rel_of_pfun_def)
+
+lemma rel_of_pfun_image [simp]: "[f]\<^sub>\<Zpfun> \<lparr> A \<rparr> = pfun_image f A"
+  by (simp add: Image_as_rel_domres)
+
+lemma rel_of_pfun_member_iff [simp]:
+  "(k, v) \<in> [f]\<^sub>\<Zpfun> \<longleftrightarrow> (k \<in> dom f \<and> f k = v)"
+  by (simp add: rel_of_pfun_def)
 
 end

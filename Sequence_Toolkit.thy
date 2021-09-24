@@ -8,8 +8,8 @@ subsection \<open> Conversion \<close>
 
 text \<open> We define a number of coercions for mapping a list to finite function. \<close>
 
-abbreviation rel_of_list :: "'a list \<Rightarrow> nat \<leftrightarrow> 'a" ("\<lbrakk>_\<rbrakk>\<^sub>s") where
-"rel_of_list xs \<equiv> pfun_graph (list_pfun xs)"
+abbreviation rel_of_list :: "'a list \<Rightarrow> nat \<leftrightarrow> 'a" ("[_]\<^sub>s") where
+"rel_of_list xs \<equiv> [list_pfun xs]\<^sub>\<Zpfun>"
 
 abbreviation seq_nth ("_'(_')\<^sub>s" [999,0] 999) where
 "seq_nth xs i \<equiv> xs ! (i - 1)"

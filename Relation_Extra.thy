@@ -162,6 +162,9 @@ lemma rel_domres_insert [simp]:
  "A \<lhd>\<^sub>r insert (k, v) R = (if (k \<in> A) then insert (k, v) (A \<lhd>\<^sub>r R) else A \<lhd>\<^sub>r R)"
   by (auto simp add: rel_domres_def)
 
+lemma rel_domres_insert_set [simp]: "x \<notin> Domain P \<Longrightarrow> (insert x A) \<lhd>\<^sub>r P = A \<lhd>\<^sub>r P"
+  by (auto simp add: rel_domres_def)
+
 lemma Image_as_rel_domres: "R `` A = Range (A \<lhd>\<^sub>r R)"
   by (auto simp add: rel_domres_def)
 
@@ -208,11 +211,20 @@ instance
   done
 end
 
+lemma override_eq: "R \<oplus> S = ((- Domain S) \<lhd>\<^sub>r R) \<union> S"
+  by (simp add: oplus_set_def)
+
 lemma Domain_rel_override [simp]: "Domain (R \<oplus> S) = Domain(R) \<union> Domain(S)"
   by (auto simp add: oplus_set_def Domain_Un_eq)
 
 lemma Range_rel_override: "Range(R \<oplus> S) \<subseteq> Range(R) \<union> Range(S)"
   by (auto simp add: oplus_set_def rel_domres_def)
+
+lemma compatible_rel: "R ## S = (Domain R \<lhd>\<^sub>r S = Domain S \<lhd>\<^sub>r R)"
+  by (simp add: compatible_set_def)
+
+lemma compatible_relI: "Domain R \<lhd>\<^sub>r S = Domain S \<lhd>\<^sub>r R \<Longrightarrow> R ## S"
+  by (simp add: compatible_rel)
 
 subsection \<open> Functional Relations \<close>
 
@@ -233,14 +245,20 @@ lemma functional_apply:
   shows "R(x)\<^sub>r = y"
   by (metis (no_types, lifting) Domain.intros DomainE assms(1) assms(2) single_valuedD rel_apply_def theI_unique)  
 
+lemma functional_apply_iff: "functional R \<Longrightarrow> (x, y) \<in> R \<longleftrightarrow> (x \<in> Domain R \<and> R(x)\<^sub>r = y)"
+  by (auto simp add: functional_apply)
+
 lemma functional_elem:
   assumes "functional R" "x \<in> Domain(R)"
   shows "(x, R(x)\<^sub>r) \<in> R"
   using assms(1) assms(2) functional_apply by fastforce
 
-lemma functional_override [intro]: "\<lbrakk> functional R; functional S \<rbrakk> \<Longrightarrow> functional (R \<oplus> S)"
+lemma functional_override [intro!]: "\<lbrakk> functional R; functional S \<rbrakk> \<Longrightarrow> functional (R \<oplus> S)"
   by (auto simp add: functional_algebraic oplus_set_def rel_domres_def)
 
+lemma functional_union [intro!]: "\<lbrakk> functional R; functional S; R ## S \<rbrakk> \<Longrightarrow> functional (R \<union> S)"
+  by (metis functional_override le_sup_iff override_comm override_eq single_valued_subset subsetI)
+  
 definition functional_list :: "('a \<times> 'b) list \<Rightarrow> bool" where
 "functional_list xs = (\<forall> x y z. ListMem (x,y) xs \<and> ListMem (x,z) xs \<longrightarrow> y = z)"
 
@@ -314,6 +332,16 @@ lemma left_totalr_algebraic: "left_totalr R \<longleftrightarrow> Id \<subseteq>
 
 lemma left_totalr_fun_rel: "left_totalr (fun_rel f)"
   by (simp add: left_totalr_on_def fun_rel_def)
+
+subsection \<open> Injective Relations \<close>
+
+definition injective :: "('a \<leftrightarrow> 'b) \<Rightarrow> bool" where
+"injective R = (functional R \<and> R O R\<inverse> \<subseteq> Id)"
+
+lemma injectiveI: 
+  assumes "functional R" "\<And> x y. \<lbrakk> x \<in> Domain R; y \<in> Domain R; R(x)\<^sub>r = R(y)\<^sub>r \<rbrakk> \<Longrightarrow> x = y"
+  shows "injective R"
+  using assms by (auto simp add: injective_def functional_apply_iff)
 
 subsection \<open> Relation Sets \<close>
 

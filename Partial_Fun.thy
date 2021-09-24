@@ -82,6 +82,9 @@ is ran_restrict_map .
 
 abbreviation pran_nres (infixr "\<rhd>\<^sub>p-" 66) where "pran_nres A P \<equiv> P \<rhd>\<^sub>p (- A)"
 
+definition pfun_image :: "'a \<Zpfun> 'b \<Rightarrow> 'a set \<Rightarrow> 'b set" where
+[simp]: "pfun_image f A = pran (A \<lhd>\<^sub>p f)"
+
 lift_definition pfun_graph :: "('a, 'b) pfun \<Rightarrow> ('a \<times> 'b) set" is map_graph .
 
 lift_definition graph_pfun :: "('a \<times> 'b) set \<Rightarrow> ('a, 'b) pfun" is "graph_map \<circ> mk_functional" .
@@ -754,8 +757,14 @@ lemma pfun_eq_graph: "f = g \<longleftrightarrow> pfun_graph f = pfun_graph g"
 lemma Dom_pfun_graph [simp]: "Domain (pfun_graph f) = pdom f"
   by (transfer, simp add: dom_map_graph)
 
+lemma Range_pfun_graph [simp]: "Range (pfun_graph f) = pran f"
+  by (transfer, auto simp add: ran_map_graph[THEN sym] ran_def)
+
 lemma card_pfun_graph [simp]: "finite (pdom f) \<Longrightarrow> card (pfun_graph f) = card (pdom f)"
   by (transfer, simp add: card_map_graph dom_map_graph finite_dom_graph)
+
+lemma functional_pfun_graph [simp]: "functional (pfun_graph f)"
+  by (transfer, simp)
 
 lemma pfun_graph_zero: "pfun_graph 0 = {}"
   by (transfer, simp add: map_graph_def)
