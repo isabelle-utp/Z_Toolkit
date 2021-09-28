@@ -10,6 +10,9 @@ text \<open> This theory marks the boundary between reusable library utilities a
   Z notation. We avoid overriding any HOL syntax up until this point, but we do supply some optional 
   bundles. \<close>
 
+lemma if_eqE [elim!]: "\<lbrakk> (if b then e else f) = v; \<lbrakk> b; e = v \<rbrakk> \<Longrightarrow> P; \<lbrakk> \<not> b; f = v \<rbrakk> \<Longrightarrow> P \<rbrakk> \<Longrightarrow> P"
+  by (cases b, auto)
+
 bundle Z_Type_Syntax
 begin
 

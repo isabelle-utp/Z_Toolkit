@@ -182,6 +182,12 @@ lemma rel_ranres_Un [simp]: "(P \<union> Q) \<rhd>\<^sub>r A = (P \<rhd>\<^sub>r
 lemma rel_ranres_relcomp [simp]: "(P O Q) \<rhd>\<^sub>r A = P O (Q \<rhd>\<^sub>r A)"
   by (auto simp add: rel_ranres_def relcomp_unfold prod.case_eq_if)
 
+lemma conv_rel_domres [simp]: "(P \<rhd>\<^sub>r A)\<inverse> = A \<lhd>\<^sub>r P\<inverse>"
+  by (auto simp add: rel_domres_def rel_ranres_def)
+
+lemma rel_ranres_le: "A \<subseteq> B \<Longrightarrow> f \<rhd>\<^sub>r A \<le> f \<rhd>\<^sub>r B"
+  by (simp add: Collect_mono_iff in_mono rel_ranres_def)
+
 subsection \<open> Relational Override \<close>
 
 class restrict = pre_restrict +

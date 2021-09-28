@@ -343,11 +343,14 @@ lemma pfun_member_minus:
 lemma pfun_app_map [simp]: "(pfun_of_map f)(x)\<^sub>p = (if (x \<in> dom(f)) then the (f x) else undefined)"
   by (transfer, simp)
 
-lemma pfun_app_upd_1 [simp]: "x = y \<Longrightarrow> (f(x \<mapsto> v)\<^sub>p)(y)\<^sub>p = v"
+lemma pfun_app_upd_1: "x = y \<Longrightarrow> (f(x \<mapsto> v)\<^sub>p)(y)\<^sub>p = v"
   by (transfer, simp)
 
-lemma pfun_app_upd_2 [simp]: "x \<noteq> y \<Longrightarrow> (f(x \<mapsto> v)\<^sub>p)(y)\<^sub>p = f(y)\<^sub>p"
+lemma pfun_app_upd_2: "x \<noteq> y \<Longrightarrow> (f(x \<mapsto> v)\<^sub>p)(y)\<^sub>p = f(y)\<^sub>p"
   by (transfer, simp)
+
+lemma pfun_app_upd [simp]: "(f(x \<mapsto> e)\<^sub>p)(y)\<^sub>p = (if (x = y) then e else f(y)\<^sub>p)"
+  by (metis pfun_app_upd_1 pfun_app_upd_2)
 
 lemma pfun_graph_apply [simp]: "rel_apply (pfun_graph f) x = f(x)\<^sub>p"
   by (transfer, auto simp add: rel_apply_def map_graph_def)
@@ -532,6 +535,69 @@ lemma pran_finite [simp]: "finite (pdom f) \<Longrightarrow> finite (pran f)"
 lemma pran_pdom: "pran F = pfun_app F ` pdom F"
   by (transfer, force simp add: dom_def)
 
+subsection \<open> Graph laws \<close>
+
+lemma pfun_graph_inv [code_unfold]: "graph_pfun (pfun_graph f) = f"
+  by (transfer, simp add: mk_functional_fp)
+
+lemma pfun_eq_graph: "f = g \<longleftrightarrow> pfun_graph f = pfun_graph g"
+  by (metis pfun_graph_inv)
+
+lemma Dom_pfun_graph [simp]: "Domain (pfun_graph f) = pdom f"
+  by (transfer, simp add: dom_map_graph)
+
+lemma Range_pfun_graph [simp]: "Range (pfun_graph f) = pran f"
+  by (transfer, auto simp add: ran_map_graph[THEN sym] ran_def)
+
+lemma card_pfun_graph [simp]: "finite (pdom f) \<Longrightarrow> card (pfun_graph f) = card (pdom f)"
+  by (transfer, simp add: card_map_graph dom_map_graph finite_dom_graph)
+
+lemma functional_pfun_graph [simp]: "functional (pfun_graph f)"
+  by (transfer, simp)
+
+lemma pfun_graph_zero: "pfun_graph 0 = {}"
+  by (transfer, simp add: map_graph_def)
+
+lemma pfun_graph_pId_on: "pfun_graph (pId_on A) = Id_on A"
+  by (transfer, auto simp add: map_graph_def)
+
+lemma pfun_graph_minus: "pfun_graph (f - g) = pfun_graph f - pfun_graph g"
+  by (transfer, simp add: map_graph_minus)
+
+lemma pfun_graph_inter: "pfun_graph (f \<inter>\<^sub>p g) = pfun_graph f \<inter> pfun_graph g"
+  apply (transfer, auto simp add: map_graph_def)
+   apply (metis option.discI)+
+  done
+
+lemma pfun_graph_domres: "pfun_graph (A \<lhd>\<^sub>p f) = (A \<lhd>\<^sub>r pfun_graph f)"
+  by (transfer, simp add: rel_domres_math_def map_graph_def restrict_map_def, metis option.simps(3))
+
+lemma pfun_graph_override: "pfun_graph (f \<oplus> g) = pfun_graph f \<oplus> pfun_graph g"
+  by (transfer, auto simp add: map_add_def oplus_set_def rel_domres_def map_graph_def option.case_eq_if)
+     (metis option.collapse)+
+
+lemma pfun_graph_comp: "pfun_graph (f \<circ>\<^sub>p g) = pfun_graph g O pfun_graph f"
+  by (transfer, simp add: map_graph_comp)
+
+lemma comp_pfun_graph: "pfun_graph f O pfun_graph g = pfun_graph (g \<circ>\<^sub>p f)"
+  by (simp add: pfun_graph_comp)
+
+lemma pfun_graph_pfun_inv: "pfun_inj f \<Longrightarrow> pfun_graph (pfun_inv f) = (pfun_graph f)\<inverse>"
+  by (transfer, simp add: map_graph_map_inv)
+
+lemma pfun_graph_pabs: "pfun_graph (\<lambda> x \<in> A | P x \<bullet> f x) = {(k, v). k \<in> A \<and> P k \<and> v = f k}"
+  unfolding pabs_def by (transfer, auto simp add: map_graph_def restrict_map_def)
+
+lemma pfun_graph_le_iff:
+  "pfun_graph f \<subseteq> pfun_graph g \<longleftrightarrow> f \<subseteq>\<^sub>p g"
+  by (simp add: inf.order_iff pfun_eq_graph pfun_graph_inter)
+
+lemma pfun_member_iff [simp]: "(k, v) \<in> pfun_graph f \<longleftrightarrow> (k \<in> pdom(f) \<and> pfun_app f k = v)"
+  by (transfer, auto simp add: map_graph_def)
+
+lemma pfun_graph_rres: "pfun_graph (f \<rhd>\<^sub>p A) = pfun_graph f \<rhd>\<^sub>r A"
+  by (transfer, auto simp add: map_graph_def rel_ranres_def ran_restrict_map_def)
+
 subsection \<open> Partial Injections \<close>
 
 lemma pfun_inj_empty [simp]: "pfun_inj {}\<^sub>p"
@@ -681,6 +747,31 @@ lemma pran_res_override: "(f \<oplus> g) \<rhd>\<^sub>p A \<subseteq>\<^sub>p (f
 lemma pcomp_ranres [simp]: "(f \<circ>\<^sub>p g) \<rhd>\<^sub>p A = (f \<rhd>\<^sub>p A) \<circ>\<^sub>p g"
   by (simp add: pfun_comp_assoc pran_res_alt_def)
 
+lemma pranres_le: "A \<subseteq> B \<Longrightarrow> f \<rhd>\<^sub>p A \<le> f \<rhd>\<^sub>p B"
+  by (simp add: pfun_graph_le_iff[THEN sym] pfun_graph_comp pfun_graph_rres relcomp_mono rel_ranres_le)
+
+subsection \<open> Preimage Laws \<close>
+
+lemma ppreimageI: "\<lbrakk> x \<in> pdom(f); f(x)\<^sub>p \<in> A \<rbrakk> \<Longrightarrow> x \<in> pdom (f \<rhd>\<^sub>p A)"
+  by (metis (full_types) insertI1 pdom_upd pfun_upd_ext pran_res_upd_1)
+
+lemma ppreimageD: "x \<in> pdom (f \<rhd>\<^sub>p A) \<Longrightarrow> \<exists> y \<in> A. f(x)\<^sub>p = y"
+  by (transfer, auto simp add: ran_restrict_map_def)
+
+lemma ppreimageE [elim!]: "\<lbrakk> x \<in> pdom (f \<rhd>\<^sub>p A); \<And> y. \<lbrakk> x \<in> pdom(f); y \<in> A; f(x)\<^sub>p = y \<rbrakk> \<Longrightarrow> P \<rbrakk> \<Longrightarrow> P"
+  by (metis (no_types) pdom_pranres ppreimageD subsetD)
+
+subsection \<open> Composition \<close>
+
+lemma pcomp_apply [simp]: "\<lbrakk> x \<in> pdom(g) \<rbrakk> \<Longrightarrow> (f \<circ>\<^sub>p g)(x)\<^sub>p = f(g(x)\<^sub>p)\<^sub>p"
+  by (transfer, auto)
+
+lemma pcomp_mono: "\<lbrakk> f \<le> f'; g \<le> g' \<rbrakk> \<Longrightarrow> f \<circ>\<^sub>p g \<le> f' \<circ>\<^sub>p g'"
+  by (simp add: pfun_graph_le_iff[THEN sym] pfun_graph_comp relcomp_mono)
+
+lemma pdom_UNIV_comp: "pdom f = UNIV \<Longrightarrow> pdom (f \<circ>\<^sub>p g) = pdom g"
+  by simp
+
 subsection \<open> Entries \<close>
   
 lemma pfun_entries_empty [simp]: "pfun_entries {} f = {}\<^sub>p"
@@ -758,70 +849,6 @@ lemma pabs_simple_comp [simp]: "(\<lambda> x \<bullet> f x) \<circ>\<^sub>p g(k 
 
 lemma pabs_comp: "(\<lambda> x \<in> A \<bullet> f x) \<circ>\<^sub>p g = (\<lambda> x \<in> pdom (g \<rhd>\<^sub>p A) \<bullet> f (pfun_app g x))"
   by (metis pabs_eta pcomp_pabs pdom_pId_on pdom_pabs)
-
-subsection \<open> Graph laws \<close>
-
-lemma pfun_graph_inv [code_unfold]: "graph_pfun (pfun_graph f) = f"
-  by (transfer, simp add: mk_functional_fp)
-
-lemma pfun_eq_graph: "f = g \<longleftrightarrow> pfun_graph f = pfun_graph g"
-  by (metis pfun_graph_inv)
-
-lemma Dom_pfun_graph [simp]: "Domain (pfun_graph f) = pdom f"
-  by (transfer, simp add: dom_map_graph)
-
-lemma Range_pfun_graph [simp]: "Range (pfun_graph f) = pran f"
-  by (transfer, auto simp add: ran_map_graph[THEN sym] ran_def)
-
-lemma card_pfun_graph [simp]: "finite (pdom f) \<Longrightarrow> card (pfun_graph f) = card (pdom f)"
-  by (transfer, simp add: card_map_graph dom_map_graph finite_dom_graph)
-
-lemma functional_pfun_graph [simp]: "functional (pfun_graph f)"
-  by (transfer, simp)
-
-lemma pfun_graph_zero: "pfun_graph 0 = {}"
-  by (transfer, simp add: map_graph_def)
-
-lemma pfun_graph_pId_on: "pfun_graph (pId_on A) = Id_on A"
-  by (transfer, auto simp add: map_graph_def)
-
-lemma pfun_graph_minus: "pfun_graph (f - g) = pfun_graph f - pfun_graph g"
-  by (transfer, simp add: map_graph_minus)
-
-lemma pfun_graph_inter: "pfun_graph (f \<inter>\<^sub>p g) = pfun_graph f \<inter> pfun_graph g"
-  apply (transfer, auto simp add: map_graph_def)
-   apply (metis option.discI)+
-  done
-
-lemma pfun_graph_domres: "pfun_graph (A \<lhd>\<^sub>p f) = (A \<lhd>\<^sub>r pfun_graph f)"
-  by (transfer, simp add: rel_domres_math_def map_graph_def restrict_map_def, metis option.simps(3))
-
-lemma pfun_graph_override: "pfun_graph (f \<oplus> g) = pfun_graph f \<oplus> pfun_graph g"
-  by (transfer, auto simp add: map_add_def oplus_set_def rel_domres_def map_graph_def option.case_eq_if)
-     (metis option.collapse)+
-
-lemma pfun_graph_comp: "pfun_graph (f \<circ>\<^sub>p g) = pfun_graph g O pfun_graph f"
-  by (transfer, simp add: map_graph_comp)
-
-lemma comp_pfun_graph: "pfun_graph f O pfun_graph g = pfun_graph (g \<circ>\<^sub>p f)"
-  by (simp add: pfun_graph_comp)
-
-lemma pfun_graph_pfun_inv: "pfun_inj f \<Longrightarrow> pfun_graph (pfun_inv f) = (pfun_graph f)\<inverse>"
-  by (transfer, simp add: map_graph_map_inv)
-
-lemma pfun_graph_pabs: "pfun_graph (\<lambda> x \<in> A | P x \<bullet> f x) = {(x, f x) | x. x \<in> A \<and> P x}"
-  unfolding pabs_def
-  by (transfer, auto simp add: map_graph_def restrict_map_def)
-
-lemma pfun_graph_le_iff [simp]:
-  "pfun_graph f \<subseteq> pfun_graph g \<longleftrightarrow> f \<subseteq>\<^sub>p g"
-  by (simp add: inf.order_iff pfun_eq_graph pfun_graph_inter)
-
-lemma pfun_member_iff [simp]: "(k, v) \<in> pfun_graph f \<longleftrightarrow> (k \<in> pdom(f) \<and> pfun_app f k = v)"
-  by (transfer, auto simp add: map_graph_def)
-
-lemma pfun_graph_rres [simp]: "pfun_graph f \<rhd>\<^sub>r A = pfun_graph (f \<rhd>\<^sub>p A)"
-  by (transfer, auto simp add: map_graph_def rel_ranres_def ran_restrict_map_def)
 
 subsection \<open> Summation \<close>
     

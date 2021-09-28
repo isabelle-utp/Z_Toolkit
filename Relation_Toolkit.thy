@@ -154,7 +154,10 @@ lemma rel_of_pfun_eq_iff [simp]: "[f]\<^sub>\<Zpfun> = [g]\<^sub>\<Zpfun> \<long
   by (simp add: pfun_eq_graph rel_of_pfun_def)
 
 lemma rel_of_pfun_le_iff [simp]: "[f]\<^sub>\<Zpfun> \<subseteq> [g]\<^sub>\<Zpfun> \<longleftrightarrow> f \<le> g"
-  by (simp add: rel_of_pfun_def)
+  by (simp add: pfun_graph_le_iff rel_of_pfun_def)
+
+lemma rel_of_pfun_pabs: "[pabs A P f]\<^sub>\<Zpfun> = {(k, v). k \<in> A \<and> P k \<and> v = f k}"
+  by (simp add: rel_of_pfun_def pfun_graph_pabs)
 
 lemma rel_of_pfun_apply [simp]: "[f]\<^sub>\<Zpfun> x = f x"
   by (simp add: rel_of_pfun_def)
@@ -168,6 +171,9 @@ lemma rel_of_pfun_override [simp]: "[f]\<^sub>\<Zpfun> \<oplus> [g]\<^sub>\<Zpfu
 lemma rel_of_pfun_comp [simp]: "[f]\<^sub>\<Zpfun> O [g]\<^sub>\<Zpfun> = [g \<circ>\<^sub>p f]\<^sub>\<Zpfun>"
   by (simp add: pfun_graph_comp rel_of_pfun_def)
 
+lemma pfun_comp_inv: "[f \<circ>\<^sub>p g]\<^sub>\<Zpfun>\<^sup>\<sim> = [f]\<^sub>\<Zpfun>\<^sup>\<sim> O [g]\<^sub>\<Zpfun>\<^sup>\<sim>"
+  by (metis converse_relcomp rel_of_pfun_comp)
+
 lemma rel_of_pfun_dom [simp]: "Domain [f]\<^sub>\<Zpfun> = pdom f"
   by (simp add: rel_of_pfun_def)
 
@@ -178,7 +184,7 @@ lemma rel_of_pfun_domres [simp]: "A \<Zdres> [f]\<^sub>\<Zpfun> = [A \<Zdres> f]
   by (simp add: pfun_graph_domres rel_of_pfun_def)
 
 lemma rel_of_pfun_ranres [simp]: "[f]\<^sub>\<Zpfun> \<Zrres> A = [f \<Zrres> A]\<^sub>\<Zpfun>"
-  by (simp add: rel_of_pfun_def)
+  by (simp add: rel_of_pfun_def pfun_graph_rres)
 
 lemma rel_of_pfun_image [simp]: "[f]\<^sub>\<Zpfun> \<lparr> A \<rparr> = pfun_image f A"
   by (simp add: Image_as_rel_domres)
@@ -189,5 +195,11 @@ lemma rel_of_pfun_member_iff [simp]:
 
 lemma rel_of_pinj_conv [simp]: "[[f]\<^sub>\<Zpinj>]\<^sub>\<Zpfun>\<inverse> = [[pinv f]\<^sub>\<Zpinj>]\<^sub>\<Zpfun>"
   by (simp add: pfun_graph_pfun_inv pinv.rep_eq rel_of_pfun_def)
+
+lemma dom_pinv [simp]: "dom [pinv f]\<^sub>\<Zpinj> = ran [f]\<^sub>\<Zpinj>"
+  by (simp add: pinv.rep_eq)
+
+lemma ran_pinv [simp]: "ran [pinv f]\<^sub>\<Zpinj> = dom [f]\<^sub>\<Zpinj>"
+  by (metis dom_pinv pinv_pinv)
 
 end
