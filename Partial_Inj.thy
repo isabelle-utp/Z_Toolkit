@@ -119,6 +119,11 @@ lemma pirres_commute: "f \<rhd>\<^sub>\<rho> A \<rhd>\<^sub>\<rho> B = f \<rhd>\
 lemma pidom_upd: "pidom (f(k \<mapsto> v)\<^sub>\<rho>) = insert k (pidom (f \<rhd>\<^sub>\<rho> (- {v})))"
   by (transfer, simp)
 
+(* FIXME: Properly integrate using a proof strategy for coercion to partial injections *)
+
+lemma pinv_f_f_apply: "x \<in> pran (pfun_of_pinj f) \<Longrightarrow> (pfun_of_pinj f)(pfun_of_pinj (pinv f) (x)\<^sub>p)\<^sub>p = x"
+  by (transfer, simp add: pfun_inv_f_f_apply)
+
 fun pinj_of_alist :: "('a \<times> 'b) list \<Rightarrow> 'a \<Zpinj> 'b" where
 "pinj_of_alist [] = {}\<^sub>\<rho>" |
 "pinj_of_alist (p # ps) = (pinj_of_alist ps)(fst p \<mapsto> snd p)\<^sub>\<rho>" 

@@ -612,6 +612,9 @@ lemma pfun_inj_inv_inv: "pfun_inj f \<Longrightarrow> pfun_inv (pfun_inv f) = f"
 lemma pfun_inj_inv: "pfun_inj f \<Longrightarrow> pfun_inj (pfun_inv f)"
   by (transfer, simp add: inj_map_inv)
 
+lemma pfun_inv_f_f_apply: "\<lbrakk> pfun_inj f; x \<in> pran f \<rbrakk> \<Longrightarrow> f(pfun_inv f(x)\<^sub>p)\<^sub>p = x"
+  by (transfer, auto simp add: ranI)
+
 lemma pfun_inj_upd: "\<lbrakk> pfun_inj f; v \<notin> pran f \<rbrakk> \<Longrightarrow> pfun_inj (f(k \<mapsto> v)\<^sub>p)"
   by (transfer, auto, meson f_the_inv_into_f inj_on_fun_updI)
 
@@ -752,7 +755,7 @@ lemma pranres_le: "A \<subseteq> B \<Longrightarrow> f \<rhd>\<^sub>p A \<le> f 
 
 subsection \<open> Preimage Laws \<close>
 
-lemma ppreimageI: "\<lbrakk> x \<in> pdom(f); f(x)\<^sub>p \<in> A \<rbrakk> \<Longrightarrow> x \<in> pdom (f \<rhd>\<^sub>p A)"
+lemma ppreimageI [intro]: "\<lbrakk> x \<in> pdom(f); f(x)\<^sub>p \<in> A \<rbrakk> \<Longrightarrow> x \<in> pdom (f \<rhd>\<^sub>p A)"
   by (metis (full_types) insertI1 pdom_upd pfun_upd_ext pran_res_upd_1)
 
 lemma ppreimageD: "x \<in> pdom (f \<rhd>\<^sub>p A) \<Longrightarrow> \<exists> y \<in> A. f(x)\<^sub>p = y"
@@ -861,7 +864,12 @@ lemma pfun_sum_empty [simp]: "pfun_sum {}\<^sub>p = 0"
 lemma pfun_sum_upd_1:
   assumes "finite(pdom(m))" "k \<notin> pdom(m)"
   shows "pfun_sum (m(k \<mapsto> v)\<^sub>p) = pfun_sum m + v"
-  by (simp_all add: pfun_sum_def assms, metis add.commute assms(2) pfun_app_upd_2 sum.cong)
+proof -
+  from assms(2) have "(\<Sum>x\<in>pdom m. if k = x then v else m(x)\<^sub>p) = sum (pfun_app m) (pdom m)"
+    by (auto intro!: sum.cong)
+  thus ?thesis
+    by (simp_all add: pfun_sum_def assms add.commute cong: sum.cong)
+qed
 
 lemma pfun_sums_upd_2:
   assumes "finite(pdom(m))"
