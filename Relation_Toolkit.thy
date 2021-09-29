@@ -51,7 +51,8 @@ adhoc_overloading
   dom Map.dom and
   dom Relation.Domain and
   dom Partial_Fun.pdom and
-  dom Finite_Fun.fdom
+  dom Finite_Fun.fdom and
+  dom Partial_Inj.pidom
 
 subsection \<open> Range \<close>
 
@@ -63,7 +64,8 @@ adhoc_overloading
   ran Map.ran and
   ran Relation.Range and
   ran Partial_Fun.pran and
-  ran Finite_Fun.fran
+  ran Finite_Fun.fran and
+  ran Partial_Inj.piran
 
 subsection \<open> Identity relation \<close>
 
@@ -108,6 +110,7 @@ adhoc_overloading
   dom_res rel_domres
   and dom_res pdom_res
   and dom_res fdom_res
+  and dom_res pinj_dres
 
 syntax "_ndres" :: "logic \<Rightarrow> logic \<Rightarrow> logic" 
 translations "_ndres A P" == "CONST dom_res (- A) P"
@@ -121,7 +124,8 @@ abbreviation nrres (infixl "\<Znrres>" 86) where "nrres P A \<equiv> CONST ran_r
 adhoc_overloading 
   ran_res rel_ranres
   and ran_res pran_res
-  and dom_res fran_res
+  and ran_res fran_res
+  and ran_res pinj_rres
 
 subsection \<open> Relational inversion \<close>
 

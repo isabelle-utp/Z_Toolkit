@@ -21,8 +21,6 @@ setup_lifting type_definition_pinj
 lift_definition pinv :: "'a \<Zpinj> 'b \<Rightarrow> 'b \<Zpinj> 'a" is pfun_inv
   by (simp add: pfun_inj_inv)
 
-term pinv
-
 instantiation pinj :: (type, type) zero
 begin
   lift_definition zero_pinj :: "('a, 'b) pinj" is "0"
@@ -85,9 +83,13 @@ lemma pinv_pcomp: "pinv (f \<circ>\<^sub>\<rho> g) = pinv g \<circ>\<^sub>\<rho>
   by (transfer, simp add: pfun_eq_graph pfun_graph_pfun_inv pfun_graph_comp pfun_inj_comp converse_relcomp)
 
 lemmas pidom_empty [simp] = pdom_zero[Transfer.transferred]
+lemma piran_zero [simp]: "piran {}\<^sub>\<rho> = {}" by (transfer, simp)
 
 lemmas pinj_dres_empty [simp] = pdom_res_zero[Transfer.transferred]
 lemmas pinj_rres_empty [simp] = pran_res_zero[Transfer.transferred]
+
+lemmas pidom_res_empty [simp] = pdom_res_empty[Transfer.transferred]
+lemmas piran_res_empty [simp] = pran_res_empty[Transfer.transferred]
 
 lemma pidom_res_upd: "A \<lhd>\<^sub>\<rho> f(k \<mapsto> v)\<^sub>\<rho> = (if k \<in> A then (A \<lhd>\<^sub>\<rho> f)(k \<mapsto> v)\<^sub>\<rho> else A \<lhd>\<^sub>\<rho> (f \<rhd>\<^sub>\<rho> (- {v})))"
   by (transfer, simp, metis pdom_res_swap)

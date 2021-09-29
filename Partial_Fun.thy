@@ -80,7 +80,7 @@ abbreviation pdom_nres (infixr "-\<lhd>\<^sub>p" 85) where "pdom_nres A P \<equi
 lift_definition pran_res :: "('a, 'b) pfun \<Rightarrow> 'b set \<Rightarrow> ('a, 'b) pfun" (infixl "\<rhd>\<^sub>p" 86)
 is ran_restrict_map .
 
-abbreviation pran_nres (infixr "\<rhd>\<^sub>p-" 66) where "pran_nres A P \<equiv> P \<rhd>\<^sub>p (- A)"
+abbreviation pran_nres (infixr "\<rhd>\<^sub>p-" 66) where "pran_nres P A \<equiv> P \<rhd>\<^sub>p (- A)"
 
 definition pfun_image :: "'a \<Zpfun> 'b \<Rightarrow> 'a set \<Rightarrow> 'b set" where
 [simp]: "pfun_image f A = pran (A \<lhd>\<^sub>p f)"
@@ -535,6 +535,9 @@ lemma pran_finite [simp]: "finite (pdom f) \<Longrightarrow> finite (pran f)"
 lemma pran_pdom: "pran F = pfun_app F ` pdom F"
   by (transfer, force simp add: dom_def)
 
+lemma pran_override [simp]: "pran (f \<oplus> g) = pran(g) \<union> pran(pdom(g) -\<lhd>\<^sub>p f)"
+  by (transfer, auto simp add: restrict_map_def dom_def map_add_def option.case_eq_if)
+
 subsection \<open> Graph laws \<close>
 
 lemma pfun_graph_inv [code_unfold]: "graph_pfun (pfun_graph f) = f"
@@ -626,6 +629,9 @@ lemma pfun_inj_rres: "pfun_inj f \<Longrightarrow> pfun_inj (f \<rhd>\<^sub>p A)
 
 lemma pfun_inj_comp: "\<lbrakk> pfun_inj f; pfun_inj g \<rbrakk> \<Longrightarrow> pfun_inj (f \<circ>\<^sub>p g)"
   by (transfer, auto simp add: inj_on_def map_comp_def option.case_eq_if dom_def)
+
+lemma pfun_inj_ovrd: "\<lbrakk> pfun_inj f; pfun_inj g; pran f \<inter> pran g = {} \<rbrakk> \<Longrightarrow> pfun_inj (f \<oplus> g)"
+  by (transfer, force simp add: inj_on_def map_add_def option.case_eq_if dom_def)
 
 lemma pfun_inv_dres: "pfun_inj f \<Longrightarrow> pfun_inv (A \<lhd>\<^sub>p f) = (pfun_inv f) \<rhd>\<^sub>p A"
   by (transfer, simp add: map_inv_dom_res)
@@ -725,6 +731,9 @@ subsection \<open> Range restriction laws \<close>
 lemma pran_res_UNIV [simp]: "f \<rhd>\<^sub>p UNIV = f"
   by (transfer, simp add: ran_restrict_map_def)
 
+lemma pran_res_empty [simp]: "f \<rhd>\<^sub>p {} = {}\<^sub>p"
+  by (transfer, auto simp add: ran_restrict_map_def)
+
 lemma pran_res_zero [simp]: "{}\<^sub>p \<rhd>\<^sub>p A = {}\<^sub>p"
   by (transfer, auto simp add: ran_restrict_map_def)
 
@@ -753,9 +762,12 @@ lemma pcomp_ranres [simp]: "(f \<circ>\<^sub>p g) \<rhd>\<^sub>p A = (f \<rhd>\<
 lemma pranres_le: "A \<subseteq> B \<Longrightarrow> f \<rhd>\<^sub>p A \<le> f \<rhd>\<^sub>p B"
   by (simp add: pfun_graph_le_iff[THEN sym] pfun_graph_comp pfun_graph_rres relcomp_mono rel_ranres_le)
 
+lemma pranres_neg_ran [simp]: "P \<rhd>\<^sub>p- pran P = {}\<^sub>p"
+  by (transfer, auto simp add: ran_restrict_map_def fun_eq_iff option.case_eq_if bind_eq_None_conv, meson option.exhaust_sel)
+
 subsection \<open> Preimage Laws \<close>
 
-lemma ppreimageI [intro]: "\<lbrakk> x \<in> pdom(f); f(x)\<^sub>p \<in> A \<rbrakk> \<Longrightarrow> x \<in> pdom (f \<rhd>\<^sub>p A)"
+lemma ppreimageI [intro!]: "\<lbrakk> x \<in> pdom(f); f(x)\<^sub>p \<in> A \<rbrakk> \<Longrightarrow> x \<in> pdom (f \<rhd>\<^sub>p A)"
   by (metis (full_types) insertI1 pdom_upd pfun_upd_ext pran_res_upd_1)
 
 lemma ppreimageD: "x \<in> pdom (f \<rhd>\<^sub>p A) \<Longrightarrow> \<exists> y \<in> A. f(x)\<^sub>p = y"
