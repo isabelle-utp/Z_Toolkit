@@ -179,10 +179,10 @@ lemma pfun_comp_inv: "[f \<circ>\<^sub>p g]\<^sub>\<Zpfun>\<^sup>\<sim> = [f]\<^
   by (metis converse_relcomp rel_of_pfun_comp)
 
 lemma rel_of_pfun_dom [simp]: "Domain [f]\<^sub>\<Zpfun> = pdom f"
-  by (simp add: rel_of_pfun_def)
+  by (simp add: Dom_pfun_graph rel_of_pfun_def)
 
 lemma rel_of_pfun_ran [simp]: "Range [f]\<^sub>\<Zpfun> = pran f"
-  by (simp add: rel_of_pfun_def)
+  by (simp add: Range_pfun_graph rel_of_pfun_def)
 
 lemma rel_of_pfun_domres [simp]: "A \<Zdres> [f]\<^sub>\<Zpfun> = [A \<Zdres> f]\<^sub>\<Zpfun>"
   by (simp add: pfun_graph_domres rel_of_pfun_def)
@@ -205,5 +205,8 @@ lemma dom_pinv [simp]: "dom [pinv f]\<^sub>\<Zpinj> = ran [f]\<^sub>\<Zpinj>"
 
 lemma ran_pinv [simp]: "ran [pinv f]\<^sub>\<Zpinj> = dom [f]\<^sub>\<Zpinj>"
   by (metis dom_pinv pinv_pinv)
+
+lemma pfun_inj_rel_conv [simp]: "pfun_inj f \<Longrightarrow> [f]\<^sub>\<Zpfun>\<^sup>\<sim> = [pfun_inv f]\<^sub>\<Zpfun>"
+  by (simp add: pfun_graph_pfun_inv rel_of_pfun_def)
 
 end

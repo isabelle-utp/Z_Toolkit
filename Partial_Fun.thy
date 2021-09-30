@@ -340,6 +340,9 @@ lemma pfun_member_minus:
   "(x, y) \<in>\<^sub>p f - g \<longleftrightarrow> (x, y) \<in>\<^sub>p f \<and> (\<not> (x, y) \<in>\<^sub>p g)"
   by (transfer, simp add: map_member_minus)
 
+lemma pfun_app_in_ran [simp]: "x \<in> pdom f \<Longrightarrow> f(x)\<^sub>p \<in> pran f"
+  by (transfer, auto)
+
 lemma pfun_app_map [simp]: "(pfun_of_map f)(x)\<^sub>p = (if (x \<in> dom(f)) then the (f x) else undefined)"
   by (transfer, simp)
 
@@ -546,13 +549,13 @@ lemma pfun_graph_inv [code_unfold]: "graph_pfun (pfun_graph f) = f"
 lemma pfun_eq_graph: "f = g \<longleftrightarrow> pfun_graph f = pfun_graph g"
   by (metis pfun_graph_inv)
 
-lemma Dom_pfun_graph [simp]: "Domain (pfun_graph f) = pdom f"
+lemma Dom_pfun_graph: "Domain (pfun_graph f) = pdom f"
   by (transfer, simp add: dom_map_graph)
 
-lemma Range_pfun_graph [simp]: "Range (pfun_graph f) = pran f"
+lemma Range_pfun_graph: "Range (pfun_graph f) = pran f"
   by (transfer, auto simp add: ran_map_graph[THEN sym] ran_def)
 
-lemma card_pfun_graph [simp]: "finite (pdom f) \<Longrightarrow> card (pfun_graph f) = card (pdom f)"
+lemma card_pfun_graph: "finite (pdom f) \<Longrightarrow> card (pfun_graph f) = card (pdom f)"
   by (transfer, simp add: card_map_graph dom_map_graph finite_dom_graph)
 
 lemma functional_pfun_graph [simp]: "functional (pfun_graph f)"
@@ -615,7 +618,10 @@ lemma pfun_inj_inv_inv: "pfun_inj f \<Longrightarrow> pfun_inv (pfun_inv f) = f"
 lemma pfun_inj_inv: "pfun_inj f \<Longrightarrow> pfun_inj (pfun_inv f)"
   by (transfer, simp add: inj_map_inv)
 
-lemma pfun_inv_f_f_apply: "\<lbrakk> pfun_inj f; x \<in> pran f \<rbrakk> \<Longrightarrow> f(pfun_inv f(x)\<^sub>p)\<^sub>p = x"
+lemma f_pfun_inv_f_apply: "\<lbrakk> pfun_inj f; x \<in> pran f \<rbrakk> \<Longrightarrow> f(pfun_inv f(x)\<^sub>p)\<^sub>p = x"
+  by (transfer, auto simp add: ranI)
+
+lemma pfun_inv_f_f_apply: "\<lbrakk> pfun_inj f; x \<in> pdom f \<rbrakk> \<Longrightarrow> pfun_inv f(f(x)\<^sub>p)\<^sub>p = x"
   by (transfer, auto simp add: ranI)
 
 lemma pfun_inj_upd: "\<lbrakk> pfun_inj f; v \<notin> pran f \<rbrakk> \<Longrightarrow> pfun_inj (f(k \<mapsto> v)\<^sub>p)"
@@ -775,6 +781,12 @@ lemma ppreimageD: "x \<in> pdom (f \<rhd>\<^sub>p A) \<Longrightarrow> \<exists>
 
 lemma ppreimageE [elim!]: "\<lbrakk> x \<in> pdom (f \<rhd>\<^sub>p A); \<And> y. \<lbrakk> x \<in> pdom(f); y \<in> A; f(x)\<^sub>p = y \<rbrakk> \<Longrightarrow> P \<rbrakk> \<Longrightarrow> P"
   by (metis (no_types) pdom_pranres ppreimageD subsetD)
+
+lemma mem_pimage_iff: "x \<in> pran (A \<lhd>\<^sub>p f) \<longleftrightarrow> (\<exists> y \<in> A \<inter> pdom(f). f(y)\<^sub>p = x)"
+  by (auto simp add: pran_pdom)
+
+lemma ppreimage_inter [simp]: "pdom (f \<rhd>\<^sub>p (A \<inter> B)) = pdom (f \<rhd>\<^sub>p A) \<inter> pdom (f \<rhd>\<^sub>p B)"
+  by fastforce
 
 subsection \<open> Composition \<close>
 
