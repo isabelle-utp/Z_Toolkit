@@ -1118,7 +1118,7 @@ lemma graph_pfun_set [code]:
   by (transfer, simp only: comp_def mk_functional_alist)
      (metis graph_map_set mk_functional mk_functional_alist)
 
-lemma pabs_pfun_entries [code_unfold]: "(\<lambda> x \<in> A \<bullet> f x) = pfun_entries A f"
+lemma pabs_pfun_entries: "(\<lambda> x \<in> A \<bullet> f x) = pfun_entries A f"
   by (simp add: pfun_entries_pabs)
 
 declare pdom_pfun_entries [code]
