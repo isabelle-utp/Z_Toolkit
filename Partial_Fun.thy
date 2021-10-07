@@ -1005,7 +1005,7 @@ lemma pfun_of_alist_Cons [simp]: "pfun_of_alist (p # ps) = pfun_of_alist ps(fst 
 lemma dom_pfun_alist [simp, code]: "pdom (pfun_of_alist xs) = set (map fst xs)"
   by (transfer, simp add: dom_map_of_conv_image_fst)
 
-lemma ran_pfun_alist [simp, code]: "pran (pfun_of_alist xs) = set (map snd (AList.clearjunk xs))"
+lemma ran_pfun_alist [simp, code]: "pran (pfun_of_alist xs) = set (remdups (map snd (AList.clearjunk xs)))"
   by (transfer, auto)
      (metis ranI ran_map_of, metis distinct_clearjunk map_of_clearjunk map_of_eq_Some_iff)
 
@@ -1118,8 +1118,8 @@ lemma graph_pfun_set [code]:
   by (transfer, simp only: comp_def mk_functional_alist)
      (metis graph_map_set mk_functional mk_functional_alist)
 
-lemma pabs_pfun_entries: "(\<lambda> x \<in> A \<bullet> f x) = pfun_entries A f"
-  by (simp add: pfun_entries_pabs)
+lemma pabs_basic_pfun_entries [code_unfold]: "(\<lambda> x \<bullet> f x) = pfun_entries (List.coset []) f"
+  by (metis UNIV_coset pfun_entries_pabs)
 
 declare pdom_pfun_entries [code]
 
