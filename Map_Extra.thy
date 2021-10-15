@@ -136,6 +136,9 @@ lemma map_graph_comp: "map_graph (g \<circ>\<^sub>m f) = (map_graph f) O (map_gr
 lemma rel_comp_map: "R O map_graph f = (\<lambda> p. (fst p, the (f (snd p)))) ` (R \<rhd>\<^sub>r dom(f))"
   by (force simp add: map_graph_def relcomp_unfold rel_ranres_def image_def dom_def)
 
+lemma map_graph_update: "map_graph (f(k \<mapsto> v)) = insert (k, v) ((- {k}) \<lhd>\<^sub>r map_graph f)"
+  by (auto simp add: map_graph_def rel_domres_def, metis option.sel)
+
 subsection \<open> Map Application \<close>
 
 definition map_apply :: "('a \<rightharpoonup> 'b) \<Rightarrow> 'a \<Rightarrow> 'b" ("_'(_')\<^sub>m" [999,0] 999) where

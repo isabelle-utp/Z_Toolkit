@@ -153,6 +153,25 @@ definition ran_seq :: "'a list \<Rightarrow> 'a set" where
 
 adhoc_overloading ran ran_seq
 
+subsection \<open> Filter \<close>
+
+notation seq_filter (infix "\<restriction>" 80)
+
+lemma seq_filter_Nil: "[] \<restriction> V = []" by simp
+
+lemma seq_filter_append: "(s @ t) \<restriction> V = (s \<restriction> V) @ (t \<restriction> V)" 
+  by (simp add: seq_filter_append)
+
+lemma seq_filter_subset_iff: "ran s \<subseteq> V \<longleftrightarrow> (s \<restriction> V = s)"
+  by (auto simp add: seq_filter_def subsetD, meson filter_id_conv)
+
+lemma seq_filter_empty: "s \<restriction> {} = []" by simp
+
+lemma seq_filter_size: "#(s \<restriction> V) \<le> #s"
+  by (simp add: seq_filter_def)
+
+lemma seq_filter_twice: "(s \<restriction> V) \<restriction> W = s \<restriction> (V \<inter> W)" by simp
+
 subsection \<open> Examples \<close>
 
 lemma "([1,2,3] \<^bold>; (\<lambda> x \<bullet> x + 1)) 1 = 2"

@@ -582,6 +582,9 @@ lemma pfun_graph_override: "pfun_graph (f \<oplus> g) = pfun_graph f \<oplus> pf
   by (transfer, auto simp add: map_add_def oplus_set_def rel_domres_def map_graph_def option.case_eq_if)
      (metis option.collapse)+
 
+lemma pfun_graph_update: "pfun_graph (f(k \<mapsto> v)\<^sub>p) = insert (k, v) ((- {k}) \<lhd>\<^sub>r pfun_graph f)"
+  by (transfer, simp add: map_graph_update)
+ 
 lemma pfun_graph_comp: "pfun_graph (f \<circ>\<^sub>p g) = pfun_graph g O pfun_graph f"
   by (transfer, simp add: map_graph_comp)
 
@@ -603,6 +606,58 @@ lemma pfun_member_iff [simp]: "(k, v) \<in> pfun_graph f \<longleftrightarrow> (
 
 lemma pfun_graph_rres: "pfun_graph (f \<rhd>\<^sub>p A) = pfun_graph f \<rhd>\<^sub>r A"
   by (transfer, auto simp add: map_graph_def rel_ranres_def ran_restrict_map_def)
+
+subsection \<open> Graph Transfer Setup \<close>
+
+definition cr_pfung :: "('a \<leftrightarrow> 'b) \<Rightarrow> 'a \<Zpfun> 'b \<Rightarrow> bool" where
+"cr_pfung f g = (f = pfun_graph g)"
+
+lemma Domainp_cr_pfung [transfer_domain_rule]: "Domainp cr_pfung = functional"
+  unfolding cr_pfung_def Domainp_iff[abs_def]
+  by (auto simp add: fun_eq_iff, metis graph_map_inv pfun_graph.abs_eq)
+
+bundle pfun_graph_lifting
+begin
+
+unbundle lifting_syntax
+
+lemma bi_unique_cr_pfung [transfer_rule]: "bi_unique cr_pfung"
+  unfolding cr_pfung_def bi_unique_def by (auto simp add: pfun_eq_graph)
+
+lemma right_total_cr_pfung [transfer_rule]: "right_total cr_pfung"
+  unfolding cr_pfung_def right_total_def by simp
+
+lemma cr_pfung_empty [transfer_rule]: "cr_pfung {} {}\<^sub>p"
+  unfolding cr_pfung_def by (simp add: pfun_graph_zero)
+
+lemma cr_pfung_dom [transfer_rule]: "(cr_pfung ===> (=)) Domain pdom"
+  unfolding rel_fun_def cr_pfung_def by (simp add: Dom_pfun_graph)
+
+lemma cr_pfung_ran [transfer_rule]: "(cr_pfung ===> (=)) Range pran"
+  unfolding rel_fun_def cr_pfung_def by (simp add: Range_pfun_graph)
+
+lemma cr_pfung_id [transfer_rule]: "((=) ===> cr_pfung) Id_on pId_on"
+  unfolding rel_fun_def cr_pfung_def by (simp add: pfun_graph_pId_on)
+
+lemma cr_pfung_ovrd [transfer_rule]: "(cr_pfung ===> cr_pfung ===> cr_pfung) (\<oplus>) (\<oplus>)"
+  unfolding rel_fun_def cr_pfung_def by (simp add: pfun_graph_override)
+
+lemma cr_pfung_ovrd [transfer_rule]: "(cr_pfung ===> cr_pfung ===> cr_pfung) (O) (\<lambda> x y. y \<circ>\<^sub>p x)"
+  unfolding rel_fun_def cr_pfung_def by (simp add: pfun_graph_comp) 
+
+lemma cr_pfung_dres [transfer_rule]: "((=) ===> cr_pfung ===> cr_pfung) (\<lhd>\<^sub>r) (\<lhd>\<^sub>p)"
+  unfolding rel_fun_def cr_pfung_def by (simp add: pfun_graph_domres)
+
+lemma cr_pfung_rres [transfer_rule]: "(cr_pfung ===> (=) ===> cr_pfung) (\<rhd>\<^sub>r) (\<rhd>\<^sub>p)"
+  unfolding rel_fun_def cr_pfung_def by (simp add: pfun_graph_rres)
+
+lemma cr_pfung_le [transfer_rule]: "(cr_pfung ===> cr_pfung ===> (=)) (\<le>) (\<le>)"
+  unfolding rel_fun_def cr_pfung_def by (simp add: pfun_graph_le_iff)
+
+lemma cr_pfung_update [transfer_rule]: "(cr_pfung ===> (=) ===> (=) ===> cr_pfung) (\<lambda> f k v. insert (k, v) ((- {k}) \<lhd>\<^sub>r f)) pfun_upd"
+  unfolding rel_fun_def cr_pfung_def by (simp add: pfun_graph_update)
+
+end
 
 subsection \<open> Partial Injections \<close>
 
