@@ -9,7 +9,7 @@ text \<open> It may seem a little strange to create this, given we already have 
 
 typedef ('a, 'b) tfun = "{f :: 'a \<Zpfun> 'b. pdom(f) = UNIV}" 
   morphisms pfun_of_tfun Abs_tfun
-  by (rule_tac x="pfun_entries UNIV undefined" in exI, simp)
+  by (rule_tac x="pfun_entries UNIV (\<lambda> _. True) undefined" in exI, simp)
 
 type_notation tfun (infixr "\<Rightarrow>\<^sub>t" 0)
 
