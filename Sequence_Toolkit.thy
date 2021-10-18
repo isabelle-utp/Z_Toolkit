@@ -84,6 +84,11 @@ definition "iseq A = seq A \<inter> Collect distinct"
 lemma iseq_iff [simp]: "xs \<in> iseq(A) \<longleftrightarrow> (xs \<in> seq A \<and> distinct xs)"
   by (simp add: iseq_def)
 
+subsection \<open> Bounded sequences \<close>
+
+definition bseq :: "\<nat> \<Rightarrow> 'a set \<Rightarrow> 'a list set" ("bseq[_]") where
+"bseq n A = blists n A"
+
 (* Proof that this corresponds to the Z definition required *)
 
 subsection \<open> Sequence brackets \<close>
