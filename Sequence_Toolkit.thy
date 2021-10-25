@@ -40,14 +40,6 @@ lemma iter_eqs:
 
 subsection \<open> Number of members of a set \<close>
 
-notation size ("#_" [999] 999)
-
-instantiation set :: (type) size
-begin
-definition [simp]: "size A = card A"
-instance ..
-end
-
 lemma size_rel_of_list: 
   "#xs = length xs" 
   by simp

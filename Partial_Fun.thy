@@ -984,7 +984,7 @@ proof -
     apply (simp add: pfun_sum_def)
     apply (subst 1)
     apply (subst sum_diff)
-      apply (auto simp add: sum_diff Diff_subset Int_commute boolean_algebra_class.diff_eq assms)
+      apply (auto simp add: sum_diff Int_commute boolean_algebra_class.diff_eq assms)
     done
 qed
   
@@ -1055,6 +1055,9 @@ lemma relt_pfun_iff:
 
 lift_definition pfun_of_alist :: "('a \<times> 'b) list \<Rightarrow> 'a \<Zpfun> 'b" is map_of .
 
+lemma pfun_of_alist_clearjunk: "pfun_of_alist xs = pfun_of_alist (AList.clearjunk xs)"
+  by (transfer, simp add: map_of_clearjunk)
+
 lemma pfun_of_alist_Nil [simp]: "pfun_of_alist [] = {}\<^sub>p"
   by (transfer, simp)
 
@@ -1108,6 +1111,13 @@ lemma map_pfun_of_map [code]: "map_pfun f (pfun_of_map g) = pfun_of_map (\<lambd
 lemma pdom_res_alist [code]:
   "A \<lhd>\<^sub>p (pfun_of_alist m) = pfun_of_alist (AList.restrict A m)"
   by (transfer, simp add: restr_conv')
+
+lemma pran_res_alist_distinct: 
+  "distinct (map fst xs) \<Longrightarrow> pfun_of_alist xs \<rhd>\<^sub>p A = pfun_of_alist (filter (\<lambda>(k, v). v \<in> A) xs)"
+  by (induct xs, auto)
+
+lemma pran_res_alist [code]: "pfun_of_alist xs \<rhd>\<^sub>p A = pfun_of_alist (filter (\<lambda>(k, v). v \<in> A) (AList.clearjunk xs))"
+  by (metis distinct_clearjunk pfun_of_alist_clearjunk pran_res_alist_distinct)
 
 lemma pdom_res_set_map [code]:
   "set xs \<lhd>\<^sub>p (pfun_of_map m) = pfun_of_alist (map (\<lambda> x. (x, the (m x))) (filter (\<lambda> x. m x \<noteq> None) xs))"

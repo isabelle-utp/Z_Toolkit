@@ -9,6 +9,27 @@ subsection \<open> Partial Functions \<close>
 lemma partial_functions: "X \<rightarrow>\<^sub>p Y = {f \<in> X \<leftrightarrow> Y. \<forall> p \<in> f. \<forall> q \<in> f. p.1 = q.1 \<longrightarrow> p.2 = q.2}"
   by (auto simp add: rel_pfun_def single_valued_def)
 
+notation size ("#_" [999] 999)
+
+instantiation set :: (type) size
+begin
+definition [simp]: "size A = card A"
+instance ..
+end
+
+instantiation pfun :: (type, type) size
+begin
+
+definition size_pfun :: "('a \<Zpfun> 'b) \<Rightarrow> nat" where
+"size_pfun f = card (pfun_graph f)"
+
+instance ..
+
+end
+
+lemma size_finite_pfun: "finite (pdom f) \<Longrightarrow> #f = #(dom f)"
+  by (simp add: card_pfun_graph size_pfun_def)
+
 subsection \<open> Total Functions \<close>
 
 text \<open> One issue that emerges in this encoding is the treatment of total functions. In Z, a total
