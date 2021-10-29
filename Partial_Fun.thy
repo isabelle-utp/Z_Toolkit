@@ -1030,6 +1030,12 @@ lemma list_pfun_le_iff_prefix [simp]: "list_pfun xs \<le> list_pfun ys \<longlef
   by (auto simp add: pfun_le_iff list_le_prefix_iff pfun_app_list_pfun)
      (metis Suc_leI atLeastAtMost_iff diff_Suc_Suc diff_zero zero_less_Suc)
 
+lemma pfun_upd_le_iff: "(f(k \<mapsto> v)\<^sub>p \<subseteq>\<^sub>p g) = (k \<in> pdom g \<and> g(k)\<^sub>p = v \<and> (- {k}) \<lhd>\<^sub>p f \<subseteq>\<^sub>p g)"
+  by (auto simp add: pfun_le_iff)
+
+lemma pfun_upd_le_pfun_upd: "(f(k \<mapsto> v)\<^sub>p \<subseteq>\<^sub>p g(k \<mapsto> v)\<^sub>p) = ((- {k}) \<lhd>\<^sub>p f \<subseteq>\<^sub>p (- {k}) \<lhd>\<^sub>p g)"
+  by (auto simp add: pfun_le_iff)
+
 subsection \<open> Partial Function Lens \<close>
 
 definition pfun_lens :: "'a \<Rightarrow> ('b \<Longrightarrow> ('a, 'b) pfun)" where

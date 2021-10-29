@@ -155,6 +155,9 @@ lemma rel_domres_inter [simp]: "A \<lhd>\<^sub>r B \<lhd>\<^sub>r R = (A \<inter
 lemma rel_domres_compl_disj: "A \<inter> Domain P = {} \<Longrightarrow> (- A) \<lhd>\<^sub>r P = P"
   by (auto simp add: rel_domres_def)
 
+lemma rel_domres_notin_Dom: "k \<notin> Domain(f) \<Longrightarrow> (- {k}) \<lhd>\<^sub>r f = f"
+  by (simp add: rel_domres_compl_disj)
+
 lemma rel_domres_Id_on: "A \<lhd>\<^sub>r R = Id_on A O R"
   by (auto simp add: rel_domres_def Id_on_def relcomp_unfold)
 

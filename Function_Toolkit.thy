@@ -30,6 +30,13 @@ end
 lemma size_finite_pfun: "finite (pdom f) \<Longrightarrow> #f = #(dom f)"
   by (simp add: card_pfun_graph size_pfun_def)
 
+lemma card_pfun_empty [simp]: "#{}\<^sub>p = 0"
+  by (simp add: size_pfun_def pfun_graph_zero)
+
+lemma card_pfun_update [simp]: "finite (dom f) \<Longrightarrow> #(f(k \<mapsto> v)\<^sub>p) = (if (k \<in> dom f) then #f else #f + 1)"
+  by (auto simp add: size_pfun_def pfun_graph_update Dom_pfun_graph rel_domres_compl_disj)
+     (metis card_pfun_graph insert_absorb pdom_upd pfun_graph_update)
+
 subsection \<open> Total Functions \<close>
 
 text \<open> One issue that emerges in this encoding is the treatment of total functions. In Z, a total
