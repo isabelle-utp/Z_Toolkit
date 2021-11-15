@@ -98,7 +98,7 @@ thm pdom_res_upd_out[Transfer.transferred]
 
 lemma piran_res_upd: "f(x \<mapsto> v)\<^sub>\<rho> \<rhd>\<^sub>\<rho> A = (if v \<in> A then (f \<rhd>\<^sub>\<rho> A)(x \<mapsto> v)\<^sub>\<rho> else ((- {x}) \<lhd>\<^sub>\<rho> f) \<rhd>\<^sub>\<rho> A)"
   by (transfer, simp add: inf.commute)
-     (metis (no_types, hide_lams) ComplI Compl_Un double_compl insert_absorb insert_is_Un pdom_res_swap pran_res_twice)
+     (metis (no_types, opaque_lifting) ComplI Compl_Un double_compl insert_absorb insert_is_Un pdom_res_swap pran_res_twice)
 
 lemma pinj_upd_with_dres_rres: "((-{x}) \<lhd>\<^sub>\<rho> f \<rhd>\<^sub>\<rho> (-{y}))(x \<mapsto> y)\<^sub>\<rho> = f(x \<mapsto> y)\<^sub>\<rho>"
   by (transfer, simp add: pdom_res_swap)
@@ -107,13 +107,13 @@ lemma pidres_twice: "A \<lhd>\<^sub>\<rho> B \<lhd>\<^sub>\<rho> f = (A \<inter>
   by (transfer, metis pdom_res_twice)
 
 lemma pidres_commute: "A \<lhd>\<^sub>\<rho> B \<lhd>\<^sub>\<rho> f = B \<lhd>\<^sub>\<rho> A \<lhd>\<^sub>\<rho> f"
-  by (metis (no_types, hide_lams) inf_commute pidres_twice)
+  by (metis (no_types, opaque_lifting) inf_commute pidres_twice)
 
 lemma pidres_rres_commute: "A \<lhd>\<^sub>\<rho> (P \<rhd>\<^sub>\<rho> B) = (A \<lhd>\<^sub>\<rho> P) \<rhd>\<^sub>\<rho> B"
-  by (transfer, simp, metis (mono_tags, hide_lams) pdres_rres_commute)
+  by (transfer, simp, metis (mono_tags, opaque_lifting) pdres_rres_commute)
 
 lemma pirres_twice: "f \<rhd>\<^sub>\<rho> A \<rhd>\<^sub>\<rho> B = f \<rhd>\<^sub>\<rho> (A \<inter> B)"
-  by (transfer, metis (no_types, hide_lams) pran_res_twice)
+  by (transfer, metis (no_types, opaque_lifting) pran_res_twice)
 
 lemma pirres_commute: "f \<rhd>\<^sub>\<rho> A \<rhd>\<^sub>\<rho> B = f \<rhd>\<^sub>\<rho> B \<rhd>\<^sub>\<rho> A"
   by (metis inf_commute pirres_twice)
