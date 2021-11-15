@@ -100,7 +100,7 @@ lemma sorted_map: "\<lbrakk> sorted xs; mono f \<rbrakk> \<Longrightarrow> sorte
 lemma sorted_distinct [intro]: "\<lbrakk> sorted (xs); distinct(xs) \<rbrakk> \<Longrightarrow> (\<forall> i<length xs - 1. xs!i < xs!(i + 1))"
   apply (induct xs)
    apply (auto)
-  apply (metis (no_types, hide_lams) Suc_leI Suc_less_eq Suc_pred gr0_conv_Suc not_le not_less_iff_gr_or_eq nth_Cons_Suc nth_mem nth_non_equal_first_eq)
+  apply (metis (no_types, opaque_lifting) Suc_leI Suc_less_eq Suc_pred gr0_conv_Suc not_le not_less_iff_gr_or_eq nth_Cons_Suc nth_mem nth_non_equal_first_eq)
   done
 
 text \<open> The concatenation of two lists is sorted provided (1) both the lists are sorted, and (2) 
@@ -161,9 +161,11 @@ next
     have "(\<forall>n. \<not> n < length (x # xs) - 1 \<or> (x # xs) ! n < (x # xs) ! (n + 1)) \<and> set (x # xs) = A"
       by (meson \<open>is_sorted_list_of_set A (x # xs)\<close> is_sorted_list_of_set_def)
   then show ?thesis
-    by (metis \<open>distinct xs\<close> add.commute add_diff_cancel_left' distinct.simps(2) leD length_Cons length_greater_0_conv length_pos_if_in_set less_le nth_Cons_0 nth_Cons_Suc plus_1_eq_Suc set_ConsD sorted.elims(2) srtd)    
+    by (metis \<open>distinct xs\<close> add.commute add_diff_cancel_left' distinct.simps(2) leD length_Cons length_greater_0_conv length_pos_if_in_set less_le nth_Cons_0 nth_Cons_Suc plus_1_eq_Suc set_ConsD sorted_wrt.elims(2) srtd)    
   qed
 qed
+
+term sorted
 
 lemma is_sorted_list_of_set_alt_def:
   "is_sorted_list_of_set A xs \<longleftrightarrow> sorted (xs) \<and> distinct (xs) \<and> set(xs) = A"
@@ -382,10 +384,10 @@ lemma strict_prefix_map_inj:
    strict_prefix xs ys"
   apply (induct xs arbitrary:ys)
    apply (auto)
-  using prefix_bot.bot.not_eq_extremum apply fastforce
+  using prefix_bot.not_eq_extremum apply fastforce
   apply (erule strict_prefix_Cons_elim)
   apply (auto)
-  apply (metis (hide_lams, full_types) image_insert insertI1 insert_Diff_if singletonE)
+  apply (metis (opaque_lifting, full_types) image_insert insertI1 insert_Diff_if singletonE)
   done
 
 lemma strict_prefix_map_inj_eq [simp]:
@@ -899,7 +901,7 @@ lemma length_minus_le: "length (ys - xs) \<le> length ys"
 
 lemma length_minus_less: "\<lbrakk> xs \<le> ys; xs \<noteq> [] \<rbrakk> \<Longrightarrow> length (ys - xs) < length ys"
   by (auto simp add: minus_list_def less_eq_list_def)
-     (metis diff_less length_greater_0_conv prefix_bot.bot.extremum_uniqueI)
+     (metis diff_less length_greater_0_conv prefix_bot.extremum_uniqueI)
 
 lemma filter_minus [simp]: "ys \<le> xs \<Longrightarrow> filter P (xs - ys) = filter P xs - filter P ys"
   by (simp add: minus_list_def less_eq_list_def filter_mono_prefix)

@@ -406,7 +406,7 @@ lemma rel_pfun_override [rclos]: "\<lbrakk> R \<in> A \<rightarrow>\<^sub>p B; S
   apply (rule rel_pfun_intro)
    apply (rule rel_typed_intro)
   apply (auto simp add: rel_pfun_def rel_typed_def)
-  apply (metis (no_types, hide_lams) Range.simps Range_Un_eq Range_rel_override Un_iff rev_subsetD)
+  apply (metis (no_types, opaque_lifting) Range.simps Range_Un_eq Range_rel_override Un_iff rev_subsetD)
   done
 
 subsection \<open> Code Generation \<close>
