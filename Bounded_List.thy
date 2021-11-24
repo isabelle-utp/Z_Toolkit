@@ -22,6 +22,8 @@ setup_lifting type_definition_blist
 
 lift_definition blength :: "'a blist['n::finite] \<Rightarrow> nat" is length .
 
+lift_definition bnth :: "'a blist['n::finite] \<Rightarrow> nat \<Rightarrow> 'a" is nth .
+
 lift_definition bappend :: "'a blist['m::finite] \<Rightarrow> 'a blist['n::finite] \<Rightarrow> 'a blist['m + 'n]" (infixr "@\<^sub>s" 65) is append
   by auto
 
