@@ -1143,6 +1143,11 @@ lemma plus_pfun_alist [code]: "pfun_of_alist f \<oplus> pfun_of_alist g = pfun_o
 lemma pfun_entries_alist [code]: "pfun_entries (set ks) P f = pfun_of_alist (map (\<lambda> k. (k, f k)) (filter P ks))"
   by (auto simp add: pfun_eq_iff apply_pfun_alist map_of_map prod.case_eq_if image_iff map_of_map_restrict)
 
+lemma pdom_res_entries_alist [code]:
+  "A \<lhd>\<^sub>p pfun_entries (set bs) P f = 
+    pfun_of_alist (map (\<lambda> k. (k, f k)) (filter P (List.filter (\<lambda>x. x \<in> A) bs)))"
+  by (metis inter_set_filter pdom_res_entries pfun_entries_alist)
+
 text \<open> Adapted from Mapping theory \<close>
 
 lemma ptabulate_alist [code]: "ptabulate ks f = pfun_of_alist (map (\<lambda>k. (k, f k)) ks)"
@@ -1199,7 +1204,7 @@ lemma pabs_basic_pfun_entries [code_unfold]: "(\<lambda> x | P x \<bullet> f x) 
   by (metis UNIV_coset pfun_entries_pabs)
 
 declare pdom_pfun_entries [code]
-
+                 
 lemma pfun_app_entries [code]: "pfun_app (pfun_entries A P f) x = (if (x \<in> A \<and> P x) then f x else undefined)"
   by auto
 
