@@ -907,6 +907,18 @@ lemma filter_minus [simp]: "ys \<le> xs \<Longrightarrow> filter P (xs - ys) = f
   by (simp add: minus_list_def less_eq_list_def filter_mono_prefix)
      (metis filter_append filter_mono_prefix prefix_drop same_append_eq)
 
+subsection \<open> Laws on @{term list_update} \<close>
+
+lemma list_augment_as_update: 
+  "k < length xs \<Longrightarrow> list_augment xs k x = list_update xs k x"
+  by (metis list_augment_def list_augment_idem list_update_overwrite)
+
+lemma list_update_0: "length(xs) > 0 \<Longrightarrow> xs[0 := x] = x # tl xs"
+  by (metis length_0_conv list.collapse list_update_code(2) nat_less_le)
+
+lemma tl_list_update: "\<lbrakk> length xs > 0; k > 0 \<rbrakk> \<Longrightarrow> tl(xs[k := v]) = (tl xs)[k-1 := v]"
+  by (metis One_nat_def Suc_pred length_greater_0_conv list.collapse list.sel(3) list_update_code(3))
+
 subsection \<open> Laws on @{term take}, @{term drop}, and @{term nths} \<close>
 
 lemma take_prefix: "m \<le> n \<Longrightarrow> take m xs \<le> take n xs"
@@ -927,10 +939,6 @@ lemma sorted_nths_atLeastAtMost_0: "\<lbrakk> m \<le> n; sorted (nths xs {0..n})
 lemma sorted_nths_atLeastLessThan_0: "\<lbrakk> m \<le> n; sorted (nths xs {0..<n}) \<rbrakk> \<Longrightarrow> sorted (nths xs {0..<m})"
   by (metis atLeast0LessThan nths_upt_eq_take sorted_prefix take_prefix)
 
-lemma list_augment_as_update: 
-  "k < length xs \<Longrightarrow> list_augment xs k x = list_update xs k x"
-  by (metis list_augment_def list_augment_idem list_update_overwrite)
-
 lemma nths_list_update_out: "k \<notin> A \<Longrightarrow> nths (list_update xs k x) A = nths xs A"
   apply (induct xs arbitrary: k x A)
    apply (auto)
@@ -941,16 +949,6 @@ lemma nths_list_update_out: "k \<notin> A \<Longrightarrow> nths (list_update xs
 
 lemma nths_list_augment_out: "\<lbrakk> k < length xs; k \<notin> A \<rbrakk> \<Longrightarrow> nths (list_augment xs k x) A = nths xs A"
   by (simp add: list_augment_as_update nths_list_update_out)
-
-lemma nths_single: "n < length xs \<Longrightarrow> nths xs {n} = [xs ! n]"
-proof (induct xs arbitrary: n)
-  case Nil
-  then show ?case by (simp)
-next
-  case (Cons a xs)
-  have "\<And> n. n > 0 \<Longrightarrow> {j. Suc j = n} = {n-1}" by auto
-  with Cons show ?case by (auto simp add: nths_Cons)
-qed
 
 lemma nths_uptoLessThan:
   "\<lbrakk> m \<le> n; n < length xs \<rbrakk> \<Longrightarrow> nths xs {m..n} = xs ! m # nths xs {Suc m..n}"
@@ -968,7 +966,6 @@ qed
 
 lemma nths_upt_nth: "\<lbrakk> j < i; i < length xs \<rbrakk> \<Longrightarrow> (nths xs {0..<i}) ! j = xs ! j"
   by (metis lessThan_atLeast0 nth_take nths_upt_eq_take)
-
 
 lemma nths_upt_length: "\<lbrakk> m \<le> n; n \<le> length xs \<rbrakk> \<Longrightarrow> length (nths xs {m..<n}) = n-m"
   by (metis atLeastLessThan_empty diff_is_0_eq length_map length_upt list.size(3) not_less nths_empty seq_extract_as_map seq_extract_def)
@@ -1003,6 +1000,80 @@ qed
 lemma nths_upt_le_append_split:
   "\<lbrakk> j \<le> i; i < length xs \<rbrakk> \<Longrightarrow> nths xs {0..<j} @ nths xs {j..i} = nths xs {0..i}"
   by (auto simp add: list_eq_iff_nth_eq nths_upt_length nths_upt_le_length nths_upt_le_nth nths_upt_nth nth_append)
+
+lemma nths_Cons_atLeastAtMost: "n > m \<Longrightarrow> nths (x # xs) {m..n} = (if m = 0 then x # nths xs {0..n-1} else nths xs {m-1..n-1})"
+  apply (auto simp add: nths_Cons)
+  using One_nat_def sl1 apply presburger
+  using One_nat_def le_eq_less_or_eq sl2 apply presburger
+  done
+
+lemma nths_atLeastAtMost_eq_drop_take: "nths xs {m..n} = drop m (take (n+1) xs)"
+  by (induct xs rule: rev_induct, simp_all split: nat_diff_split add: nths_append, linarith)
+
+lemma drop_as_map: "drop m xs = map (nth xs) [m..<length xs]"
+  by (metis add.commute add.right_neutral drop_map drop_upt map_nth)
+
+lemma take_as_map: "take m xs = map (nth xs) [0..<min m (length xs)]"
+  by (metis (no_types, lifting) add_0 map_nth min.cobounded2 min.commute min_def take_all_iff take_map take_upt)
+
+lemma nths_atLeastAtMost_as_map: "nths xs {m..n} = map (\<lambda> i. xs ! i) [m..<min (n+1) (length xs)]"
+  by (simp add: nths_atLeastAtMost_eq_drop_take drop_as_map take_as_map)
+
+lemma nths_single: "nths xs {k} = (if k < length xs then [xs ! k] else [])"
+  using nths_atLeastAtMost_as_map[of xs k k] by simp 
+
+lemma nths_list_update_in_range: "k \<in> {m..n} \<Longrightarrow> nths (list_update xs k x) {m..n} = list_update (nths xs {m..n}) (k - m) x"
+proof (induct xs arbitrary: k x m n)
+  case Nil
+  then show ?case by auto
+next
+  case (Cons a xs)
+  then show ?case
+  proof (cases k)
+    case 0
+    then show ?thesis apply (simp)
+      by (smt (verit, best) Cons.prems append_Cons list_update_code(2) nths_Cons)
+  next
+    case (Suc nat)
+    with Cons show ?thesis
+    proof (cases n m rule: linorder_cases)
+      case less
+      then show ?thesis
+        by force
+    next
+      case equal
+      with Suc show ?thesis 
+        by (cases k, force)
+           (metis (no_types, opaque_lifting) Cons.prems nths_single atLeastAtMost_singleton diff_is_0_eq' length_list_update list_update_code(2) list_update_code(3) list_update_nonempty nle_le nth_list_update_eq singletonD)
+    next
+      case greater
+      with Suc Cons(1)[of nat "m - Suc 0" "n - Suc 0" x] show ?thesis 
+        by (cases k, auto simp add: nths_Cons_atLeastAtMost nths_atLeastAtMost_0_take take_update_swap)
+           (metis Cons.prems Suc_le_mono Suc_pred atLeastAtMost_iff dual_order.strict_trans)
+    qed
+  qed
+qed
+
+lemma length_nths_atLeastAtMost [simp]: "length (nths xs {m..n}) = min (Suc n) (length xs) - m"
+  by (simp add: nths_atLeastAtMost_as_map)
+
+lemma hd_nths_atLeastAtMost: "\<lbrakk> m < length xs; m \<le> n \<rbrakk> \<Longrightarrow> hd (nths xs {m..n}) = xs ! m"
+  by (simp add: nths_atLeastAtMost_as_map upt_conv_Cons)
+
+lemma tl_nths_atLeastAtMost: "tl (nths xs {m..n}) = nths xs {Suc m..n}"
+  by (simp add: nths_atLeastAtMost_as_map, metis map_tl tl_upt)
+
+lemma set_nths_atLeastAtMost: "set (nths xs {m..n}) = {xs!i | i. m \<le> i \<and> i \<le> n \<and> i < length xs}"
+  by (auto simp add: nths_atLeastAtMost_as_map)
+
+lemma nths_atLeastAtMost_neq_Nil [simp]: "\<lbrakk> m \<le> n; length xs > m \<rbrakk> \<Longrightarrow> nths xs {m..n} \<noteq> []"
+  by (force simp add: nths_atLeastAtMost_as_map)
+
+lemma nths_atLeastAtMost_head: "\<lbrakk> m \<le> n; m < length xs \<rbrakk> \<Longrightarrow> nths xs {m..n} = xs ! m # (nths xs {Suc m..n})"
+  by (simp add: nths_atLeastAtMost_as_map upt_conv_Cons)
+
+lemma sorted_hd_le_all: "\<lbrakk> xs \<noteq> []; sorted xs; x \<in> set xs \<rbrakk> \<Longrightarrow> hd xs \<le> x"
+  by (metis Orderings.order_eq_iff list.sel(1) list.set_cases sorted_simps(2))
 
 subsection \<open> List power \<close>
 
