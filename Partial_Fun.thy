@@ -109,11 +109,11 @@ definition "pfun_tinj A B = pfun_tfun A B \<inter> pfun_pinj A B"
 definition "pfun_tsurj A B = pfun_tfun A B \<inter> pfun_psurj A B"
 definition "pfun_bij A B = pfun_tfun A B \<inter> pfun_pinj A B \<inter> pfun_psurj A B"
 
-lift_definition pfun_entries :: "'k set \<Rightarrow> ('k \<Rightarrow> bool) \<Rightarrow> ('k \<Rightarrow> 'v) \<Rightarrow> ('k, 'v) pfun" is
-"\<lambda> d P f x. if (x \<in> d \<and> P x) then Some (f x) else None" .
+lift_definition pfun_entries :: "'k set \<Rightarrow> ('k \<Rightarrow> 'v) \<Rightarrow> ('k, 'v) pfun" is
+"\<lambda> d f x. if x \<in> d then Some (f x) else None" .
 
 definition pfuse :: "('a \<Zpfun> 'b) \<Rightarrow> ('a \<Zpfun> 'c) \<Rightarrow> ('a \<Zpfun> 'b \<times> 'c)"
-  where "pfuse f g = pfun_entries (pdom(f) \<inter> pdom(g)) (\<lambda> _. True) (\<lambda> x. (pfun_app f x, pfun_app g x))"
+  where "pfuse f g = pfun_entries (pdom(f) \<inter> pdom(g)) (\<lambda> x. (pfun_app f x, pfun_app g x))"
 
 lift_definition ptabulate :: "'a list \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> ('a, 'b) pfun"
   is "\<lambda>ks f. (map_of (List.map (\<lambda>k. (k, f k)) ks))" .
@@ -122,7 +122,7 @@ lift_definition pcombine ::
   "('b \<Rightarrow> 'b \<Rightarrow> 'b) \<Rightarrow> ('a, 'b) pfun \<Rightarrow> ('a, 'b) pfun \<Rightarrow> ('a, 'b) pfun"
   is "\<lambda>f m1 m2 x. combine_options f (m1 x) (m2 x)" .
 
-abbreviation "fun_pfun \<equiv> pfun_entries UNIV (\<lambda> _. True)"
+abbreviation "fun_pfun \<equiv> pfun_entries UNIV"
 
 definition pfun_disjoint :: "'a \<Zpfun> 'b set \<Rightarrow> bool" where
 "pfun_disjoint S = (\<forall> i \<in> pdom S. \<forall> j \<in> pdom S. i \<noteq> j \<longrightarrow> pfun_app S i \<inter> pfun_app S j = {})"
@@ -856,28 +856,24 @@ lemma pdom_UNIV_comp: "pdom f = UNIV \<Longrightarrow> pdom (f \<circ>\<^sub>p g
 
 subsection \<open> Entries \<close>
   
-lemma pfun_entries_empty [simp]: "pfun_entries {} P f = {}\<^sub>p"
+lemma pfun_entries_empty [simp]: "pfun_entries {} f = {}\<^sub>p"
   by (transfer, simp)
 
-lemma pdom_pfun_entries [simp]: "pdom (pfun_entries A P f) = {x \<in> A. P x}"
+lemma pdom_pfun_entries [simp]: "pdom (pfun_entries A f) = A"
   by (transfer, auto)
 
-lemma pran_pfun_entries [simp]: "pran (pfun_entries A P f) = f ` {x \<in> A. P x}"
+lemma pran_pfun_entries [simp]: "pran (pfun_entries A f) = f ` A"
   by (transfer, simp add: ran_def, auto)
 
 lemma pfun_entries_apply_1 [simp]: 
-  "\<lbrakk> x \<in> d; P x \<rbrakk> \<Longrightarrow> (pfun_entries d P f)(x)\<^sub>p = f x"
+  "x \<in> d \<Longrightarrow> (pfun_entries d f)(x)\<^sub>p = f x"
   by (transfer, auto)
 
 lemma pfun_entries_apply_2 [simp]: 
-  "x \<notin> d \<Longrightarrow> (pfun_entries d P f)(x)\<^sub>p = undefined"
+  "x \<notin> d \<Longrightarrow> (pfun_entries d f)(x)\<^sub>p = undefined"
   by (transfer, auto)
 
-lemma pfun_entries_apply_2' [simp]: 
-  "\<not> P x \<Longrightarrow> (pfun_entries d P f)(x)\<^sub>p = undefined"
-  by (transfer, auto)
-
-lemma pdom_res_entries: "A \<lhd>\<^sub>p pfun_entries B P f = pfun_entries (A \<inter> B) P f"
+lemma pdom_res_entries: "A \<lhd>\<^sub>p pfun_entries B f = pfun_entries (A \<inter> B) f"
   by (transfer, auto simp add: fun_eq_iff restrict_map_def)
 
 lemma pfuse_app [simp]:
@@ -911,7 +907,7 @@ lemma pabs_eta [simp]: "(\<lambda> x \<in> pdom(f) \<bullet> f(x)\<^sub>p) = f"
 lemma pabs_id [simp]: "(\<lambda> x \<in> A | P x \<bullet> x) = pId_on {x\<in>A. P x}"
   unfolding pabs_def by (transfer, simp add: restrict_map_def)
 
-lemma pfun_entries_pabs: "pfun_entries A P f = (\<lambda> x \<in> A | P x \<bullet> f x)"
+lemma pfun_entries_pabs: "pfun_entries A f = (\<lambda> x \<in> A \<bullet> f x)"
   by (simp add: pabs_def, transfer, auto)
 
 text \<open> This rule can perhaps be simplified \<close>
@@ -1140,12 +1136,12 @@ qed
 lemma plus_pfun_alist [code]: "pfun_of_alist f \<oplus> pfun_of_alist g = pfun_of_alist (g @ f)"
   by (transfer, simp)
 
-lemma pfun_entries_alist [code]: "pfun_entries (set ks) P f = pfun_of_alist (map (\<lambda> k. (k, f k)) (filter P ks))"
+lemma pfun_entries_alist [code]: "pfun_entries (set ks) f = pfun_of_alist (map (\<lambda> k. (k, f k)) ks)"
   by (auto simp add: pfun_eq_iff apply_pfun_alist map_of_map prod.case_eq_if image_iff map_of_map_restrict)
 
 lemma pdom_res_entries_alist [code]:
-  "A \<lhd>\<^sub>p pfun_entries (set bs) P f = 
-    pfun_of_alist (map (\<lambda> k. (k, f k)) (filter P (List.filter (\<lambda>x. x \<in> A) bs)))"
+  "A \<lhd>\<^sub>p pfun_entries (set bs) f = 
+    pfun_of_alist (map (\<lambda> k. (k, f k)) (filter (\<lambda>x. x \<in> A) bs))"
   by (metis inter_set_filter pdom_res_entries pfun_entries_alist)
 
 text \<open> Adapted from Mapping theory \<close>
@@ -1189,7 +1185,7 @@ text \<open> Partial abstractions can either be modelled finitely, as lists, or 
   @{const pfun_entries}. \<close>
 
 lemma pabs_set [code]: "pabs (set xs) P f = pfun_of_alist (map (\<lambda>k. (k, f k)) (filter P xs))"
-  by (simp only: pabs_def pfun_entries_alist pdom_res_entries set_inter_Collect Int_UNIV_right, simp)
+  by (auto simp add: pfun_eq_iff apply_pfun_alist map_of_map prod.case_eq_if image_iff map_of_map_restrict)
 
 lemma pabs_coset [code]: 
   "pabs (List.coset A) P f = pfun_of_map (\<lambda> x. if x \<in> List.coset A \<and> P x then Some (f x) else None)"
@@ -1200,12 +1196,12 @@ lemma graph_pfun_set [code]:
   by (transfer, simp only: comp_def mk_functional_alist)
      (metis graph_map_set mk_functional mk_functional_alist)
 
-lemma pabs_basic_pfun_entries [code_unfold]: "(\<lambda> x | P x \<bullet> f x) = pfun_entries (List.coset []) P f"
+lemma pabs_basic_pfun_entries [code_unfold]: "(\<lambda> x \<bullet> f x) = pfun_entries (List.coset []) f"
   by (metis UNIV_coset pfun_entries_pabs)
 
 declare pdom_pfun_entries [code]
                  
-lemma pfun_app_entries [code]: "pfun_app (pfun_entries A P f) x = (if (x \<in> A \<and> P x) then f x else undefined)"
+lemma pfun_app_entries [code]: "pfun_app (pfun_entries A f) x = (if x \<in> A then f x else undefined)"
   by auto
 
 text \<open> Useful for optimising relational compositions containing partial functions \<close>
