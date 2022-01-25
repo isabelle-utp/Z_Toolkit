@@ -939,6 +939,10 @@ lemma sorted_nths_atLeastAtMost_0: "\<lbrakk> m \<le> n; sorted (nths xs {0..n})
 lemma sorted_nths_atLeastLessThan_0: "\<lbrakk> m \<le> n; sorted (nths xs {0..<n}) \<rbrakk> \<Longrightarrow> sorted (nths xs {0..<m})"
   by (metis atLeast0LessThan nths_upt_eq_take sorted_prefix take_prefix)
 
+lemma list_augment_as_update: 
+  "k < length xs \<Longrightarrow> list_augment xs k x = list_update xs k x"
+  by (metis list_augment_def list_augment_idem list_update_overwrite)
+
 lemma nths_list_update_out: "k \<notin> A \<Longrightarrow> nths (list_update xs k x) A = nths xs A"
   apply (induct xs arbitrary: k x A)
    apply (auto)
@@ -949,6 +953,23 @@ lemma nths_list_update_out: "k \<notin> A \<Longrightarrow> nths (list_update xs
 
 lemma nths_list_augment_out: "\<lbrakk> k < length xs; k \<notin> A \<rbrakk> \<Longrightarrow> nths (list_augment xs k x) A = nths xs A"
   by (simp add: list_augment_as_update nths_list_update_out)
+
+lemma nths_none: "\<forall>i \<in> I. i \<ge> length xs \<Longrightarrow> nths xs I = []"
+  apply (simp add: nths_def)
+  apply (subst filter_False)
+   apply (metis atLeastLessThan_iff in_set_zip leD nth_mem set_upt)
+  apply simp
+  done
+
+lemma nths_single: "n < length xs \<Longrightarrow> nths xs {n} = [xs ! n]"
+proof (induct xs arbitrary: n)
+  case Nil
+  then show ?case by (simp)
+next
+  case (Cons a xs)
+  have "\<And> n. n > 0 \<Longrightarrow> {j. Suc j = n} = {n-1}" by auto
+  with Cons show ?case by (auto simp add: nths_Cons)
+qed
 
 lemma nths_uptoLessThan:
   "\<lbrakk> m \<le> n; n < length xs \<rbrakk> \<Longrightarrow> nths xs {m..n} = xs ! m # nths xs {Suc m..n}"
@@ -966,6 +987,7 @@ qed
 
 lemma nths_upt_nth: "\<lbrakk> j < i; i < length xs \<rbrakk> \<Longrightarrow> (nths xs {0..<i}) ! j = xs ! j"
   by (metis lessThan_atLeast0 nth_take nths_upt_eq_take)
+
 
 lemma nths_upt_length: "\<lbrakk> m \<le> n; n \<le> length xs \<rbrakk> \<Longrightarrow> length (nths xs {m..<n}) = n-m"
   by (metis atLeastLessThan_empty diff_is_0_eq length_map length_upt list.size(3) not_less nths_empty seq_extract_as_map seq_extract_def)
@@ -997,9 +1019,71 @@ next
   qed
 qed    
 
-lemma nths_upt_le_append_split:
-  "\<lbrakk> j \<le> i; i < length xs \<rbrakk> \<Longrightarrow> nths xs {0..<j} @ nths xs {j..i} = nths xs {0..i}"
-  by (auto simp add: list_eq_iff_nth_eq nths_upt_length nths_upt_le_length nths_upt_le_nth nths_upt_nth nth_append)
+lemma nths_split_union:
+  assumes "\<And>x y. x \<in> A \<Longrightarrow> y \<in> B \<Longrightarrow> x < y"
+  shows "nths l A @ nths l B = nths l (A \<union> B)"
+proof (induct l rule: rev_induct)
+  case Nil
+  then show ?case by simp
+next
+  case (snoc x xs)
+  { assume *: "length xs \<notin> (A \<union> B)"
+    then have L: "nths (xs @ [x]) (A \<union> B) = nths xs (A \<union> B)"
+      by (simp add: nths_append)
+    from * have R: "nths (xs @ [x]) A = nths xs A" "nths (xs @ [x]) B = nths xs B"
+      by (simp add: nths_append)+
+    have ?case
+      using L R snoc by presburger
+  } note length_notin = this
+
+  { assume *: "length xs \<in> (A \<union> B)"
+    then have new_nths: "nths (xs @ [x]) (A \<union> B) = nths xs (A \<union> B) @ [x]"
+      by (simp add: nths_append)
+    from * consider (A) "length xs \<in> A" | (B) "length xs \<in> B"
+      using assms by auto
+    then have ?case
+    proof cases
+      case A
+      then have "i \<in> B \<Longrightarrow> i > length xs" for i
+        using assms by force
+      then have nths_B: "nths (xs @ [x]) B = []"
+        by (metis Suc_less_eq le_simps(2) length_Cons length_rotate1 nths_none rotate1.simps(2))
+      from A have "nths (xs @ [x]) A = nths xs A @ [x]"
+        by (simp add: nths_append)
+      then have "nths (xs @ [x]) A @ nths (xs @ [x]) B = (nths xs A @ nths xs B) @ [x]"
+        by (metis append_is_Nil_conv nths_B nths_append self_append_conv)
+      then show ?thesis
+        using snoc new_nths by presburger
+    next
+      case B
+      then have "length xs \<notin> A"
+        using assms by blast
+      then have "nths (xs @ [x]) A = nths xs A"
+        by (simp add: nths_append)
+      moreover have "nths (xs @ [x]) B = nths xs B @ [x]"
+        by (simp add: B nths_append)
+      ultimately show ?thesis
+        by (simp add: new_nths snoc)
+    qed
+  } note length_in=this
+   
+  show ?case
+    using length_in length_notin by blast
+qed
+
+corollary nths_upt_le_append_split:
+  "j \<le> i \<Longrightarrow> nths xs {0..<j} @ nths xs {j..i} = nths xs {0..i}"
+proof -
+  assume "j \<le> i"
+  have "\<And>x y. x \<in> {0..<j} \<Longrightarrow> y \<in> {j..i} \<Longrightarrow> x < y"
+    by auto
+  then have "nths xs {0..<j} @ nths xs {j..i} = nths xs ({0..<j} \<union> {j..i})"
+    by (rule nths_split_union)
+  moreover have "{0..<j} \<union> {j..i} = {0..i}"
+    by (simp add: ivl_disj_un_two(7) \<open>j \<le> i\<close>)
+  ultimately show ?thesis
+    using \<open>j \<le> i\<close> by presburger
+qed
 
 lemma nths_Cons_atLeastAtMost: "n > m \<Longrightarrow> nths (x # xs) {m..n} = (if m = 0 then x # nths xs {0..n-1} else nths xs {m-1..n-1})"
   apply (auto simp add: nths_Cons)
