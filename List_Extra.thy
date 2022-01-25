@@ -909,10 +909,6 @@ lemma filter_minus [simp]: "ys \<le> xs \<Longrightarrow> filter P (xs - ys) = f
 
 subsection \<open> Laws on @{term list_update} \<close>
 
-lemma list_augment_as_update: 
-  "k < length xs \<Longrightarrow> list_augment xs k x = list_update xs k x"
-  by (metis list_augment_def list_augment_idem list_update_overwrite)
-
 lemma list_update_0: "length(xs) > 0 \<Longrightarrow> xs[0 := x] = x # tl xs"
   by (metis length_0_conv list.collapse list_update_code(2) nat_less_le)
 
@@ -960,16 +956,6 @@ lemma nths_none: "\<forall>i \<in> I. i \<ge> length xs \<Longrightarrow> nths x
    apply (metis atLeastLessThan_iff in_set_zip leD nth_mem set_upt)
   apply simp
   done
-
-lemma nths_single: "n < length xs \<Longrightarrow> nths xs {n} = [xs ! n]"
-proof (induct xs arbitrary: n)
-  case Nil
-  then show ?case by (simp)
-next
-  case (Cons a xs)
-  have "\<And> n. n > 0 \<Longrightarrow> {j. Suc j = n} = {n-1}" by auto
-  with Cons show ?case by (auto simp add: nths_Cons)
-qed
 
 lemma nths_uptoLessThan:
   "\<lbrakk> m \<le> n; n < length xs \<rbrakk> \<Longrightarrow> nths xs {m..n} = xs ! m # nths xs {Suc m..n}"
