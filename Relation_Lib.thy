@@ -42,6 +42,9 @@ interpretation ref_preorder: preorder "(\<sqsubseteq>)" "(\<sqsubset>)"
 lemma ref_by_trans [trans]: "\<lbrakk> P \<sqsubseteq> Q; Q \<sqsubseteq> R \<rbrakk> \<Longrightarrow> P \<sqsubseteq> R"
   using ref_preorder.dual_order.trans by auto
 
+abbreviation (input) refines (infix "\<sqsupseteq>" 50) where "Q \<sqsupseteq> P \<equiv> P \<sqsubseteq> Q"
+abbreviation (input) srefines (infix "\<sqsupset>" 50) where "Q \<sqsupset> P \<equiv> P \<sqsubset> Q"
+
 instantiation "bool" :: refine
 begin
 
