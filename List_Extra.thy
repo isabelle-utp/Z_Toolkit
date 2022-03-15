@@ -24,6 +24,14 @@ subsection \<open> Sets \<close>
 lemma set_Fpow [simp]: "set xs \<in> Fpow A \<longleftrightarrow> set xs \<subseteq> A"
   by (auto simp add: Fpow_def)
 
+lemma Fpow_as_Pow: "finite A \<Longrightarrow> Fpow A = Pow A"
+  by (auto simp add: Pow_def Fpow_def finite_subset)
+
+lemma Fpow_set [code]:
+  "Fpow (set []) = {{}}"
+  "Fpow (set (x # xs)) = (let A = Fpow (set xs) in A \<union> insert x ` A)"
+  by (simp_all add: Fpow_as_Pow Pow_set del: set_simps)
+
 subsection \<open> Folds \<close>
 
 context abel_semigroup

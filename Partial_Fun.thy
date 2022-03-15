@@ -300,6 +300,9 @@ lemma pfun_override_commute_weak:
   "(\<forall> k \<in> pdom(f) \<inter> pdom(g). f(k)\<^sub>p = g(k)\<^sub>p) \<Longrightarrow> f \<oplus> g = g \<oplus> f"
   by (transfer, simp, metis IntD1 IntD2 domD map_add_comm_weak option.sel)
 
+lemma pfun_override_res: "pdom g -\<lhd>\<^sub>p f \<oplus> g = f \<oplus> g"
+  by (transfer, auto simp add: map_add_restrict[THEN sym])
+
 lemma pfun_minus_override_commute:
   "pdom(g) \<inter> pdom(h) = {} \<Longrightarrow> (f - g) \<oplus> h = (f \<oplus> h) - g"
   by (transfer, simp add: map_minus_plus_commute)

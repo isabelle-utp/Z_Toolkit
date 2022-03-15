@@ -237,6 +237,9 @@ text \<open> A range restriction operator; only domain restriction is provided i
 definition ran_restrict_map :: "('a \<rightharpoonup> 'b) \<Rightarrow> 'b set \<Rightarrow> 'a \<rightharpoonup> 'b" ("_\<upharpoonleft>\<^bsub>_\<^esub>" [111,110] 110) where
 "ran_restrict_map f B = (\<lambda>x. do { v <- f(x); if (v \<in> B) then Some(v) else None })"
 
+lemma ran_restrict_alt_def: "f\<upharpoonleft>\<^bsub>B\<^esub> = (\<lambda> x. if x \<in> dom(f) \<and> the(f(x)) \<in> B then f x else None)"
+  by (auto simp add: ran_restrict_map_def fun_eq_iff bind_eq_None_conv)
+
 lemma ran_restrict_empty [simp]: "f\<upharpoonleft>\<^bsub>{}\<^esub> = Map.empty"
   by (simp add:ran_restrict_map_def)
 
