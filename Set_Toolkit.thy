@@ -1,7 +1,7 @@
 section \<open> Set Toolkit \<close>
 
 theory Set_Toolkit
-  imports "HOL-Library.Adhoc_Overloading" "Relation_Lib"
+  imports "HOL-Library.Adhoc_Overloading" "HOL-Library.Multiset" "Relation_Lib"
 begin
 
 text \<open> The majority of the Z set toolkit is implemented in the core libraries of HOL. We could
