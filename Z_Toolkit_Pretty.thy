@@ -35,12 +35,12 @@ notation relcomp (infixr "\<Zcomp>" 75)
 
 end
 
+text \<open> Relation Function Syntax \<close>
+
 bundle Z_RFun_Syntax
 begin
 
 unbundle Z_Syntax
-
-subsection \<open> Functions \<close>
 
 no_notation funcset (infixr "\<rightarrow>" 60)
 
