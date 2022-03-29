@@ -23,11 +23,22 @@ text \<open> Allow partial functions to be written with braces \<close>
 syntax
   "_Pfun"     :: "maplets => ('a, 'b) pfun"            ("(1{_})")
 
+unbundle Z_Relation_Syntax
+
 bundle Z_Syntax
 begin
 
 unbundle Z_Type_Syntax
 unbundle Z_Relation_Syntax
+
+notation relcomp (infixr "\<Zcomp>" 75)
+
+end
+
+bundle Z_RFun_Syntax
+begin
+
+unbundle Z_Syntax
 
 subsection \<open> Functions \<close>
 
@@ -37,12 +48,10 @@ notation rel_tfun (infixr "\<rightarrow>" 60)
 notation rel_pfun (infixr "\<Zpfun>" 60)
 notation rel_ffun (infixr "\<Zffun>" 60)
 
-notation relcomp (infixr "\<Zcomp>" 75)
-
 end
 
 context
-  includes Z_Syntax
+  includes Z_RFun_Syntax
 begin
 
 subsection \<open> Examples \<close>
