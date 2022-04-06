@@ -6,3 +6,4 @@ session "Z_Toolkit" = "Optics" +
     "root.bib"
     "isabellezed.sty"
     "cztsymb.sty"
+    "zed.sty"
