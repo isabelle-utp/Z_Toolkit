@@ -83,20 +83,18 @@ text \<open> Composition is probably the most difficult of the Z functions to im
   heterogeneous relations and functions, which is not easy to type infer. Consequently, we opt
   to use adhoc overloading here. \<close>
 
-hide_const (open) comp
-
-consts comp :: "'f \<Rightarrow> 'g \<Rightarrow> 'h" 
+consts zcomp :: "'f \<Rightarrow> 'g \<Rightarrow> 'h" 
 
 adhoc_overloading
-  comp Fun.comp and
-  comp pfun_comp and
-  comp ffun_comp
+  zcomp Fun.comp and
+  zcomp pfun_comp and
+  zcomp ffun_comp
 
 bundle Z_Relation_Syntax
 begin
 
 no_notation Fun.comp (infixl "\<circ>" 55)
-notation comp (infixl "\<circ>" 55)
+notation zcomp (infixl "\<circ>" 55)
 
 end
 
