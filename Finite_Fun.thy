@@ -45,6 +45,9 @@ lift_definition graph_ffun :: "('a \<times> 'b) set \<Rightarrow> 'a \<Zffun> 'b
   "\<lambda> R. if (finite (Domain R)) then graph_pfun R else pempty"
   by (simp add: finite_Domain) (meson pdom_graph_pfun rev_finite_subset)
 
+lift_definition ffun_entries :: "'a set \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> 'a \<Zffun> 'b" 
+  is "\<lambda> A f. if (finite A) then pfun_entries A f else 0" by simp
+
 instantiation ffun :: (type, type) zero
 begin
 lift_definition zero_ffun :: "'a \<Zffun> 'b" is "0" by simp
