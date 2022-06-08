@@ -21,14 +21,16 @@ setup_lifting type_definition_pinj
 lift_definition pinv :: "'a \<Zpinj> 'b \<Rightarrow> 'b \<Zpinj> 'a" is pfun_inv
   by (simp add: pfun_inj_inv)
 
-instantiation pinj :: (type, type) zero
+unbundle lattice_syntax
+
+instantiation pinj :: (type, type) bot
 begin
-  lift_definition zero_pinj :: "('a, 'b) pinj" is "0"
+  lift_definition bot_pinj :: "('a, 'b) pinj" is "\<bottom>"
     by simp
 instance ..
 end
 
-abbreviation pinj_empty :: "('a, 'b) pinj" ("{}\<^sub>\<rho>") where "{}\<^sub>\<rho> \<equiv> 0"
+abbreviation pinj_empty :: "('a, 'b) pinj" ("{}\<^sub>\<rho>") where "{}\<^sub>\<rho> \<equiv> \<bottom>"
 
 lift_definition pinj_app :: "('a, 'b) pinj \<Rightarrow> 'a \<Rightarrow> 'b" ("_'(_')\<^sub>\<rho>" [999,0] 999) 
 is "pfun_app" .
@@ -184,7 +186,7 @@ lemma pinv_pinj_of_ialist:
 
 
 lemma pfun_of_ialist: "ialist xs \<Longrightarrow> pfun_of_pinj (pinj_of_alist xs) = pfun_of_alist xs"
-  by (induct xs rule: pinj_of_alist.induct, auto simp add: zero_pinj.rep_eq ialist_def pinj_upd.rep_eq )
+  by (induct xs rule: pinj_of_alist.induct, auto simp add: bot_pinj.rep_eq ialist_def pinj_upd.rep_eq )
      (metis pinj_of_alist_nrres pinj_rres.rep_eq)
 
 
@@ -200,5 +202,7 @@ lemma pfun_of_pinj_of_alist [code]:
   by (metis ialist_clearjunk pfun_of_ialist pinj_of_alist_clearjunk)
 
 declare pinj_of_alist.simps [simp del]
+
+unbundle no_lattice_syntax
 
 end

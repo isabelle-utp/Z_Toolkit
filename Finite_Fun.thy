@@ -45,17 +45,19 @@ lift_definition graph_ffun :: "('a \<times> 'b) set \<Rightarrow> 'a \<Zffun> 'b
   "\<lambda> R. if (finite (Domain R)) then graph_pfun R else pempty"
   by (simp add: finite_Domain) (meson pdom_graph_pfun rev_finite_subset)
 
-lift_definition ffun_entries :: "'a set \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> 'a \<Zffun> 'b" 
-  is "\<lambda> A f. if (finite A) then pfun_entries A f else 0" by simp
+unbundle lattice_syntax
 
-instantiation ffun :: (type, type) zero
+lift_definition ffun_entries :: "'a set \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> 'a \<Zffun> 'b" 
+  is "\<lambda> A f. if (finite A) then pfun_entries A f else \<bottom>" by simp
+
+instantiation ffun :: (type, type) bot
 begin
-lift_definition zero_ffun :: "'a \<Zffun> 'b" is "0" by simp
+lift_definition bot_ffun :: "'a \<Zffun> 'b" is "\<bottom>" by simp
 instance ..
 end
 
 abbreviation fempty :: "'a \<Zffun> 'b" ("{}\<^sub>f")
-where "fempty \<equiv> 0"
+where "fempty \<equiv> \<bottom>"
 
 instantiation ffun :: (type, type) oplus
 begin
@@ -135,17 +137,17 @@ lemma ffun_override_dist_comp:
 
 lemma ffun_minus_unit [simp]:
   fixes f :: "'a \<Zffun> 'b"
-  shows "f - 0 = f"
+  shows "f - \<bottom> = f"
   by (transfer, simp)
 
 lemma ffun_minus_zero [simp]:
   fixes f :: "'a \<Zffun> 'b"
-  shows "0 - f = 0"
+  shows "\<bottom> - f = \<bottom>"
   by (transfer, simp)
 
 lemma ffun_minus_self [simp]:
   fixes f :: "'a \<Zffun> 'b"
-  shows "f - f = 0"
+  shows "f - f = \<bottom>"
   by (transfer, simp)
 
 instantiation ffun :: (type, type) override
@@ -272,7 +274,7 @@ subsection \<open> Domain laws \<close>
 lemma fdom_finite [simp]: "finite(fdom(f))"
   by (transfer, simp)
 
-lemma fdom_zero [simp]: "fdom 0 = {}"
+lemma fdom_zero [simp]: "fdom \<bottom> = {}"
   by (transfer, simp)
 
 lemma fdom_plus [simp]: "fdom (f \<oplus> g) = fdom f \<union> fdom g"
@@ -309,7 +311,7 @@ lemma finite_pdom_ffun [simp]: "finite (pdom (pfun_of f))"
 
 subsection \<open> Range laws \<close>
 
-lemma fran_zero [simp]: "fran 0 = {}"
+lemma fran_zero [simp]: "fran \<bottom> = {}"
   by (transfer, simp)
 
 lemma fran_upd [simp]: "fran (f(k \<mapsto> v)\<^sub>f) = insert v (fran ((- {k}) \<lhd>\<^sub>f f))"
@@ -376,7 +378,7 @@ subsection \<open> Graph laws \<close>
 lemma ffun_graph_inv: "graph_ffun (ffun_graph f) = f"
   by (transfer, auto simp add: pfun_graph_inv finite_Domain)
 
-lemma ffun_graph_zero: "ffun_graph 0 = {}"
+lemma ffun_graph_zero: "ffun_graph \<bottom> = {}"
   by (transfer, simp add: pfun_graph_zero)
 
 lemma ffun_graph_minus: "ffun_graph (f - g) = ffun_graph f - ffun_graph g"
@@ -417,5 +419,7 @@ text \<open> Hide implementation details for finite functions \<close>
 
 lifting_update ffun.lifting
 lifting_forget ffun.lifting
+
+unbundle no_lattice_syntax
 
 end

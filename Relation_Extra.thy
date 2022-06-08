@@ -81,15 +81,6 @@ definition res_prod :: "('a \<leftrightarrow> 'b) \<Rightarrow> ('a \<leftrighta
 instance ..
 end
 
-instantiation set :: (type) zero
-begin
-
-definition zero_set :: "'a set" where
-[simp]: "zero_set = {}"
-
-instance ..
-end
-
 instantiation set :: (pre_restrict) oplus
 begin
 

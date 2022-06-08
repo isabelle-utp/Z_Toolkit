@@ -138,14 +138,16 @@ definition pabs :: "'a set \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> (
 definition pcard :: "('a, 'b) pfun \<Rightarrow> nat"
 where "pcard f = card (pdom f)"
 
-instantiation pfun :: (type, type) zero
+unbundle lattice_syntax
+
+instantiation pfun :: (type, type) bot
 begin
-lift_definition zero_pfun :: "('a, 'b) pfun" is "Map.empty" .
+lift_definition bot_pfun :: "('a, 'b) pfun" is "Map.empty" .
 instance ..
 end
 
 abbreviation pempty :: "('a, 'b) pfun" ("{}\<^sub>p")
-where "pempty \<equiv> 0"
+where "pempty \<equiv> bot"
 
 instantiation pfun :: (type, type) oplus
 begin
@@ -246,17 +248,17 @@ lemma pfun_override_dist_comp:
 
 lemma pfun_minus_unit [simp]:
   fixes f :: "('a, 'b) pfun"
-  shows "f - 0 = f"
+  shows "f - \<bottom> = f"
   by (transfer, simp add: map_minus_def)
 
 lemma pfun_minus_zero [simp]:
   fixes f :: "('a, 'b) pfun"
-  shows "0 - f = 0"
+  shows "\<bottom> - f = \<bottom>"
   by (transfer, simp add: map_minus_def)
 
 lemma pfun_minus_self [simp]:
   fixes f :: "('a, 'b) pfun"
-  shows "f - f = 0"
+  shows "f - f = \<bottom>"
   by (transfer, simp add: map_minus_def)
 
 instantiation pfun :: (type, type) override
@@ -470,7 +472,7 @@ lemma map_pfun_dres [simp]: "map_pfun f (A \<lhd>\<^sub>p g) = A \<lhd>\<^sub>p 
 
 subsection \<open> Domain laws \<close>
 
-lemma pdom_zero [simp]: "pdom 0 = {}"
+lemma pdom_zero [simp]: "pdom \<bottom> = {}"
   by (transfer, simp)
 
 lemma pdom_pId_on [simp]: "pdom (pId_on A) = A"
@@ -520,7 +522,7 @@ lemma rel_comp_pfun: "R O pfun_graph f = (\<lambda> p. (fst p, pfun_app f (snd p
 
 subsection \<open> Range laws \<close>
 
-lemma pran_zero [simp]: "pran 0 = {}"
+lemma pran_zero [simp]: "pran \<bottom> = {}"
   by (transfer, simp)
 
 lemma pran_pId_on [simp]: "pran (pId_on A) = A"
@@ -564,7 +566,7 @@ lemma card_pfun_graph: "finite (pdom f) \<Longrightarrow> card (pfun_graph f) = 
 lemma functional_pfun_graph [simp]: "functional (pfun_graph f)"
   by (transfer, simp)
 
-lemma pfun_graph_zero: "pfun_graph 0 = {}"
+lemma pfun_graph_zero: "pfun_graph \<bottom> = {}"
   by (transfer, simp add: map_graph_def)
 
 lemma pfun_graph_pId_on: "pfun_graph (pId_on A) = Id_on A"
@@ -1241,5 +1243,7 @@ text \<open> Hide implementation details for partial functions \<close>
 
 lifting_update pfun.lifting
 lifting_forget pfun.lifting
+
+unbundle no_lattice_syntax
 
 end
