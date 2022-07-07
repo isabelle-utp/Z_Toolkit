@@ -9,4 +9,5 @@ theory Z_Toolkit
     Number_Toolkit
     Sequence_Toolkit
     Z_Toolkit_Pretty
+    Partial_Function_Command
 begin end
