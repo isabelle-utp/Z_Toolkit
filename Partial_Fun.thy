@@ -8,8 +8,10 @@
 section \<open> Partial Functions \<close>
 
 theory Partial_Fun
-imports "Optics.Lenses" Map_Extra "HOL-Library.Mapping"
+imports "Optics.Optics" Map_Extra "HOL-Library.Mapping"
 begin
+
+no_notation "Stream.stream.SCons" (infixr \<open>##\<close> 65)
 
 text \<open> I'm not completely satisfied with partial functions as provided by Map.thy, since they don't
         have a unique type and so we can't instantiate classes, make use of adhoc-overloading
@@ -53,7 +55,8 @@ lift_definition pdom :: "('a, 'b) pfun \<Rightarrow> 'a set" is dom .
 lemma pran_rep_eq [transfer_rule]: "pran f = ran (pfun_lookup f)"
   by (transfer, auto simp add: ran_def)
 
-lift_definition pfun_comp :: "('b, 'c) pfun \<Rightarrow> ('a, 'b) pfun \<Rightarrow> ('a, 'c) pfun" (infixl "\<circ>\<^sub>p" 55) is map_comp .
+lift_definition pfun_comp :: "('b, 'c) pfun \<Rightarrow> ('a, 'b) pfun \<Rightarrow> ('a, 'c) pfun" (infixl "\<circ>\<^sub>p" 55) is 
+  "\<lambda> f g. f \<circ>\<^sub>m g" .
 
 lift_definition map_pfun' :: "('c \<Rightarrow> 'a) \<Rightarrow> ('b \<Rightarrow> 'd) \<Rightarrow> ('a, 'b) pfun \<Rightarrow> ('c, 'd) pfun"
   is "\<lambda>f g m. (map_option g \<circ> m \<circ> f)" parametric map_parametric .
@@ -193,6 +196,7 @@ instance pfun :: (type, type) semilattice_inf
 lemma pfun_subset_eq_least [simp]:
   "{}\<^sub>p \<subseteq>\<^sub>p f"
   by (transfer, auto)
+
 
 syntax
   "_PfunUpd"  :: "[('a, 'b) pfun, maplets] => ('a, 'b) pfun" ("_'(_')\<^sub>p" [900,0]900)
@@ -375,8 +379,8 @@ lemma pfun_upd_add [simp]: "f \<oplus> g(x \<mapsto> v)\<^sub>p = (f \<oplus> g)
 lemma pfun_upd_add_left [simp]: "x \<notin> pdom(g) \<Longrightarrow> f(x \<mapsto> v)\<^sub>p \<oplus> g = (f \<oplus> g)(x \<mapsto> v)\<^sub>p"
   by (transfer, auto, metis domD map_add_upd_left)
 
-lemma pfun_app_add' [simp]: "\<lbrakk> e \<in> pdom f; e \<notin> pdom g \<rbrakk> \<Longrightarrow> (f \<oplus> g)(e)\<^sub>p = f(e)\<^sub>p"
-  by (metis (no_types, lifting) pfun_app_upd_1 pfun_upd_add_left pfun_upd_ext)
+lemma pfun_app_add' [simp]: "e \<notin> pdom g \<Longrightarrow> (f \<oplus> g)(e)\<^sub>p = f(e)\<^sub>p"
+  by (transfer, auto)
 
 lemma pfun_upd_twice [simp]: "f(x \<mapsto> u, x \<mapsto> v)\<^sub>p = f(x \<mapsto> v)\<^sub>p"
   by (transfer, simp)
@@ -519,6 +523,12 @@ lemma pdom_map_pfun [simp]: "pdom (map_pfun F G) = pdom G"
 
 lemma rel_comp_pfun: "R O pfun_graph f = (\<lambda> p. (fst p, pfun_app f (snd p))) ` (R \<rhd>\<^sub>r pdom(f))"
   by (transfer, auto simp add: rel_comp_map rel_ranres_def)                      
+
+lemma pdom_empty_iff_dom_empty: "f = {}\<^sub>p \<longleftrightarrow> pdom f = {}"
+  by (transfer, simp)
+
+lemma empty_map_pfunD [dest!]: "{}\<^sub>p = map_pfun f F \<Longrightarrow> F = {}\<^sub>p"
+  by (metis pdom_empty_iff_dom_empty pdom_map_pfun)
 
 subsection \<open> Range laws \<close>
 
@@ -792,6 +802,9 @@ lemma pranres_pdom [simp]: "pdom (f \<rhd>\<^sub>p A) \<lhd>\<^sub>p f = f \<rhd
 lemma pdom_pranres [simp]: "pdom (f \<rhd>\<^sub>p A) \<subseteq> pdom f"
   by (metis inf.absorb_iff1 inf.commute pdom_pdom_res pdom_res_pdom pdom_res_swap)
 
+lemma pfun_split_domain: "A \<lhd>\<^sub>p f \<oplus> (- A) \<lhd>\<^sub>p f = f"
+  by (transfer, auto simp add: restrict_map_def map_add_def fun_eq_iff option.case_eq_if)
+
 subsection \<open> Range restriction laws \<close>
 
 lemma pran_res_UNIV [simp]: "f \<rhd>\<^sub>p UNIV = f"
@@ -1052,6 +1065,40 @@ lemma lens_override_pfun_lens:
   "x \<in> pdom(g) \<Longrightarrow> f \<oplus>\<^sub>L g on pfun_lens x = f \<oplus> ({x} \<lhd>\<^sub>p g)"
   by (simp add: lens_defs pfun_ovrd_single_upd)
 
+subsection \<open> Prism Functions \<close>
+
+text \<open> We can use prisms to index a type and construct partial functions. \<close>
+
+definition prism_fun :: "('a \<Longrightarrow>\<^sub>\<triangle> 'e) \<Rightarrow> 'a set \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> ('e \<Zpfun> 'b)"
+  where "prism_fun c A P B = (\<lambda> x\<in>build\<^bsub>c\<^esub> ` A | P (the (match\<^bsub>c\<^esub> x)) \<bullet> B (the (match\<^bsub>c\<^esub> x)))"
+
+definition prism_fun_upd :: "('e \<Zpfun> 'b) \<Rightarrow> ('a \<Longrightarrow>\<^sub>\<triangle> 'e) \<Rightarrow> 'a set \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> ('e \<Zpfun> 'b)"
+  where "prism_fun_upd F c A P B = F \<oplus> prism_fun c A P B"
+
+nonterminal prism_maplet and prism_maplets
+
+syntax
+  "_prism_maplet" :: "id \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> prism_maplet" ("__ \<in> _ | _ \<mapsto> _")
+  "_prism_maplet_mem" :: "id \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> prism_maplet" ("__ \<in> _  \<mapsto> _")
+  ""               :: "prism_maplet \<Rightarrow> prism_maplets"             ("_")
+  "_prism_Maplets" :: "[prism_maplet, prism_maplets] \<Rightarrow> prism_maplets" ("_,/ _")
+  "_prism_fun_upd" :: "logic \<Rightarrow> prism_maplet \<Rightarrow> logic" ("_'(_')" [900, 0] 900)
+
+translations
+  "f(c v \<in> A | P \<mapsto> B)" => "CONST prism_fun_upd f c A (\<lambda> v. P) (\<lambda> v. B)"
+
+lemma dom_prism_fun: "wb_prism c \<Longrightarrow> pdom(prism_fun c A P B) = {build\<^bsub>c\<^esub> v | v. v \<in> A \<and> P v}"
+  by (simp add: prism_fun_def, auto)
+
+lemma prism_fun_apply: "\<lbrakk> wb_prism c; v \<in> A; P v \<rbrakk> \<Longrightarrow> (prism_fun c A P B)(build\<^bsub>c\<^esub> v)\<^sub>p = B v"
+  by (simp add: prism_fun_def)
+
+lemma prism_fun_update_1: "\<lbrakk> wb_prism c; v \<in> A; P v \<rbrakk> \<Longrightarrow> (f(c x \<in> A | P(x) \<mapsto> B(x)))(build\<^bsub>c\<^esub> v)\<^sub>p = B v"
+  by (simp add: prism_fun_def prism_fun_upd_def)
+
+lemma prism_fun_update_2: "\<lbrakk> wb_prism c; wb_prism d; d \<nabla> c \<rbrakk> \<Longrightarrow> (f(c x \<in> A | P(x) \<mapsto> B(x)))(build\<^bsub>d\<^esub> v)\<^sub>p = f(build\<^bsub>d\<^esub> v)\<^sub>p"
+  by (simp add: prism_fun_def prism_fun_upd_def image_iff prism_diff_build)
+
 subsection \<open> Code Generator \<close>
 
 subsubsection \<open> Associative Lists \<close>
@@ -1217,6 +1264,8 @@ subsection \<open> Notation \<close>
 
 bundle Z_Pfun_Notation
 begin
+
+no_notation "Stream.stream.SCons" (infixr \<open>##\<close> 65)
 
 no_notation funcset (infixr "\<rightarrow>" 60)
 

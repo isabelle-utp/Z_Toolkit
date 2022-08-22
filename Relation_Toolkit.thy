@@ -90,6 +90,10 @@ adhoc_overloading
   zcomp pfun_comp and
   zcomp ffun_comp
 
+text \<open> Once we overload @{term Fun.comp}, we need to at least have output syntax set up. \<close>
+
+notation (output) zcomp (infixl "\<circ>" 55)
+
 bundle Z_Relation_Syntax
 begin
 

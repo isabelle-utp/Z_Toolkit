@@ -36,8 +36,12 @@ lift_definition ffun_member :: "'a \<times> 'b \<Rightarrow> 'a \<Zffun> 'b \<Ri
 lift_definition fdom_res :: "'a set \<Rightarrow> 'a \<Zffun> 'b \<Rightarrow> 'a \<Zffun> 'b" (infixr "\<lhd>\<^sub>f" 85)
 is pdom_res by simp
 
+abbreviation fdom_nres (infixr "-\<lhd>\<^sub>f" 85) where "fdom_nres A P \<equiv> (- A) \<lhd>\<^sub>f P"
+
 lift_definition fran_res :: "'a \<Zffun> 'b \<Rightarrow> 'b set \<Rightarrow> 'a \<Zffun> 'b" (infixl "\<rhd>\<^sub>f" 85)
 is pran_res by simp
+
+abbreviation fran_nres (infixr "\<rhd>\<^sub>f-" 66) where "fran_nres P A \<equiv> P \<rhd>\<^sub>f (- A)"
 
 lift_definition ffun_graph :: "'a \<Zffun> 'b \<Rightarrow> ('a \<times> 'b) set" is pfun_graph .
 
@@ -232,6 +236,12 @@ lemma ffun_upd_comm:
   shows "f(y \<mapsto> u, x \<mapsto> v)\<^sub>f = f(x \<mapsto> v, y \<mapsto> u)\<^sub>f"
   using assms by (transfer, simp add: pfun_upd_comm)
 
+lemma ffun_upd_add_left [simp]: "x \<notin> fdom(g) \<Longrightarrow> f(x \<mapsto> v)\<^sub>f \<oplus> g = (f \<oplus> g)(x \<mapsto> v)\<^sub>f"
+  by (transfer, simp)
+
+lemma ffun_app_add' [simp]: "\<lbrakk> e \<in> fdom f; e \<notin> fdom g \<rbrakk> \<Longrightarrow> (f \<oplus> g)(e)\<^sub>f = f(e)\<^sub>f"
+  by (transfer, simp)
+
 lemma ffun_upd_comm_linorder [simp]:
   fixes x y :: "'a :: linorder"
   assumes "x < y"
@@ -268,6 +278,10 @@ lemma fsubseteq_dom_subset:
 lemma fsubseteq_ran_subset:
   "f \<subseteq>\<^sub>f g \<Longrightarrow> fran(f) \<subseteq> fran(g)"
   by (transfer, simp add: psubseteq_ran_subset)
+
+lemma fdom_res_apply [simp]:
+  "x \<in> A \<Longrightarrow> (A \<lhd>\<^sub>f f)(x)\<^sub>f = f(x)\<^sub>f"
+  by (transfer, simp)
 
 subsection \<open> Domain laws \<close>
 
@@ -359,6 +373,9 @@ lemma fdom_res_twice [simp]: "A \<lhd>\<^sub>f (B \<lhd>\<^sub>f f) = (A \<inter
 lemma fdom_res_comp [simp]: "A \<lhd>\<^sub>f (g \<circ>\<^sub>f f) =  g \<circ>\<^sub>f (A \<lhd>\<^sub>f f)"
   by (transfer, simp)
 
+lemma ffun_split_domain: "A \<lhd>\<^sub>f f \<oplus> (- A) \<lhd>\<^sub>f f = f"
+  by (transfer, simp add: pfun_split_domain)
+
 subsection \<open> Range restriction laws \<close>
 
 lemma fran_res_zero [simp]: "{}\<^sub>f \<rhd>\<^sub>f A = {}\<^sub>f"
@@ -414,6 +431,28 @@ lemma ffun_lens_mwb [simp]: "mwb_lens (ffun_lens i)"
 
 lemma ffun_lens_src: "\<S>\<^bsub>ffun_lens i\<^esub> = {f. i \<in> fdom(f)}"
   by (auto simp add: lens_defs lens_source_def, metis ffun_upd_ext)
+
+subsection \<open> Notation \<close>
+
+bundle Z_Ffun_Notation
+begin
+
+no_notation "Stream.stream.SCons" (infixr \<open>##\<close> 65)
+
+no_notation funcset (infixr "\<rightarrow>" 60)
+
+notation fdom_res (infixr "\<Zdres>" 86)
+notation fdom_nres (infixr "\<Zndres>" 86)
+
+notation fran_res (infixl "\<Zrres>" 86)
+notation fran_nres (infixl "\<Znrres>" 86)
+
+notation fempty ("{\<mapsto>}")
+
+syntax "_Ffun"     :: "maplets => logic" ("(1{_})")
+
+end
+
 
 text \<open> Hide implementation details for finite functions \<close>
 
