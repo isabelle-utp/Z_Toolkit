@@ -1072,11 +1072,11 @@ subsection \<open> Prism Functions \<close>
 
 text \<open> We can use prisms to index a type and construct partial functions. \<close>
 
-definition prism_fun :: "('a \<Longrightarrow>\<^sub>\<triangle> 'e) \<Rightarrow> 'a set \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> ('e \<Zpfun> 'b)"
-  where [code_unfold]: "prism_fun c A P B = (\<lambda> x\<in>build\<^bsub>c\<^esub> ` A | P (the (match\<^bsub>c\<^esub> x)) \<bullet> B (the (match\<^bsub>c\<^esub> x)))"
+definition prism_fun :: "('a \<Longrightarrow>\<^sub>\<triangle> 'e) \<Rightarrow> 'a set \<Rightarrow> ('a \<Rightarrow> bool \<times> 'b) \<Rightarrow> ('e \<Zpfun> 'b)"
+  where [code_unfold]: "prism_fun c A PB = (\<lambda> x\<in>build\<^bsub>c\<^esub> ` A | fst (PB (the (match\<^bsub>c\<^esub> x))) \<bullet> snd (PB (the (match\<^bsub>c\<^esub> x))))"
 
-definition prism_fun_upd :: "('e \<Zpfun> 'b) \<Rightarrow> ('a \<Longrightarrow>\<^sub>\<triangle> 'e) \<Rightarrow> 'a set \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> ('e \<Zpfun> 'b)"
-  where [code_unfold]: "prism_fun_upd F c A P B = F \<oplus> prism_fun c A P B"
+definition prism_fun_upd :: "('e \<Zpfun> 'b) \<Rightarrow> ('a \<Longrightarrow>\<^sub>\<triangle> 'e) \<Rightarrow> 'a set \<Rightarrow> ('a \<Rightarrow> bool \<times> 'b) \<Rightarrow> ('e \<Zpfun> 'b)"
+  where [code_unfold]: "prism_fun_upd F c A PB = F \<oplus> prism_fun c A PB"
 
 nonterminal prism_maplet and prism_maplets
 
@@ -1090,8 +1090,7 @@ syntax
   "_prism_fun"           :: "prism_maplets \<Rightarrow> logic" ("{_}\<^sub>p")
 
 translations
-  "f(c[v \<in> A | P] \<Rightarrow> B)" => "CONST prism_fun_upd f c A (\<lambda> v. P) (\<lambda> v. B)"
-  "f(c[v \<in> A | P] \<Rightarrow> B)" <= "CONST prism_fun_upd f c A (\<lambda> v. P) (\<lambda> v'. B)"
+  "f(c[v \<in> A | P] \<Rightarrow> B)" == "CONST prism_fun_upd f c A (\<lambda> v. (P, B))"
   "f(c[v \<in> A] \<Rightarrow> B)" == "f(c[v \<in> A | CONST True] \<Rightarrow> B)"
   "f(c[v] \<Rightarrow> B)" == "f(c[v \<in> CONST UNIV] \<Rightarrow> B)"
   "_prism_fun_upd m (_prism_Maplets xy ms)"  \<rightleftharpoons> "_prism_fun_upd (_prism_fun_upd m xy) ms"
@@ -1099,22 +1098,22 @@ translations
   "_prism_fun (_prism_Maplets ms1 ms2)"     \<leftharpoondown> "_prism_fun_upd (_prism_fun ms1) ms2"
   "_prism_Maplets ms1 (_prism_Maplets ms2 ms3)" \<leftharpoondown> "_prism_Maplets (_prism_Maplets ms1 ms2) ms3"
 
-lemma dom_prism_fun: "wb_prism c \<Longrightarrow> pdom(prism_fun c A P B) = {build\<^bsub>c\<^esub> v | v. v \<in> A \<and> P v}"
+lemma dom_prism_fun: "wb_prism c \<Longrightarrow> pdom(prism_fun c A PB) = {build\<^bsub>c\<^esub> v | v. v \<in> A \<and> fst (PB v)}"
   by (simp add: prism_fun_def, auto)
 
-lemma prism_fun_compat: "c \<nabla> d \<Longrightarrow> prism_fun c A P g ## prism_fun d B Q h"
+lemma prism_fun_compat: "c \<nabla> d \<Longrightarrow> prism_fun c A PB ## prism_fun d B QB"
   by (auto intro!: pfun_indep_compat simp add: prism_fun_def prism_diff_build)
 
-lemma prism_fun_commute: "c \<nabla> d \<Longrightarrow> prism_fun c A P g \<oplus> prism_fun d B Q h = prism_fun d B Q h \<oplus> prism_fun c A P g"
+lemma prism_fun_commute: "c \<nabla> d \<Longrightarrow> prism_fun c A PB \<oplus> prism_fun d B QB = prism_fun d B QB \<oplus> prism_fun c A PB"
   by (meson override_comm prism_fun_compat)
 
-lemma prism_fun_apply: "\<lbrakk> wb_prism c; v \<in> A; P v \<rbrakk> \<Longrightarrow> (prism_fun c A P B)(build\<^bsub>c\<^esub> v)\<^sub>p = B v"
+lemma prism_fun_apply: "\<lbrakk> wb_prism c; v \<in> A; fst (PB v) \<rbrakk> \<Longrightarrow> (prism_fun c A PB)(build\<^bsub>c\<^esub> v)\<^sub>p = snd (PB v)"
   by (simp add: prism_fun_def)
 
-lemma prism_fun_update_1 [simp]: "\<lbrakk> wb_prism c; v \<in> A; P v \<rbrakk> \<Longrightarrow> (f(c[x \<in> A | P(x)] \<Rightarrow> B(x)))(build\<^bsub>c\<^esub> v)\<^sub>p = B v"
+lemma prism_fun_update_app_1 [simp]: "\<lbrakk> wb_prism c; v \<in> A; P v \<rbrakk> \<Longrightarrow> (f(c[x \<in> A | P(x)] \<Rightarrow> B(x)))(build\<^bsub>c\<^esub> v)\<^sub>p = B v"
   by (simp add: prism_fun_def prism_fun_upd_def)
 
-lemma prism_fun_update_2 [simp]: "\<lbrakk> wb_prism c; wb_prism d; d \<nabla> c \<rbrakk> \<Longrightarrow> (f(c[x \<in> A | P(x)] \<Rightarrow> B(x)))(build\<^bsub>d\<^esub> v)\<^sub>p = f(build\<^bsub>d\<^esub> v)\<^sub>p"
+lemma prism_fun_update_app_2 [simp]: "\<lbrakk> wb_prism c; wb_prism d; d \<nabla> c \<rbrakk> \<Longrightarrow> (f(c[x \<in> A | P(x)] \<Rightarrow> B(x)))(build\<^bsub>d\<^esub> v)\<^sub>p = f(build\<^bsub>d\<^esub> v)\<^sub>p"
   by (simp add: prism_fun_def prism_fun_upd_def image_iff prism_diff_build)
 
 lemma prism_fun_update_cancel [simp]: "f(c[x \<in> A | P(x)] \<Rightarrow> g(x) | c[x \<in> A | P(x)] \<Rightarrow> h(x)) = f(c[x \<in> A | P(x)] \<Rightarrow> h(x))"
