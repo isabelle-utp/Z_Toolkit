@@ -306,6 +306,9 @@ lemma pfun_override_commute_weak:
   "(\<forall> k \<in> pdom(f) \<inter> pdom(g). f(k)\<^sub>p = g(k)\<^sub>p) \<Longrightarrow> f \<oplus> g = g \<oplus> f"
   by (transfer, simp, metis IntD1 IntD2 domD map_add_comm_weak option.sel)
 
+lemma pfun_override_fully: "pdom f \<subseteq> pdom g \<Longrightarrow> f \<oplus> g = g"
+  by (transfer, auto simp add: map_add_def option.case_eq_if fun_eq_iff)
+
 lemma pfun_override_res: "pdom g -\<lhd>\<^sub>p f \<oplus> g = f \<oplus> g"
   by (transfer, auto simp add: map_add_restrict[THEN sym])
 
@@ -1070,34 +1073,57 @@ subsection \<open> Prism Functions \<close>
 text \<open> We can use prisms to index a type and construct partial functions. \<close>
 
 definition prism_fun :: "('a \<Longrightarrow>\<^sub>\<triangle> 'e) \<Rightarrow> 'a set \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> ('e \<Zpfun> 'b)"
-  where "prism_fun c A P B = (\<lambda> x\<in>build\<^bsub>c\<^esub> ` A | P (the (match\<^bsub>c\<^esub> x)) \<bullet> B (the (match\<^bsub>c\<^esub> x)))"
+  where [code_unfold]: "prism_fun c A P B = (\<lambda> x\<in>build\<^bsub>c\<^esub> ` A | P (the (match\<^bsub>c\<^esub> x)) \<bullet> B (the (match\<^bsub>c\<^esub> x)))"
 
 definition prism_fun_upd :: "('e \<Zpfun> 'b) \<Rightarrow> ('a \<Longrightarrow>\<^sub>\<triangle> 'e) \<Rightarrow> 'a set \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> ('e \<Zpfun> 'b)"
-  where "prism_fun_upd F c A P B = F \<oplus> prism_fun c A P B"
+  where [code_unfold]: "prism_fun_upd F c A P B = F \<oplus> prism_fun c A P B"
 
 nonterminal prism_maplet and prism_maplets
 
 syntax
-  "_prism_maplet" :: "id \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> prism_maplet" ("__ \<in> _ | _ \<mapsto> _")
-  "_prism_maplet_mem" :: "id \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> prism_maplet" ("__ \<in> _  \<mapsto> _")
-  ""               :: "prism_maplet \<Rightarrow> prism_maplets"             ("_")
-  "_prism_Maplets" :: "[prism_maplet, prism_maplets] \<Rightarrow> prism_maplets" ("_,/ _")
-  "_prism_fun_upd" :: "logic \<Rightarrow> prism_maplet \<Rightarrow> logic" ("_'(_')" [900, 0] 900)
+  "_prism_maplet"        :: "id \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> prism_maplet" ("_[_ \<in> _ | _] \<Rightarrow> _")
+  "_prism_maplet_mem"    :: "id \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> prism_maplet" ("_[_ \<in> _] \<Rightarrow> _")
+  "_prism_maplet_simple" :: "id \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> prism_maplet" ("_[_] \<Rightarrow> _")
+  ""                     :: "prism_maplet \<Rightarrow> prism_maplets"             ("_")
+  "_prism_Maplets"       :: "[prism_maplet, prism_maplets] \<Rightarrow> prism_maplets" ("_ |/ _")
+  "_prism_fun_upd"       :: "logic \<Rightarrow> prism_maplets \<Rightarrow> logic" ("_'(_')" [900, 0] 900)
+  "_prism_fun"           :: "prism_maplets \<Rightarrow> logic" ("{_}\<^sub>p")
 
 translations
-  "f(c v \<in> A | P \<mapsto> B)" => "CONST prism_fun_upd f c A (\<lambda> v. P) (\<lambda> v. B)"
+  "f(c[v \<in> A | P] \<Rightarrow> B)" => "CONST prism_fun_upd f c A (\<lambda> v. P) (\<lambda> v. B)"
+  "f(c[v \<in> A | P] \<Rightarrow> B)" <= "CONST prism_fun_upd f c A (\<lambda> v. P) (\<lambda> v'. B)"
+  "f(c[v \<in> A] \<Rightarrow> B)" == "f(c[v \<in> A | CONST True] \<Rightarrow> B)"
+  "f(c[v] \<Rightarrow> B)" == "f(c[v \<in> CONST UNIV] \<Rightarrow> B)"
+  "_prism_fun_upd m (_prism_Maplets xy ms)"  \<rightleftharpoons> "_prism_fun_upd (_prism_fun_upd m xy) ms"
+  "_prism_fun ms"                            \<rightleftharpoons> "_prism_fun_upd {}\<^sub>p ms"
+  "_prism_fun (_prism_Maplets ms1 ms2)"     \<leftharpoondown> "_prism_fun_upd (_prism_fun ms1) ms2"
+  "_prism_Maplets ms1 (_prism_Maplets ms2 ms3)" \<leftharpoondown> "_prism_Maplets (_prism_Maplets ms1 ms2) ms3"
 
 lemma dom_prism_fun: "wb_prism c \<Longrightarrow> pdom(prism_fun c A P B) = {build\<^bsub>c\<^esub> v | v. v \<in> A \<and> P v}"
   by (simp add: prism_fun_def, auto)
 
+lemma prism_fun_compat: "c \<nabla> d \<Longrightarrow> prism_fun c A P g ## prism_fun d B Q h"
+  by (auto intro!: pfun_indep_compat simp add: prism_fun_def prism_diff_build)
+
+lemma prism_fun_commute: "c \<nabla> d \<Longrightarrow> prism_fun c A P g \<oplus> prism_fun d B Q h = prism_fun d B Q h \<oplus> prism_fun c A P g"
+  by (meson override_comm prism_fun_compat)
+
 lemma prism_fun_apply: "\<lbrakk> wb_prism c; v \<in> A; P v \<rbrakk> \<Longrightarrow> (prism_fun c A P B)(build\<^bsub>c\<^esub> v)\<^sub>p = B v"
   by (simp add: prism_fun_def)
 
-lemma prism_fun_update_1: "\<lbrakk> wb_prism c; v \<in> A; P v \<rbrakk> \<Longrightarrow> (f(c x \<in> A | P(x) \<mapsto> B(x)))(build\<^bsub>c\<^esub> v)\<^sub>p = B v"
+lemma prism_fun_update_1 [simp]: "\<lbrakk> wb_prism c; v \<in> A; P v \<rbrakk> \<Longrightarrow> (f(c[x \<in> A | P(x)] \<Rightarrow> B(x)))(build\<^bsub>c\<^esub> v)\<^sub>p = B v"
   by (simp add: prism_fun_def prism_fun_upd_def)
 
-lemma prism_fun_update_2: "\<lbrakk> wb_prism c; wb_prism d; d \<nabla> c \<rbrakk> \<Longrightarrow> (f(c x \<in> A | P(x) \<mapsto> B(x)))(build\<^bsub>d\<^esub> v)\<^sub>p = f(build\<^bsub>d\<^esub> v)\<^sub>p"
+lemma prism_fun_update_2 [simp]: "\<lbrakk> wb_prism c; wb_prism d; d \<nabla> c \<rbrakk> \<Longrightarrow> (f(c[x \<in> A | P(x)] \<Rightarrow> B(x)))(build\<^bsub>d\<^esub> v)\<^sub>p = f(build\<^bsub>d\<^esub> v)\<^sub>p"
   by (simp add: prism_fun_def prism_fun_upd_def image_iff prism_diff_build)
+
+lemma prism_fun_update_cancel [simp]: "f(c[x \<in> A | P(x)] \<Rightarrow> g(x) | c[x \<in> A | P(x)] \<Rightarrow> h(x)) = f(c[x \<in> A | P(x)] \<Rightarrow> h(x))"
+  by (simp add: prism_fun_def prism_fun_upd_def override_assoc[THEN sym] pfun_override_fully)
+
+lemma prism_fun_update_commute: 
+  "c \<nabla> d \<Longrightarrow> f(c[x \<in> A | P(x)] \<Rightarrow> g(x) | d[y \<in> B | Q(y)] \<Rightarrow> h(y)) 
+            = f(d[y \<in> B | Q(y)] \<Rightarrow> h(y) | c[x \<in> A | P(x)] \<Rightarrow> g(x))"
+  by (simp add: prism_fun_upd_def override_assoc[THEN sym] prism_fun_commute)
 
 subsection \<open> Code Generator \<close>
 
