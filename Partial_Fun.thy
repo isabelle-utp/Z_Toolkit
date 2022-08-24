@@ -1081,18 +1081,18 @@ definition prism_fun_upd :: "('e \<Zpfun> 'b) \<Rightarrow> ('a \<Longrightarrow
 nonterminal prism_maplet and prism_maplets
 
 syntax
-  "_prism_maplet"        :: "id \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> prism_maplet" ("_[_ \<in> _ | _] \<Rightarrow> _")
-  "_prism_maplet_mem"    :: "id \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> prism_maplet" ("_[_ \<in> _] \<Rightarrow> _")
-  "_prism_maplet_simple" :: "id \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> prism_maplet" ("_[_] \<Rightarrow> _")
+  "_prism_maplet"        :: "id \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> prism_maplet" ("_{_ \<in> _./ _} \<Rightarrow> _")
+  "_prism_maplet_mem"    :: "id \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> prism_maplet" ("_{_ \<in> _} \<Rightarrow> _")
+  "_prism_maplet_simple" :: "id \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> prism_maplet" ("_ _ \<Rightarrow> _")
   ""                     :: "prism_maplet \<Rightarrow> prism_maplets"             ("_")
   "_prism_Maplets"       :: "[prism_maplet, prism_maplets] \<Rightarrow> prism_maplets" ("_ |/ _")
   "_prism_fun_upd"       :: "logic \<Rightarrow> prism_maplets \<Rightarrow> logic" ("_'(_')" [900, 0] 900)
   "_prism_fun"           :: "prism_maplets \<Rightarrow> logic" ("{_}\<^sub>p")
 
 translations
-  "f(c[v \<in> A | P] \<Rightarrow> B)" == "CONST prism_fun_upd f c A (\<lambda> v. (P, B))"
-  "f(c[v \<in> A] \<Rightarrow> B)" == "f(c[v \<in> A | CONST True] \<Rightarrow> B)"
-  "f(c[v] \<Rightarrow> B)" == "f(c[v \<in> CONST UNIV] \<Rightarrow> B)"
+  "f(c{v \<in> A. P} \<Rightarrow> B)" == "CONST prism_fun_upd f c A (\<lambda> v. (P, B))"
+  "f(c{v \<in> A} \<Rightarrow> B)" == "f(c{v \<in> A. CONST True} \<Rightarrow> B)"
+  "f(c v \<Rightarrow> B)" == "f(c{v \<in> CONST UNIV} \<Rightarrow> B)"
   "_prism_fun_upd m (_prism_Maplets xy ms)"  \<rightleftharpoons> "_prism_fun_upd (_prism_fun_upd m xy) ms"
   "_prism_fun ms"                            \<rightleftharpoons> "_prism_fun_upd {}\<^sub>p ms"
   "_prism_fun (_prism_Maplets ms1 ms2)"     \<leftharpoondown> "_prism_fun_upd (_prism_fun ms1) ms2"
@@ -1110,18 +1110,18 @@ lemma prism_fun_commute: "c \<nabla> d \<Longrightarrow> prism_fun c A PB \<oplu
 lemma prism_fun_apply: "\<lbrakk> wb_prism c; v \<in> A; fst (PB v) \<rbrakk> \<Longrightarrow> (prism_fun c A PB)(build\<^bsub>c\<^esub> v)\<^sub>p = snd (PB v)"
   by (simp add: prism_fun_def)
 
-lemma prism_fun_update_app_1 [simp]: "\<lbrakk> wb_prism c; v \<in> A; P v \<rbrakk> \<Longrightarrow> (f(c[x \<in> A | P(x)] \<Rightarrow> B(x)))(build\<^bsub>c\<^esub> v)\<^sub>p = B v"
+lemma prism_fun_update_app_1 [simp]: "\<lbrakk> wb_prism c; v \<in> A; P v \<rbrakk> \<Longrightarrow> (f(c{x \<in> A. P(x)} \<Rightarrow> B(x)))(build\<^bsub>c\<^esub> v)\<^sub>p = B v"
   by (simp add: prism_fun_def prism_fun_upd_def)
 
-lemma prism_fun_update_app_2 [simp]: "\<lbrakk> wb_prism c; wb_prism d; d \<nabla> c \<rbrakk> \<Longrightarrow> (f(c[x \<in> A | P(x)] \<Rightarrow> B(x)))(build\<^bsub>d\<^esub> v)\<^sub>p = f(build\<^bsub>d\<^esub> v)\<^sub>p"
+lemma prism_fun_update_app_2 [simp]: "\<lbrakk> wb_prism c; wb_prism d; d \<nabla> c \<rbrakk> \<Longrightarrow> (f(c{x \<in> A. P(x)} \<Rightarrow> B(x)))(build\<^bsub>d\<^esub> v)\<^sub>p = f(build\<^bsub>d\<^esub> v)\<^sub>p"
   by (simp add: prism_fun_def prism_fun_upd_def image_iff prism_diff_build)
 
-lemma prism_fun_update_cancel [simp]: "f(c[x \<in> A | P(x)] \<Rightarrow> g(x) | c[x \<in> A | P(x)] \<Rightarrow> h(x)) = f(c[x \<in> A | P(x)] \<Rightarrow> h(x))"
+lemma prism_fun_update_cancel [simp]: "f(c{x \<in> A. P(x)} \<Rightarrow> g(x) | c{x \<in> A. P(x)} \<Rightarrow> h(x)) = f(c{x \<in> A. P(x)} \<Rightarrow> h(x))"
   by (simp add: prism_fun_def prism_fun_upd_def override_assoc[THEN sym] pfun_override_fully)
 
 lemma prism_fun_update_commute: 
-  "c \<nabla> d \<Longrightarrow> f(c[x \<in> A | P(x)] \<Rightarrow> g(x) | d[y \<in> B | Q(y)] \<Rightarrow> h(y)) 
-            = f(d[y \<in> B | Q(y)] \<Rightarrow> h(y) | c[x \<in> A | P(x)] \<Rightarrow> g(x))"
+  "c \<nabla> d \<Longrightarrow> f(c{x \<in> A. P(x)} \<Rightarrow> g(x) | d{y \<in> B. Q(y)} \<Rightarrow> h(y)) 
+            = f(d{y \<in> B. Q(y)} \<Rightarrow> h(y) | c{x \<in> A. P(x)} \<Rightarrow> g(x))"
   by (simp add: prism_fun_upd_def override_assoc[THEN sym] prism_fun_commute)
 
 subsection \<open> Code Generator \<close>
