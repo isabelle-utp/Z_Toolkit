@@ -1124,6 +1124,26 @@ lemma prism_fun_update_commute:
             = f(d{y \<in> B. Q(y)} \<Rightarrow> h(y) | c{x \<in> A. P(x)} \<Rightarrow> g(x))"
   by (simp add: prism_fun_upd_def override_assoc[THEN sym] prism_fun_commute)
 
+lemma case_sum_Plus: "case_sum f g ` (A <+> B) = (f`A) \<union> (g`B)"
+  by (simp add: image_iff Plus_def, metis (no_types, lifting) image_Un image_cong image_image sum.case(1) sum.case(2))
+
+lemma build_in_dom_prism_fun: "\<lbrakk> wb_prism c; x \<in> A; fst (PB x) \<rbrakk> \<Longrightarrow> build\<^bsub>c\<^esub> x \<in> pdom (prism_fun c A PB)"
+  by (auto simp add: dom_prism_fun)
+  
+lemma prism_fun_combine:
+  assumes "wb_prism c" "wb_prism d" "c \<nabla> d"
+  shows "prism_fun c A PB \<oplus> prism_fun d B QB = prism_fun (c +\<^sub>\<triangle> d) (A <+> B) (case_sum PB QB)"
+  using assms
+  apply (simp add: pfun_eq_iff dom_prism_fun sum.case_eq_if prism_diff_build build_in_dom_prism_fun)
+  apply auto
+  apply (metis InlI build_plus_Inl sum.disc(1) sum.sel(1))
+    apply (metis InrI build_plus_Inr sum.disc(2) sum.sel(2))
+   apply (simp add: dom_prism_fun prism_diff_build prism_fun_apply)
+   apply (metis InlI build_plus_Inl case_sum_o_inj(1) comp_apply prism_fun_apply prism_plus_wb)
+  apply (simp add: build_in_dom_prism_fun prism_diff_build prism_fun_apply)
+  apply (metis InrI build_plus_Inr old.sum.simps(6) prism_fun_apply prism_plus_wb)
+  done
+
 subsection \<open> Code Generator \<close>
 
 subsubsection \<open> Associative Lists \<close>
