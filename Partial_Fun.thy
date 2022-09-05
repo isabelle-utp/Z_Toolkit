@@ -907,7 +907,7 @@ lemma pdom_pfuse [simp]: "pdom (pfuse f g) = pdom(f) \<inter> pdom(g)"
 subsection \<open> Lambda abstraction \<close>
 
 lemma pabs_cong:
-  assumes "A = B" "\<And> x. x \<in> A \<Longrightarrow> P(x) = Q(x)" "\<And> x. x \<in> A \<Longrightarrow> F(x) = G(x)"
+  assumes "A = B" "\<And> x. x \<in> A \<Longrightarrow> P(x) = Q(x)" "\<And> x. \<lbrakk> x \<in> A; P x \<rbrakk> \<Longrightarrow> F(x) = G(x)"
   shows "(\<lambda> x \<in> A | P x \<bullet> F(x)) = (\<lambda> x \<in> B | Q x \<bullet> G(x))"
   using assms unfolding pabs_def
   by (transfer, auto simp add: restrict_map_def fun_eq_iff)
@@ -1143,6 +1143,23 @@ lemma prism_fun_combine:
   apply (simp add: build_in_dom_prism_fun prism_diff_build prism_fun_apply)
   apply (metis InrI build_plus_Inr old.sum.simps(6) prism_fun_apply prism_plus_wb)
   done
+
+lemma prism_diff_implies_indep_funs:
+  "\<lbrakk> wb_prism c; wb_prism d; c \<nabla> d \<rbrakk> \<Longrightarrow> pdom(prism_fun c A P\<sigma>) \<inter> pdom(prism_fun d B Q\<rho>) = {}"
+  by (auto simp add: dom_prism_fun prism_diff_build)
+
+lemma prism_fun_cong: "\<lbrakk> c = d; A = B; PB = QB \<rbrakk> \<Longrightarrow> prism_fun c A PB = prism_fun d B QB"
+  by blast
+
+lemma prism_fun_cong2: 
+  assumes 
+    "wb_prism c\<^sub>1" "wb_prism c\<^sub>2" 
+    "c\<^sub>1 = c\<^sub>2" "A\<^sub>1 = A\<^sub>2" 
+    "\<And> i. i \<in> A\<^sub>1 \<Longrightarrow> P\<^sub>1 i \<longleftrightarrow> P\<^sub>2 i" 
+    "\<And> i. \<lbrakk> i \<in> A\<^sub>1; P\<^sub>1 i \<rbrakk> \<Longrightarrow> B\<^sub>1 i = B\<^sub>2 i"
+  shows "prism_fun c\<^sub>1 A\<^sub>1 (\<lambda> x. (P\<^sub>1 x, B\<^sub>1 x)) = prism_fun c\<^sub>2 A\<^sub>2 (\<lambda> y. (P\<^sub>2 y, B\<^sub>2 y))"
+  using assms
+  by (auto intro!: pabs_cong simp add: prism_fun_def)
 
 subsection \<open> Code Generator \<close>
 
