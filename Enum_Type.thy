@@ -1,7 +1,7 @@
 section \<open> Enumeration Types \<close>
 
 theory Enum_Type
-  imports Main
+  imports Haskell_Show
   keywords "enumtype" :: "thy_defn"
 begin
 

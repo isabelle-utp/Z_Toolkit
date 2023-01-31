@@ -21,6 +21,32 @@ fun define_overloaded_generic (binding,eq) lthy =
 end;
 fun define_overloaded (name,eq) = define_overloaded_generic ((Binding.name name, @{attributes [code]}),eq);
 
+fun mk_show_eq n ctx =
+  let open Syntax; open HOLogic; 
+      val show = const @{const_name show}
+      val ctr =   Proof_Context.read_const {proper = true, strict = false} ctx n;
+ in
+    Syntax.check_term ctx (
+      mk_Trueprop (eq_const dummyT $ (show $ ctr)
+                                   $ (mk_literal (Long_Name.base_name n)))
+    )
+  end; 
+
+fun mk_show_fun tname ctrs ctx =
+  let val typ = Syntax.read_typ ctx tname in
+  Function_Fun.add_fun 
+    [(Binding.name ("show_" ^ tname), SOME (typ --> @{typ "String.literal"}), NoSyn)]
+    (map (fn n => ((Binding.empty_atts, mk_show_eq n ctx), [], [])) ctrs)
+    (Function_Fun.fun_config) ctx
+  end
+
+fun mk_show_inst tname ctrs thy =
+  let val ctx0 = Class.instantiation_cmd ([tname], [], "show") thy;
+      val ctx1 = mk_show_fun tname ctrs ctx0;
+  in Class.prove_instantiation_exit (fn _ => Class.intro_classes_tac ctx1 []) ctx1
+  end
+
+
 (* val enum_type = fn: bstring -> bstring list -> theory -> theory *)
 
 fun enum_type tname cs thy =
@@ -42,8 +68,10 @@ fun enum_type tname cs thy =
           (fn _ => EVERY [Class.intro_classes_tac ctx5 [], auto_tac (fold Simplifier.add_simp ([thm1, thm2, thm3]) ctx5), ALLGOALS (fn i => Induct_Tacs.case_tac ctx5 "x" [] NONE i THEN auto_tac ctx5)]) ctx5;
     val ctx6 = Class.instantiation_cmd ([tname], [], "default") thy1;
     val (_, ctx7) = Specification.definition (SOME (Binding.name ("default_" ^ tname), NONE, NoSyn)) [] [] ((Binding.empty, []), mk_def dummyT ("default_" ^ tname) (nth cs' 0)) ctx6
-        
+    val thy2 = Class.prove_instantiation_exit (fn _ => Class.intro_classes_tac ctx7 []) ctx7
+    val thy3 = mk_show_inst tname cs thy2
+(*    val ctx8 = Class.instantiation_cmd ([tname], [], "show") thy2; *)
   in
-    Class.prove_instantiation_exit (fn _ => Class.intro_classes_tac ctx7 []) ctx7
+    thy3
   end
 end

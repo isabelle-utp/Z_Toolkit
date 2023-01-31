@@ -9,5 +9,7 @@ theory Z_Toolkit
     Number_Toolkit
     Sequence_Toolkit
     Z_Toolkit_Pretty
+    Haskell_Show
+    Enum_Type
     Partial_Function_Command
 begin end
