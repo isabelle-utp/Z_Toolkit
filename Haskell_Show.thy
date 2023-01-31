@@ -107,7 +107,7 @@ instance ..
 
 end
 
-lemma show_Nat [code]: "show (Nat x) = show (max 0 x)"
+lemma show_Nat: "show (Nat x) = show (max 0 x)"
   using Code_Target_Nat.Nat_def integer_of_nat_eq_of_nat nat_of_integer_def of_nat_of_integer show_nat_def by presburger
   
 instantiation String.literal :: "show"
