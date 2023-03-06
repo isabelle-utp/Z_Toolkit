@@ -57,6 +57,10 @@ instance ..
 
 end
 
+code_printing
+  constant "show_unit_inst.show_unit" \<rightharpoonup> (Haskell) "Prelude.show"
+| class_instance "unit" :: "show" \<rightharpoonup> (Haskell) -
+
 text \<open> Actually, we don't really need to create the show function if all we're interested in is
   code generation. Here, for the @{typ integer} instance, we omit the definition. This is
   because @{typ integer} is set up to correspond to the built-in Haskell type Integer, which
