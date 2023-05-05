@@ -70,8 +70,14 @@ fun enum_type tname cs thy =
     val (_, ctx7) = Specification.definition (SOME (Binding.name ("default_" ^ tname), NONE, NoSyn)) [] [] ((Binding.empty, []), mk_def dummyT ("default_" ^ tname) (nth cs' 0)) ctx6
     val thy2 = Class.prove_instantiation_exit (fn _ => Class.intro_classes_tac ctx7 []) ctx7
     val thy3 = mk_show_inst tname cs thy2
+    val ctx7 = Named_Target.theory_init thy3
+    val ctx8 = snd (Local_Theory.define 
+           ((Binding.name tname, NoSyn)
+         , ((Binding.name (tname ^ "_def")
+           , @{attributes [code]})
+           , check_term ctx6 (Const (@{const_name "top"}, Type ("Set.set", [ty]))))) ctx7)
 (*    val ctx8 = Class.instantiation_cmd ([tname], [], "show") thy2; *)
   in
-    thy3
+    Local_Theory.exit_global ctx8
   end
 end

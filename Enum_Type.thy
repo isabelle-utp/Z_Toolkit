@@ -13,4 +13,6 @@ val _ =
    ((Parse.name -- (@{keyword "="} |-- Scan.repeat (Parse.name --| @{keyword "|"}) -- Parse.name)) >> (fn (tname, (cs, c)) => Toplevel.theory (Enum_Type.enum_type tname (cs @ [c]))));
 \<close>
 
+declare UNIV_enum [code_unfold]
+
 end
