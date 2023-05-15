@@ -5,7 +5,7 @@ jobs:
     name: Build Theory
     steps:
       - uses: actions/checkout@v3
-      - uses: lexbailey/isabelle-theory-build-github-action@v6
+      - uses: lexbailey/isabelle-theory-build-github-action@v7
         with:
           isabelle-version: '2022'
           depends: 'https://github.com/isabelle-utp/Optics.git@main'
