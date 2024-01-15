@@ -172,7 +172,7 @@ lemma infseq_lexord_antisym:
 lemma infseq_lexord_asym:
   assumes "asym R"
   shows "asym (infseq_lexord R)"
-  by (meson assms asym.simps infseq_lexord_antisym infseq_lexord_irrefl)
+  by (simp add: assms asym_onI infseq_lexord_antisym)
 
 lemma infseq_lexord_total:
   assumes "total R"
