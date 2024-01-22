@@ -111,19 +111,17 @@ lemma head_z_def: "xs \<in> seq\<^sub>1(A) \<Longrightarrow> head xs = xs 1"
 
 subsection \<open> Last of a sequence \<close>
 
-hide_const (open) last
+definition slast :: "'a list \<Zpfun> 'a" where
+"slast = (\<lambda> xs :: 'a list | #xs > 0 \<bullet> List.last xs)"
 
-definition last :: "'a list \<Zpfun> 'a" where
-"last = (\<lambda> xs :: 'a list | #xs > 0 \<bullet> List.last xs)"
+lemma dom_last: "dom slast = {xs. #xs > 0}"
+  by (simp add: slast_def)
 
-lemma dom_last: "dom last = {xs. #xs > 0}"
-  by (simp add: last_def)
+lemma slast_app: "#xs > 0 \<Longrightarrow> slast xs = last xs"
+  by (simp add: slast_def)
 
-lemma last_app: "#xs > 0 \<Longrightarrow> last xs = List.last xs"
-  by (simp add: last_def)
-
-lemma last_eq: "#s > 0 \<Longrightarrow> last s = s (#s)"
-  by (simp add: last_app last_conv_nth)
+lemma slast_eq: "#s > 0 \<Longrightarrow> last s = s (#s)"
+  by (simp add: slast_app last_conv_nth)
 
 subsection \<open> Tail of a sequence \<close>
 
