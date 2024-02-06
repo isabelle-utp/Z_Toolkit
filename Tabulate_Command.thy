@@ -10,6 +10,8 @@ text \<open> The following little tool allows creation truth tables for predicat
 definition "tabulate" :: "('a::enum \<Rightarrow> 'b) \<Rightarrow> ('a \<times> 'b) list" where
 "tabulate f = map (\<lambda> x. (x, f x)) (rev Enum.enum)"
 
+ML \<open> ListPair.zip \<close>
+
 ML \<open> 
 
 structure Tabulate_Command =
@@ -18,21 +20,21 @@ struct
 fun space_out cwidth str =
   str ^ Library.replicate_string ((cwidth - length (Symbol.explode str))) Symbol.space;
 
-fun print_row cwidth row =
-  String.concat (Library.separate " | " (map (space_out cwidth) row));
+fun print_row cwidths row =
+  String.concat (Library.separate " | " (map (fn (w, r) => space_out w r) (ListPair.zip (cwidths, row))));
  
 (* Print an ASCII art table, given a heading and list of rows *)
 fun print_table heads rows =
   let
-  val cnum = length heads
-  val cwidth = foldr1 Int.max (map (length o Symbol.explode) (heads @ List.concat rows));
-  val llength = (((cwidth + 2) * cnum) + 6);
+  val cols = map (fn i => map (fn xs => nth xs i) (heads :: rows)) (0 upto length heads - 1)
+  val cwidths = map (fn c => foldr1 Int.max (map length (map Symbol.explode c))) cols
+  val llength = foldr1 (fn (c, x) => (c + 4) + x) cwidths + 2
   in Print_Mode.with_modes [] (fn () =>
-              Pretty.paragraph ([Pretty.str (print_row cwidth heads)
+              Pretty.paragraph ([Pretty.str (print_row cwidths heads)
                                 , Pretty.fbrk
                                 , Pretty.para ((Library.replicate_string llength "="))
                                 , Pretty.fbrk]
-                                @ Library.separate Pretty.fbrk (map (Pretty.str o print_row cwidth) rows))) () end;
+                                @ Library.separate Pretty.fbrk (map (Pretty.str o print_row cwidths) rows))) () end;
   
 fun tabulate_cmd raw_t state =
   let 
