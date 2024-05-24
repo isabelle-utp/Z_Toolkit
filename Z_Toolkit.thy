@@ -12,4 +12,5 @@ theory Z_Toolkit
     Haskell_Show
     Enum_Type
     Partial_Function_Command
+    Channels_Events
 begin end
