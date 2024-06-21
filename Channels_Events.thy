@@ -27,14 +27,33 @@ subsection \<open> Channel Partial Instantiation \<close>
 text \<open> Create a new reduced channel (prism) by instantiating and fixing the first parameter of an 
   existing channel. \<close>
 
-definition chinst :: "('a \<times> 'b \<Longrightarrow>\<^sub>\<triangle> 'e) \<Rightarrow> 'a \<Rightarrow> ('b \<Longrightarrow>\<^sub>\<triangle> 'e)" where
-"chinst c a = \<lparr> prism_match = (\<lambda> e. case match\<^bsub>c\<^esub> e of 
+definition chinst1 :: "('a \<Longrightarrow>\<^sub>\<triangle> 'e) \<Rightarrow> 'a \<Rightarrow> (unit \<Longrightarrow>\<^sub>\<triangle> 'e)" where
+"chinst1 c a = \<lparr> prism_match = (\<lambda> e. case match\<^bsub>c\<^esub> e of 
+                                       None \<Rightarrow> None 
+                                     | Some a' \<Rightarrow> if (a = a') then Some () else None) 
+               , prism_build = (\<lambda> b. build\<^bsub>c\<^esub> a) \<rparr>"
+
+lemma chinst1_wb_prism [simp]: "wb_prism c \<Longrightarrow> wb_prism (chinst1 c a)"
+  by (simp add: chinst1_def, unfold_locales, auto simp add: option.case_eq_if)
+
+definition chinstn :: "('a \<times> 'b \<Longrightarrow>\<^sub>\<triangle> 'e) \<Rightarrow> 'a \<Rightarrow> ('b \<Longrightarrow>\<^sub>\<triangle> 'e)" where
+"chinstn c a = \<lparr> prism_match = (\<lambda> e. case match\<^bsub>c\<^esub> e of 
                                        None \<Rightarrow> None 
                                      | Some (a', b') \<Rightarrow> if (a = a') then Some b' else None) 
                , prism_build = (\<lambda> b. build\<^bsub>c\<^esub> (a, b)) \<rparr>"     
 
-lemma chinst_wb_prism [simp]: "wb_prism c \<Longrightarrow> wb_prism (chinst c a)"
-  by (simp add: chinst_def, unfold_locales, auto simp add: option.case_eq_if)
+lemma chinstn_wb_prism [simp]: "wb_prism c \<Longrightarrow> wb_prism (chinstn c a)"
+  by (simp add: chinstn_def, unfold_locales, auto simp add: option.case_eq_if)
+
+text \<open> A channel instantiation may have 1 or 2+ parameters, and this can only be decided based on
+  the type of the channel (where it's unitary, or a product). Therefore, we make channel instantiation
+  an overloaded constant. \<close>
+
+consts chinst :: "('a \<Longrightarrow>\<^sub>\<triangle> 'e) \<Rightarrow> 'b \<Rightarrow> ('c \<Longrightarrow>\<^sub>\<triangle> 'e)"
+
+adhoc_overloading
+  chinst chinst1 and
+  chinst chinstn
 
 subsection \<open> Channel Sets \<close>
 
@@ -53,7 +72,7 @@ nonterminal chan and chans
 
 syntax 
   "_chan_id"       :: "id \<Rightarrow> chan" ("_")
-  "_chan_inst"     :: "chan \<Rightarrow> id \<Rightarrow> chan" ("_\<cdot>_" [100,101] 101)
+  "_chan_inst"     :: "chan \<Rightarrow> logic \<Rightarrow> chan" ("_\<cdot>_" [100,101] 101)
   "_chan"          :: "chan \<Rightarrow> chans" ("_")
   "_chans"         :: "chan \<Rightarrow> chans \<Rightarrow> chans" ("_,/ _")
   "_ch_enum"       :: "chans \<Rightarrow> logic" ("\<lbrace>_\<rbrace>")
