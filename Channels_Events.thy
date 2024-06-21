@@ -52,17 +52,23 @@ definition csempty ("\<lbrace>\<rbrace>") where [code_unfold]: "\<lbrace>\<rbrac
 nonterminal chan and chans
 
 syntax 
-  "_chan"          :: "id \<Rightarrow> chans" ("_")
-  "_chans"         :: "id \<Rightarrow> chans \<Rightarrow> chans" ("_,/ _")
+  "_chan_id"       :: "id \<Rightarrow> chan" ("_")
+  "_chan_inst"     :: "chan \<Rightarrow> id \<Rightarrow> chan" ("_\<cdot>_" [100,101] 101)
+  "_chan"          :: "chan \<Rightarrow> chans" ("_")
+  "_chans"         :: "chan \<Rightarrow> chans \<Rightarrow> chans" ("_,/ _")
   "_ch_enum"       :: "chans \<Rightarrow> logic" ("\<lbrace>_\<rbrace>")
   "_ch_collect"    :: "id \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("\<lbrace>_/ _ \<in> _./ _\<rbrace>")
   "_ch_collect_ns" :: "id \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic" ("\<lbrace>_/ _./ _\<rbrace>")
 
-translations 
+translations
+  "_chan_id c" => "c"
+  "_chan_inst c x" => "CONST chinst c x" 
   "_chan c" => "CONST csbasic c"
   "_chans e es" => "CONST csinsert e es"
   "_ch_enum A" => "A"
   "_ch_enum (_chan c)" <= "CONST csbasic c"
+  "_chan (_chan_inst c x)" <= "_chan (CONST chinst c x)"
+  "_chan_inst (_chan_inst c x) y" <= "_chan_inst (CONST chinst c x) y"
   "_ch_enum (_chans c cs)" <= "CONST csinsert c (_ch_enum cs)"
   "_ch_collect e x A P" == "CONST cscollect e A (\<lambda> x. P)"
   "_ch_collect_ns e x P" == "_ch_collect e x (CONST UNIV) P"
@@ -107,6 +113,5 @@ translations
   "_rncollect (_evt_param c\<^sub>1 v\<^sub>1) (_evt_id c\<^sub>2) x A P" == "CONST rncollect c\<^sub>1 c\<^sub>2 A (\<lambda> x. ((v\<^sub>1, ()), P))"
   "_rncollect (_evt_id c\<^sub>1) (_evt_id c\<^sub>2) x A P" == "CONST rncollect c\<^sub>1 c\<^sub>2 A (\<lambda> x. (((), ()), P))"
   "_rncollect_ns e\<^sub>1 e\<^sub>2 x P" == "_rncollect e\<^sub>1 e\<^sub>2 x (CONST UNIV) P"
-
 
 end
