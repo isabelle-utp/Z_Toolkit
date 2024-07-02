@@ -1349,12 +1349,16 @@ fun pfuse_alist :: "('k \<times> 'a) list \<Rightarrow> ('k \<Zpfun> 'b) \<Right
 "pfuse_alist ((k, v) # ps) f = 
    (if k \<in> pdom f then (k, (v, pfun_app f k)) # pfuse_alist ps f else pfuse_alist ps f)"   
 
-lemma pfuse_pfun_of_alist [code]: 
+lemma pfuse_pfun_of_alist_aux: 
   "pfuse (pfun_of_alist xs) g = pfun_of_alist (pfuse_alist xs g)"
   apply (induct xs)
   apply (auto simp add: pfuse_upd)
   apply (metis (no_types, lifting) disjoint_iff_not_equal pdom_nres_disjoint pfun_upd_ext pfun_upd_twice pfuse_upd singletonD)
   done
+
+lemma pfuse_pfun_of_alist [code]: 
+  "pfuse (pfun_of_alist xs) g = pfun_of_alist (pfuse_alist (AList.clearjunk xs) g)"
+  by (metis pfun_of_alist_clearjunk pfuse_pfun_of_alist_aux)
 
 subsection \<open> Notation \<close>
 
