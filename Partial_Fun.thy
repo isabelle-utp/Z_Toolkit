@@ -897,12 +897,20 @@ lemma pfun_entries_apply_2 [simp]:
 lemma pdom_res_entries: "A \<lhd>\<^sub>p pfun_entries B f = pfun_entries (A \<inter> B) f"
   by (transfer, auto simp add: fun_eq_iff restrict_map_def)
 
+lemma pfuse_empty [simp]: "pfuse {}\<^sub>p g = {}\<^sub>p"
+  by (simp add: pfuse_def)
+
 lemma pfuse_app [simp]:
   "\<lbrakk> e \<in> pdom F; e \<in> pdom G \<rbrakk> \<Longrightarrow> (pfuse F G)(e)\<^sub>p = (F(e)\<^sub>p, G(e)\<^sub>p)"
   by (metis (no_types, lifting) IntI pfun_entries_apply_1 pfuse_def)
 
 lemma pdom_pfuse [simp]: "pdom (pfuse f g) = pdom(f) \<inter> pdom(g)"
   by (auto simp add: pfuse_def)
+
+lemma pfuse_upd: 
+  "pfuse (f(k \<mapsto> v)\<^sub>p) g = 
+   (if k \<in> pdom g then (pfuse ((-{k}) \<lhd>\<^sub>p f) g)(k \<mapsto> (v, pfun_app g k))\<^sub>p else pfuse f g)"
+  by (simp add: pfuse_def, transfer, auto simp add: fun_eq_iff)
 
 subsection \<open> Lambda abstraction \<close>
 
@@ -931,6 +939,12 @@ lemma pabs_id [simp]: "(\<lambda> x \<in> A | P x \<bullet> x) = pId_on {x\<in>A
 lemma pfun_entries_pabs: "pfun_entries A f = (\<lambda> x \<in> A \<bullet> f x)"
   by (simp add: pabs_def, transfer, auto)
 
+lemma pabs_empty [simp]: "(\<lambda> x\<in>{} \<bullet> f(x)) = {}\<^sub>p"
+  by (simp add: pabs_def)
+
+lemma pabs_insert_maplet: "(\<lambda> x\<in>insert y A \<bullet> f(x)) = (\<lambda> x\<in>A \<bullet> f(x)) \<oplus> {y \<mapsto> f(y)}\<^sub>p"
+  by (simp add: pabs_def, transfer, auto simp add: restrict_map_insert)
+
 text \<open> This rule can perhaps be simplified \<close>
 
 lemma pcomp_pabs: 
@@ -952,6 +966,9 @@ lemma pabs_simple_comp [simp]: "(\<lambda> x \<bullet> f x) \<circ>\<^sub>p g(k 
 
 lemma pabs_comp: "(\<lambda> x \<in> A \<bullet> f x) \<circ>\<^sub>p g = (\<lambda> x \<in> pdom (g \<rhd>\<^sub>p A) \<bullet> f (pfun_app g x))"
   by (metis pabs_eta pcomp_pabs pdom_pId_on pdom_pabs)
+
+lemma map_pfun_pabs [simp]: "map_pfun f (\<lambda> x\<in>A | B(x) \<bullet> g(x)) = (\<lambda> x\<in>A | B(x) \<bullet> f(g(x)))"
+  by (simp add: pfun_eq_iff) 
 
 subsection \<open> Summation \<close>
     
@@ -1161,6 +1178,9 @@ lemma prism_fun_cong2:
   using assms
   by (auto intro!: pabs_cong simp add: prism_fun_def)
 
+lemma map_pfun_prism_fun [simp]: "map_pfun f (prism_fun a A (\<lambda> x. (B x, C x))) = prism_fun a A (\<lambda> x. (B x, f (C x)))"
+  by (simp add: prism_fun_def)
+
 subsection \<open> Code Generator \<close>
 
 subsubsection \<open> Associative Lists \<close>
@@ -1321,6 +1341,20 @@ lemma pfun_app_entries [code]: "pfun_app (pfun_entries A f) x = (if x \<in> A th
 text \<open> Useful for optimising relational compositions containing partial functions \<close>
 
 declare rel_comp_pfun [code_unfold]
+
+text \<open> Fusing associative lists \<close>
+
+fun pfuse_alist :: "('k \<times> 'a) list \<Rightarrow> ('k \<Zpfun> 'b) \<Rightarrow> ('k \<times> ('a \<times> 'b)) list" where
+"pfuse_alist [] f = []" |
+"pfuse_alist ((k, v) # ps) f = 
+   (if k \<in> pdom f then (k, (v, pfun_app f k)) # pfuse_alist ps f else pfuse_alist ps f)"   
+
+lemma pfuse_pfun_of_alist [code]: 
+  "pfuse (pfun_of_alist xs) g = pfun_of_alist (pfuse_alist xs g)"
+  apply (induct xs)
+  apply (auto simp add: pfuse_upd)
+  apply (metis (no_types, lifting) disjoint_iff_not_equal pdom_nres_disjoint pfun_upd_ext pfun_upd_twice pfuse_upd singletonD)
+  done
 
 subsection \<open> Notation \<close>
 
