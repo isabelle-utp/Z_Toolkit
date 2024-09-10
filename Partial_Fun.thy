@@ -970,6 +970,28 @@ lemma pabs_comp: "(\<lambda> x \<in> A \<bullet> f x) \<circ>\<^sub>p g = (\<lam
 lemma map_pfun_pabs [simp]: "map_pfun f (\<lambda> x\<in>A | B(x) \<bullet> g(x)) = (\<lambda> x\<in>A | B(x) \<bullet> f(g(x)))"
   by (simp add: pfun_eq_iff) 
 
+subsection \<open> Singleton Partial Functions \<close>
+
+definition pfun_singleton :: "('a \<Zpfun> 'b) \<Rightarrow> bool" where
+"pfun_singleton f = (\<exists> k v. f = {k \<mapsto> v}\<^sub>p)" 
+
+lemma pfun_singleton_dom: "pfun_singleton f \<longleftrightarrow> (\<exists> k. pdom(f) = {k})"
+  by (auto simp add: pfun_singleton_def)
+     (metis insertI1 override_lzero pdom_res_pdom pfun_ovrd_single_upd)
+
+lemma pfun_singleton_maplet [simp]:
+  "pfun_singleton {k \<mapsto> v}\<^sub>p"
+  by (auto simp add: pfun_singleton_def)
+
+definition dest_pfsingle :: "('a \<Zpfun> 'b) \<Rightarrow> 'a \<times> 'b" where
+"dest_pfsingle f = (THE (k, v). f = {k \<mapsto> v}\<^sub>p)"
+
+lemma dest_pfsingle_maplet [simp]: "dest_pfsingle {k \<mapsto> v}\<^sub>p = (k, v)"
+  apply (auto intro!:the_equality simp add: dest_pfsingle_def)
+  apply (metis pdom_upd pdom_zero singleton_insert_inj_eq)
+  apply (metis pdom_upd pdom_zero pfun_app_upd_1 singleton_insert_inj_eq)
+  done  
+
 subsection \<open> Summation \<close>
     
 definition pfun_sum :: "('k, 'v::comm_monoid_add) pfun \<Rightarrow> 'v" where
@@ -1181,6 +1203,12 @@ lemma prism_fun_cong2:
 lemma map_pfun_prism_fun [simp]: "map_pfun f (prism_fun a A (\<lambda> x. (B x, C x))) = prism_fun a A (\<lambda> x. (B x, f (C x)))"
   by (simp add: prism_fun_def)
 
+lemma prism_fun_as_map:
+  "wb_prism b \<Longrightarrow> 
+   prism_fun b A PB = pfun_of_map (\<lambda> x. case match\<^bsub>b\<^esub> x of None \<Rightarrow> None | Some x \<Rightarrow> if x \<in> A \<and> fst (PB x) then Some (snd (PB x)) else None)"
+  by (auto simp add: prism_fun_def pfun_eq_iff domIff pdom.abs_eq option.case_eq_if)
+     (metis (no_types, lifting) image_iff option.collapse option.distinct(1) wb_prism.build_match, metis option.discI)
+
 subsection \<open> Code Generator \<close>
 
 subsubsection \<open> Associative Lists \<close>
@@ -1278,6 +1306,21 @@ lemma pdom_res_entries_alist [code]:
     pfun_of_alist (map (\<lambda> k. (k, f k)) (filter (\<lambda>x. x \<in> A) bs))"
   by (metis inter_set_filter pdom_res_entries pfun_entries_alist)
 
+lemma pfun_alist_oplus_map [code]: 
+  "pfun_of_alist xs \<oplus> pfun_of_map f = pfun_of_map (\<lambda> k. case f k of None \<Rightarrow> map_of xs k | Some v \<Rightarrow> Some v)"
+  by (simp add: map_add_def oplus_pfun.abs_eq pfun_of_alist.abs_eq)
+
+lemma pfun_map_oplus_alist [code]: 
+  "pfun_of_map f \<oplus> pfun_of_alist xs = pfun_of_map (\<lambda> k. if k \<in> set (map fst xs) then map_of xs k else f k)"
+  by (simp add: map_add_def oplus_pfun.abs_eq pfun_of_alist.abs_eq)
+     (metis map_of_eq_None_iff option.case_eq_if option.exhaust option.sel)
+
+lemma pfun_singleton_alist [code]: "pfun_singleton (pfun_of_alist [(k, v)]) = True"
+  by simp
+
+lemma dest_pfsingle_alist [code]: "dest_pfsingle (pfun_of_alist [(k, v)]) = (k, v)"
+  by simp
+
 text \<open> Adapted from Mapping theory \<close>
 
 lemma ptabulate_alist [code]: "ptabulate ks f = pfun_of_alist (map (\<lambda>k. (k, f k)) ks)"
@@ -1324,6 +1367,9 @@ lemma pabs_set [code]: "pabs (set xs) P f = pfun_of_alist (map (\<lambda>k. (k, 
 lemma pabs_coset [code]: 
   "pabs (List.coset A) P f = pfun_of_map (\<lambda> x. if x \<in> List.coset A \<and> P x then Some (f x) else None)"
   by (simp add: pabs_def, transfer, auto)
+
+lemma pfun_app_of_map [code]: "pfun_app (pfun_of_map f) x = the (f x)"
+  by (simp add: domIff option.the_def)
 
 lemma graph_pfun_set [code]: 
   "graph_pfun (set xs) = pfun_of_alist (filter (\<lambda>(x, y). length (remdups (map snd (AList.restrict {x} xs))) = 1) xs)"
