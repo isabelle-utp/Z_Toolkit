@@ -36,7 +36,7 @@ definition chinst1 :: "('a \<Longrightarrow>\<^sub>\<triangle> 'e) \<Rightarrow>
 lemma chinst1_wb_prism [simp]: "wb_prism c \<Longrightarrow> wb_prism (chinst1 c a)"
   by (simp add: chinst1_def, unfold_locales, auto simp add: option.case_eq_if)
 
-definition chinstn :: "('a \<times> 'b \<Longrightarrow>\<^sub>\<triangle> 'e) \<Rightarrow> 'a \<Rightarrow> ('b \<Longrightarrow>\<^sub>\<triangle> 'e)" where
+definition chinstn :: "('a \<times> 'b \<Longrightarrow>\<^sub>\<triangle> 'e) \<Rightarrow> 'a \<Rightarrow> ('b \<Longrightarrow>\<^sub>\<triangle> 'e)" ("_\<^bold>._" [0,1] 0) where
 "chinstn c a = \<lparr> prism_match = (\<lambda> e. case match\<^bsub>c\<^esub> e of 
                                        None \<Rightarrow> None 
                                      | Some (a', b') \<Rightarrow> if (a = a') then Some b' else None) 
@@ -46,14 +46,10 @@ lemma chinstn_wb_prism [simp]: "wb_prism c \<Longrightarrow> wb_prism (chinstn c
   by (simp add: chinstn_def, unfold_locales, auto simp add: option.case_eq_if)
 
 text \<open> A channel instantiation may have 1 or 2+ parameters, and this can only be decided based on
-  the type of the channel (where it's unitary, or a product). Therefore, we make channel instantiation
-  an overloaded constant. \<close>
-
-consts chinst :: "('a \<Longrightarrow>\<^sub>\<triangle> 'e) \<Rightarrow> 'b \<Rightarrow> ('c \<Longrightarrow>\<^sub>\<triangle> 'e)"
-
-adhoc_overloading
-  chinst chinst1 and
-  chinst chinstn
+  the type of the channel (where it's unitary, or a product). We could make channel instantiation
+  an overloaded constant, but this introduces issues so for now we assume that we can only instantiate
+  a channel with a product view type. In future, we could get the syntax translation mechanisation
+  to resolve this. \<close>
 
 subsection \<open> Channel Sets \<close>
 
@@ -72,29 +68,29 @@ nonterminal chan and chans
 
 syntax 
   "_chan_id"       :: "id \<Rightarrow> chan" ("_")
-  "_chan_inst"     :: "chan \<Rightarrow> logic \<Rightarrow> chan" ("_\<cdot>_" [100,101] 101)
+  "_chan_inst"     :: "chan \<Rightarrow> logic \<Rightarrow> chan" ("_\<^bold>._" [100,101] 101)
   "_chan"          :: "chan \<Rightarrow> chans" ("_")
   "_chans"         :: "chan \<Rightarrow> chans \<Rightarrow> chans" ("_,/ _")
   "_ch_enum"       :: "chans \<Rightarrow> logic" ("\<lbrace>_\<rbrace>")
-  "_ch_collect"    :: "id \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("\<lbrace>_/ _ \<in> _./ _\<rbrace>")
-  "_ch_collect_ns" :: "id \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic" ("\<lbrace>_/ _./ _\<rbrace>")
+  "_ch_collect"    :: "id \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("\<lbrace>_/\<^bold>._ \<in> _./ _\<rbrace>")
+  "_ch_collect_ns" :: "id \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic" ("\<lbrace>_/\<^bold>._./ _\<rbrace>")
 
 translations
   "_chan_id c" => "c"
-  "_chan_inst c x" => "CONST chinst c x" 
+  "_chan_inst c x" => "CONST chinstn c x" 
   "_chan c" => "CONST csbasic c"
   "_chans e es" => "CONST csinsert e es"
   "_ch_enum A" => "A"
   "_ch_enum (_chan c)" <= "CONST csbasic c"
-  "_chan (_chan_inst c x)" <= "_chan (CONST chinst c x)"
-  "_chan_inst (_chan_inst c x) y" <= "_chan_inst (CONST chinst c x) y"
+  "_chan (_chan_inst c x)" <= "_chan (CONST chinstn c x)"
+  "_chan_inst (_chan_inst c x) y" <= "_chan_inst (CONST chinstn c x) y"
   "_ch_enum (_chans c cs)" <= "CONST csinsert c (_ch_enum cs)"
   "_ch_collect e x A P" == "CONST cscollect e A (\<lambda> x. P)"
   "_ch_collect_ns e x P" == "_ch_collect e x (CONST UNIV) P"
 
 subsection \<open> Renaming Relations \<close>
 
-nonterminal chexpr and chargs and rnenum
+nonterminal rnenum
 
 definition rnsingle :: "('a \<Longrightarrow>\<^sub>\<triangle> 'e\<^sub>1) \<Rightarrow> ('a \<Longrightarrow>\<^sub>\<triangle> 'e\<^sub>2) \<Rightarrow> 'e\<^sub>1 \<leftrightarrow> 'e\<^sub>2" where
 "rnsingle c\<^sub>1 c\<^sub>2 = {(build\<^bsub>c\<^sub>1\<^esub> v, build\<^bsub>c\<^sub>2\<^esub> v) | v. True}" 
@@ -106,21 +102,13 @@ definition rncollect :: "('a \<Longrightarrow>\<^sub>\<triangle> 'e\<^sub>1) \<R
 "rncollect c\<^sub>1 c\<^sub>2 A f = {(build\<^bsub>c\<^sub>1\<^esub> (fst (fst (f x))), build\<^bsub>c\<^sub>2\<^esub> (snd (fst (f x)))) | x. x \<in> A \<and> snd (f x)}"
 
 syntax
-  "_rnsingle"      :: "chexpr \<Rightarrow> chexpr \<Rightarrow> rnenum" ("_ \<mapsto> _")
-  "_rnmaplets"     :: "chexpr \<Rightarrow> chexpr \<Rightarrow> rnenum \<Rightarrow> rnenum" ("_ \<mapsto> _,/ _")
+  "_rnsingle"      :: "chan \<Rightarrow> chan \<Rightarrow> rnenum" ("_ \<mapsto> _")
+  "_rnmaplets"     :: "chan \<Rightarrow> chan \<Rightarrow> rnenum \<Rightarrow> rnenum" ("_ \<mapsto> _,/ _")
   "_rnenum"        :: "rnenum \<Rightarrow> logic" ("\<lbrace>_\<rbrace>")
-  "_charg"        :: "logic \<Rightarrow> chargs" ("_")
-  "_chargs"       :: "logic \<Rightarrow> chargs \<Rightarrow> chargs" ("_\<cdot>_" [65,66] 66) 
-  "_chid"         :: "id \<Rightarrow> chexpr" ("_")
-  "_chinst"       :: "id \<Rightarrow> chargs \<Rightarrow> chexpr" ("_\<cdot>_" [65,66] 66)
   "_rncollect"    :: "evt \<Rightarrow> evt \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic \<Rightarrow> logic" ("\<lbrace>_ \<mapsto> _ | _ \<in> _./ _\<rbrace>")
   "_rncollect_ns" :: "evt \<Rightarrow> evt \<Rightarrow> pttrn \<Rightarrow> logic \<Rightarrow> logic" ("\<lbrace>_ \<mapsto> _ | _./ _\<rbrace>")
 
 translations
-  "_chid c" => "c"
-  "_chinst c (_charg x)" == "CONST chinst c x"
-  "_chinst c (_chargs x y)" == "_chinst (CONST chinst c x) y" 
-
   "_rnenum A" => "A"
   "_rnsingle c\<^sub>1 c\<^sub>2" => "CONST rnsingle c\<^sub>1 c\<^sub>2"
   "_rnmaplets c\<^sub>1 c\<^sub>2 r" => "CONST rninsert c\<^sub>1 c\<^sub>2 r"
