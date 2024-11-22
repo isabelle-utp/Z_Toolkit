@@ -36,7 +36,7 @@ definition chinst1 :: "('a \<Longrightarrow>\<^sub>\<triangle> 'e) \<Rightarrow>
 lemma chinst1_wb_prism [simp]: "wb_prism c \<Longrightarrow> wb_prism (chinst1 c a)"
   by (simp add: chinst1_def, unfold_locales, auto simp add: option.case_eq_if)
 
-definition chinstn :: "('a \<times> 'b \<Longrightarrow>\<^sub>\<triangle> 'e) \<Rightarrow> 'a \<Rightarrow> ('b \<Longrightarrow>\<^sub>\<triangle> 'e)" ("_\<^bold>._" [0,1] 0) where
+definition chinstn :: "('a \<times> 'b \<Longrightarrow>\<^sub>\<triangle> 'e) \<Rightarrow> 'a \<Rightarrow> ('b \<Longrightarrow>\<^sub>\<triangle> 'e)" ("_\<^bold>._" [100,101] 100) where
 "chinstn c a = \<lparr> prism_match = (\<lambda> e. case match\<^bsub>c\<^esub> e of 
                                        None \<Rightarrow> None 
                                      | Some (a', b') \<Rightarrow> if (a = a') then Some b' else None) 
