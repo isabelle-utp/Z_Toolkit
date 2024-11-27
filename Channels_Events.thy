@@ -36,7 +36,7 @@ definition chinst1 :: "('a \<Longrightarrow>\<^sub>\<triangle> 'e) \<Rightarrow>
 lemma chinst1_wb_prism [simp]: "wb_prism c \<Longrightarrow> wb_prism (chinst1 c a)"
   by (simp add: chinst1_def, unfold_locales, auto simp add: option.case_eq_if)
 
-definition chinstn :: "('a \<times> 'b \<Longrightarrow>\<^sub>\<triangle> 'e) \<Rightarrow> 'a \<Rightarrow> ('b \<Longrightarrow>\<^sub>\<triangle> 'e)" ("_\<^bold>._" [100,101] 100) where
+definition chinstn :: "('a \<times> 'b \<Longrightarrow>\<^sub>\<triangle> 'e) \<Rightarrow> 'a \<Rightarrow> ('b \<Longrightarrow>\<^sub>\<triangle> 'e)" where
 "chinstn c a = \<lparr> prism_match = (\<lambda> e. case match\<^bsub>c\<^esub> e of 
                                        None \<Rightarrow> None 
                                      | Some (a', b') \<Rightarrow> if (a = a') then Some b' else None) 
@@ -44,6 +44,24 @@ definition chinstn :: "('a \<times> 'b \<Longrightarrow>\<^sub>\<triangle> 'e) \
 
 lemma chinstn_wb_prism [simp]: "wb_prism c \<Longrightarrow> wb_prism (chinstn c a)"
   by (simp add: chinstn_def, unfold_locales, auto simp add: option.case_eq_if)
+
+text \<open> Syntax is defined for channel instantiation, which selects either @{const chinstn} if the
+   type is a product and @{const chinst1} otherwise \<close>
+
+syntax "_chinst" :: "logic \<Rightarrow> logic \<Rightarrow> logic" ("_\<^bold>._" [100,101] 100)
+
+translations
+  "_chinst c v" <= "CONST chinst1 c v"
+  "_chinst c v" <= "CONST chinstn c v"
+
+ML_file \<open>Channel_Events.ML\<close>
+
+parse_translation
+  \<open>[(@{syntax_const "_chinst"}, 
+    fn ctx => fn ts => 
+      case ts of 
+        [t1, t2] => Channel_Events.chinst ctx t1 t2 |
+        _ => raise Match)]\<close>
 
 text \<open> A channel instantiation may have 1 or 2+ parameters, and this can only be decided based on
   the type of the channel (where it's unitary, or a product). We could make channel instantiation
@@ -77,7 +95,7 @@ syntax
 
 translations
   "_chan_id c" => "c"
-  "_chan_inst c x" => "CONST chinstn c x" 
+  "_chan_inst c x" => "_chinst c x" 
   "_chan c" => "CONST csbasic c"
   "_chans e es" => "CONST csinsert e es"
   "_ch_enum A" => "A"
