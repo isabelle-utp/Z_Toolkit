@@ -139,4 +139,6 @@ translations
   "_rncollect (_evt_id c\<^sub>1) (_evt_id c\<^sub>2) x A P" == "CONST rncollect c\<^sub>1 c\<^sub>2 A (\<lambda> x. (((), ()), P))"
   "_rncollect_ns e\<^sub>1 e\<^sub>2 x P" == "_rncollect e\<^sub>1 e\<^sub>2 x (CONST UNIV) P"
 
+term "\<lbrace>c\<^bold>.1\<^bold>.y\<rbrace>"
+
 end
