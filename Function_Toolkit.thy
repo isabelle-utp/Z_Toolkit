@@ -58,17 +58,17 @@ consts
   disjoint :: "'f \<Rightarrow> bool"
 
 adhoc_overloading 
-  disjoint rel_disjoint and
-  disjoint pfun_disjoint and 
-  disjoint list_disjoint 
+  disjoint \<rightleftharpoons> rel_disjoint and
+  disjoint \<rightleftharpoons> pfun_disjoint and 
+  disjoint \<rightleftharpoons> list_disjoint 
 
 subsection \<open> Partitions \<close>
 
 consts partitions :: "'f \<Rightarrow> 'a set \<Rightarrow> bool" (infix "partitions" 65)
 
 adhoc_overloading
-  partitions rel_partitions and
-  partitions pfun_partitions and
-  partitions list_partitions
+  partitions \<rightleftharpoons> rel_partitions and
+  partitions \<rightleftharpoons> pfun_partitions and
+  partitions \<rightleftharpoons> list_partitions
 
 end

@@ -87,13 +87,6 @@ lemma cset_CollectD: "(a :: 'a::countable) \<in>\<^sub>c {x. P x}\<^sub>c \<Long
 lemma cset_Collect_cong: "(\<And>x. P x = Q x) ==> {x. P x}\<^sub>c = {x. Q x}\<^sub>c"
   by simp
 
-text \<open> Avoid eta-contraction for robust pretty-printing. \<close>
-
-print_translation \<open>
- [Syntax_Trans.preserve_binder_abs_tr'
-   @{const_syntax cset_Collect} @{syntax_const "_cColl"}]
-\<close>
-
 lift_definition cset_set :: "'a list \<Rightarrow> 'a cset" is set
   using countable_finite by blast
 

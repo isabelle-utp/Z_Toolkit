@@ -203,6 +203,4 @@ lemma pfun_of_pinj_of_alist [code]:
 
 declare pinj_of_alist.simps [simp del]
 
-unbundle no_lattice_syntax
-
 end

@@ -139,14 +139,14 @@ subsection \<open> Domain \<close>
 definition dom_seq :: "'a list \<Rightarrow> \<nat> set" where
 [simp]: "dom_seq xs = {0..<#xs}"
 
-adhoc_overloading dom dom_seq
+adhoc_overloading dom \<rightleftharpoons> dom_seq
 
 subsection \<open> Range \<close>
 
 definition ran_seq :: "'a list \<Rightarrow> 'a set" where
 [simp]: "ran_seq xs = set xs"
 
-adhoc_overloading ran ran_seq
+adhoc_overloading ran \<rightleftharpoons> ran_seq
 
 subsection \<open> Filter \<close>
 

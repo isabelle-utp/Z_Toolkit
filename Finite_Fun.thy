@@ -459,6 +459,4 @@ text \<open> Hide implementation details for finite functions \<close>
 lifting_update ffun.lifting
 lifting_forget ffun.lifting
 
-unbundle no_lattice_syntax
-
 end

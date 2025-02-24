@@ -48,11 +48,11 @@ hide_const (open) dom
 consts dom :: "'f \<Rightarrow> 'a set"
 
 adhoc_overloading
-  dom Map.dom and
-  dom Relation.Domain and
-  dom Partial_Fun.pdom and
-  dom Finite_Fun.fdom and
-  dom Partial_Inj.pidom
+  dom \<rightleftharpoons> Map.dom and
+  dom \<rightleftharpoons> Relation.Domain and
+  dom \<rightleftharpoons> Partial_Fun.pdom and
+  dom \<rightleftharpoons> Finite_Fun.fdom and
+  dom \<rightleftharpoons> Partial_Inj.pidom
 
 subsection \<open> Range \<close>
 
@@ -61,11 +61,11 @@ hide_const (open) ran
 consts ran :: "'f \<Rightarrow> 'a set"
 
 adhoc_overloading
-  ran Map.ran and
-  ran Relation.Range and
-  ran Partial_Fun.pran and
-  ran Finite_Fun.fran and
-  ran Partial_Inj.piran
+  ran \<rightleftharpoons> Map.ran and
+  ran \<rightleftharpoons> Relation.Range and
+  ran \<rightleftharpoons> Partial_Fun.pran and
+  ran \<rightleftharpoons> Finite_Fun.fran and
+  ran \<rightleftharpoons> Partial_Inj.piran
 
 subsection \<open> Identity relation \<close>
 
@@ -86,9 +86,9 @@ text \<open> Composition is probably the most difficult of the Z functions to im
 consts zcomp :: "'f \<Rightarrow> 'g \<Rightarrow> 'h" 
 
 adhoc_overloading
-  zcomp Fun.comp and
-  zcomp pfun_comp and
-  zcomp ffun_comp
+  zcomp \<rightleftharpoons> Fun.comp and
+  zcomp \<rightleftharpoons> pfun_comp and
+  zcomp \<rightleftharpoons> ffun_comp
 
 text \<open> Once we overload @{term Fun.comp}, we need to at least have output syntax set up. \<close>
 
@@ -109,10 +109,10 @@ consts dom_res :: "'a set \<Rightarrow> 'r \<Rightarrow> 'r" (infixr "\<Zdres>" 
 abbreviation ndres (infixr "\<Zndres>" 85) where "ndres A P \<equiv> CONST dom_res (- A) P" 
 
 adhoc_overloading 
-  dom_res rel_domres
-  and dom_res pdom_res
-  and dom_res fdom_res
-  and dom_res pinj_dres
+  dom_res \<rightleftharpoons> rel_domres
+  and dom_res \<rightleftharpoons> pdom_res
+  and dom_res \<rightleftharpoons> fdom_res
+  and dom_res \<rightleftharpoons> pinj_dres
 
 syntax "_ndres" :: "logic \<Rightarrow> logic \<Rightarrow> logic" 
 translations "_ndres A P" == "CONST dom_res (- A) P"
@@ -124,10 +124,10 @@ consts ran_res :: "'r \<Rightarrow> 'a set \<Rightarrow> 'r" (infixl "\<Zrres>" 
 abbreviation nrres (infixl "\<Znrres>" 86) where "nrres P A \<equiv> CONST ran_res P (- A)"
 
 adhoc_overloading 
-  ran_res rel_ranres
-  and ran_res pran_res
-  and ran_res fran_res
-  and ran_res pinj_rres
+  ran_res \<rightleftharpoons> rel_ranres
+  and ran_res \<rightleftharpoons> pran_res
+  and ran_res \<rightleftharpoons> fran_res
+  and ran_res \<rightleftharpoons> pinj_rres
 
 subsection \<open> Relational inversion \<close>
 

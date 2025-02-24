@@ -51,7 +51,7 @@ fun tabulate_cmd raw_t state =
     val t' = HOLogic.tupled_lambda xp t
     (* Close the term, apply the tabulate function, and evaluate *)
     val ts' = dest_list (Value_Command.value ctx (check_term ctx (const @{const_name "tabulate"} $ t')));
-    fun term_string t = YXML.content_of (symbolic_string_of (pretty_term ctx' t));
+    fun term_string t = XML.content_of (YXML.parse_body (symbolic_string_of (pretty_term ctx' t)));
     val heads = (map term_string (map Free (rev xs)) @ [term_string t])
     val rows = (map ((fn (x, y) => (map term_string (strip_tuple x) @ [term_string y])) o dest_prod) ts');
   in Pretty.writeln ((print_table heads rows)) end;

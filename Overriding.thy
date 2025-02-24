@@ -37,6 +37,4 @@ lemma override_compat_iff: "P ## Q \<Longrightarrow> (P \<oplus> Q) ## R \<longl
 
 end
 
-unbundle no_lattice_syntax
-
 end

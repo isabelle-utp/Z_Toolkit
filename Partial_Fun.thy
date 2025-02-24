@@ -1439,6 +1439,4 @@ text \<open> Hide implementation details for partial functions \<close>
 lifting_update pfun.lifting
 lifting_forget pfun.lifting
 
-unbundle no_lattice_syntax
-
 end
