@@ -273,7 +273,7 @@ lemma pfun_compat_addI: "\<lbrakk> (P :: 'a \<Zpfun> 'b) ## Q; P ## R; Q ## R \<
   apply (simp add: compatible_pfun_def oplus_pfun_def)
   apply (transfer)
   apply (auto simp add: restrict_map_def fun_eq_iff dom_def map_add_def option.case_eq_if)
-  apply (metis option.inject)+
+   apply (metis option.inject)+
   done
 
 instance proof
@@ -483,7 +483,7 @@ lemma pdom_plus [simp]: "pdom (f \<oplus> g) = pdom f \<union> pdom g"
 
 lemma pdom_minus [simp]: "g \<le> f \<Longrightarrow> pdom (f - g) = pdom f - pdom g"
   apply (transfer, auto simp add: map_minus_def)
-  apply (meson option.distinct(1))
+   apply (meson option.distinct(1))
   apply (metis domIff map_le_def option.simps(3))
   done
 
@@ -943,11 +943,14 @@ text \<open> This rule can perhaps be simplified \<close>
 lemma pcomp_pabs: 
   "(\<lambda> x \<in> A | P x \<bullet> f x) \<circ>\<^sub>p (\<lambda> x \<in> B | Q x \<bullet> g x) 
     = (\<lambda> x \<in> pdom (pabs B Q g \<rhd>\<^sub>p (A \<inter> Collect P)) \<bullet> (f (g x)))"
-  apply (subst pabs_eta[THEN sym, of "(\<lambda> x \<in> A | P x \<bullet> f x) \<circ>\<^sub>p (\<lambda> x \<in> B | Q x \<bullet> g x)"]) 
-  apply (simp)
-  apply (simp add: pabs_def)
-  apply (transfer, auto simp add: restrict_map_def map_comp_def ran_restrict_map_def fun_eq_iff)
-  done
+proof -
+  have "pabs A P f \<circ>\<^sub>p pabs B Q g = (\<lambda> x \<in> pdom (pabs A P f \<circ>\<^sub>p pabs B Q g) \<bullet> (pfun_app (pabs A P f \<circ>\<^sub>p pabs B Q g)) x)"
+    by (rule pabs_eta[THEN sym, of "(\<lambda> x \<in> A | P x \<bullet> f x) \<circ>\<^sub>p (\<lambda> x \<in> B | Q x \<bullet> g x)"]) 
+  also have "... = (\<lambda> x \<in> pdom (pabs B Q g \<rhd>\<^sub>p (A \<inter> Collect P)) \<bullet> (f (g x)))"
+    unfolding pabs_def
+    by (transfer, auto simp add: restrict_map_def map_comp_def ran_restrict_map_def fun_eq_iff)
+  finally show ?thesis .
+qed
 
 lemma pabs_rres [simp]: "pabs A P f \<rhd>\<^sub>p B = pabs A (\<lambda> x. P x \<and> f x \<in> B) f"
   by (simp add: pabs_def, transfer, auto simp add: ran_restrict_map_def restrict_map_def)
@@ -981,7 +984,7 @@ definition dest_pfsingle :: "('a \<Zpfun> 'b) \<Rightarrow> 'a \<times> 'b" wher
 
 lemma dest_pfsingle_maplet [simp]: "dest_pfsingle {k \<mapsto> v}\<^sub>p = (k, v)"
   apply (auto intro!:the_equality simp add: dest_pfsingle_def)
-  apply (metis pdom_upd pdom_zero singleton_insert_inj_eq)
+   apply (metis pdom_upd pdom_zero singleton_insert_inj_eq)
   apply (metis pdom_upd pdom_zero pfun_app_upd_1 singleton_insert_inj_eq)
   done  
 
@@ -1029,18 +1032,18 @@ lemma pfun_sum_pdom_res:
 proof -
   have 1:"A \<inter> pdom(f) = pdom(f) - (pdom(f) - A)"
     by (auto)
+  have 2: "sum (pfun_app f) (pdom f) - sum (pfun_app f) (pdom f - A) =
+    sum (pfun_app f) (pdom f) - sum (pfun_app f) (- A \<inter> pdom f)"
+    by (auto simp add: sum_diff Int_commute boolean_algebra_class.diff_eq assms)
   show ?thesis
-    apply (simp add: pfun_sum_def)
-    apply (subst 1)
-    apply (subst sum_diff)
-      apply (auto simp add: sum_diff Int_commute boolean_algebra_class.diff_eq assms)
-    done
+    by (simp add: pfun_sum_def 1 2 sum_diff assms)
 qed
   
 lemma pfun_sum_pdom_antires [simp]:
   fixes f :: "('a,'b::ab_group_add) pfun"
   assumes "finite(pdom f)"
   shows "pfun_sum ((- A) \<lhd>\<^sub>p f) = pfun_sum f - pfun_sum (A \<lhd>\<^sub>p f)"
+  using assms
   by (subst pfun_sum_pdom_res, simp_all add: assms)
 
 subsection \<open> Conversions \<close>

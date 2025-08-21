@@ -276,7 +276,7 @@ lemma dropWhile_sorted_le_above:
   apply (rename_tac a xs)
   apply (case_tac "a \<le> n")
    apply (auto)
-done
+  done
 
 lemma set_dropWhile_le:
   "sorted xs \<Longrightarrow> set (dropWhile (\<lambda> x. x \<le> n) xs) = {x\<in>set xs. x > n}"
@@ -287,7 +287,7 @@ lemma set_dropWhile_le:
    apply (simp)
    apply (safe)
      apply (auto)
-done
+  done
 
 lemma set_takeWhile_less_sorted:
   "\<lbrakk> sorted I; x \<in> set I; x < n \<rbrakk> \<Longrightarrow> x \<in> set (takeWhile (\<lambda>x. x < n) I)"
@@ -477,8 +477,8 @@ qed
 lemma list_prefix_iff:
   "(prefix xs ys \<longleftrightarrow> (length xs \<le> length ys \<and> (\<forall> i<length xs. xs!i = ys!i)))"
   apply (auto)
-  apply (simp add: prefix_imp_length_lteq)
-  apply (metis nth_append prefix_def)
+    apply (simp add: prefix_imp_length_lteq)
+   apply (metis nth_append prefix_def)
   apply (metis nth_take_lemma order_refl take_all take_is_prefix)
   done
 
@@ -949,12 +949,15 @@ lemma nths_list_update_out: "k \<notin> A \<Longrightarrow> nths (list_update xs
 lemma nths_list_augment_out: "\<lbrakk> k < length xs; k \<notin> A \<rbrakk> \<Longrightarrow> nths (list_augment xs k x) A = nths xs A"
   by (simp add: list_augment_as_update nths_list_update_out)
 
-lemma nths_none: "\<forall>i \<in> I. i \<ge> length xs \<Longrightarrow> nths xs I = []"
-  apply (simp add: nths_def)
-  apply (subst filter_False)
-   apply (metis atLeastLessThan_iff in_set_zip leD nth_mem set_upt)
-  apply simp
-  done
+lemma nths_none: 
+  assumes "\<forall>i \<in> I. i \<ge> length xs"
+  shows "nths xs I = []"
+proof -
+  from assms have "\<forall>x\<in>set (zip xs [0..<length xs]). snd x \<notin> I"
+    by (metis atLeastLessThan_iff in_set_zip leD nth_mem set_upt)
+  thus ?thesis
+    by (simp add: nths_def)
+qed
 
 lemma nths_uptoLessThan:
   "\<lbrakk> m \<le> n; n < length xs \<rbrakk> \<Longrightarrow> nths xs {m..n} = xs ! m # nths xs {Suc m..n}"
@@ -1176,7 +1179,7 @@ where "xs <\<^sub>l ys \<longleftrightarrow> (xs, ys) \<in> lexord {(u, v). u < 
 lemma list_lex_less_neq [simp]: "x <\<^sub>l y \<Longrightarrow> x \<noteq> y"
   apply (simp add: list_lex_less_def)
   apply (meson case_prodD less_irrefl lexord_irreflexive mem_Collect_eq)
-done
+  done
 
 lemma not_less_Nil [simp]: "\<not> x <\<^sub>l []"
   by (simp add: list_lex_less_def)
@@ -1259,15 +1262,15 @@ qed
 
 lemma distinct_b_lists: "distinct xs \<Longrightarrow> distinct (b_lists n xs)"
   apply (cases "xs = []")
-  apply (simp)
+   apply (simp)
   apply (auto simp add: b_lists_def)
     apply (rule distinct_concat)
-  apply (simp add: distinct_map)
-  apply (simp add: inj_onI n_lists_inj)
+      apply (simp add: distinct_map)
+      apply (simp add: inj_onI n_lists_inj)
   using distinct_n_lists apply auto[1]
-  apply (auto)
+    apply (auto)
   using length_n_lists_elem apply blast
-  apply (simp add: distinct_n_lists)
+   apply (simp add: distinct_n_lists)
   using length_n_lists_elem apply blast
   done
 
@@ -1294,11 +1297,11 @@ lemma list_disjoint_Nil [simp]: "list_disjoint []"
 lemma list_disjoint_Cons [simp]: "list_disjoint (A # Bs) = ((\<forall> B \<in> set Bs. A \<inter> B = {}) \<and> list_disjoint Bs)"
   apply (simp add: list_disjoint_def disjoint_iff)
   apply (auto)
-  apply (metis Suc_less_eq in_set_conv_nth nat.distinct(1) neq0_conv nth_Cons_0 nth_Cons_Suc)
+    apply (metis Suc_less_eq in_set_conv_nth nat.distinct(1) neq0_conv nth_Cons_0 nth_Cons_Suc)
    apply (metis lessI lift_Suc_mono_less_iff nat.inject nth_Cons_Suc)
   apply (rename_tac i j x)
   apply (case_tac i)
-  apply (simp_all)
+   apply (simp_all)
   apply (metis less_Suc_eq_0_disj list.sel(3) nth_Cons' nth_mem nth_tl)
   done
 
@@ -1306,8 +1309,8 @@ subsection \<open> Code Generation \<close>
 
 lemma set_singleton_iff: "set xs = {x} \<longleftrightarrow> remdups xs = [x]"
   apply (auto)
-  apply (metis card_set empty_set insert_not_empty length_0_conv length_Suc_conv list.simps(15) remdups.simps(1) remdups.simps(2) set_remdups the_elem_set)
-  apply (metis empty_iff empty_set set_ConsD set_remdups)
+    apply (metis card_set empty_set insert_not_empty length_0_conv length_Suc_conv list.simps(15) remdups.simps(1) remdups.simps(2) set_remdups the_elem_set)
+   apply (metis empty_iff empty_set set_ConsD set_remdups)
   apply (metis list.set_intros(1) set_remdups)
   done
 
