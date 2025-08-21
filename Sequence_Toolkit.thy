@@ -79,7 +79,7 @@ lemma iseq_iff [simp]: "xs \<in> iseq(A) \<longleftrightarrow> (xs \<in> seq A \
 subsection \<open> Bounded sequences \<close>
 
 definition bseq :: "\<nat> \<Rightarrow> 'a set \<Rightarrow> 'a list set" ("bseq[_]") where
-"bseq n A = blists n A"
+"bseq n A = bounded_lists n A"
 
 (* Proof that this corresponds to the Z definition required *)
 
