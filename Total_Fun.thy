@@ -1,3 +1,5 @@
+section \<open> Total functions \<close>
+
 theory Total_Fun
   imports Partial_Fun
 begin

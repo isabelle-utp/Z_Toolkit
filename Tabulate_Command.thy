@@ -1,4 +1,4 @@
-section \<open> Tabulating Terms \<close>
+section \<open> Tabulating terms \<close>
 
 theory Tabulate_Command
   imports Main
@@ -10,10 +10,7 @@ text \<open> The following little tool allows creation truth tables for predicat
 definition "tabulate" :: "('a::enum \<Rightarrow> 'b) \<Rightarrow> ('a \<times> 'b) list" where
 "tabulate f = map (\<lambda> x. (x, f x)) (rev Enum.enum)"
 
-ML \<open> ListPair.zip \<close>
-
 ML \<open> 
-
 structure Tabulate_Command =
 struct
 

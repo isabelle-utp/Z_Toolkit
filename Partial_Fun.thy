@@ -1,10 +1,3 @@
-(******************************************************************************)
-(* Project: Isabelle/UTP Toolkit                                              *)
-(* File: Partial_Fun.thy                                                      *)
-(* Authors: Simon Foster and Frank Zeyda                                      *)
-(* Emails: simon.foster@york.ac.uk and frank.zeyda@york.ac.uk                 *)
-(******************************************************************************)
-
 section \<open> Partial Functions \<close>
 
 theory Partial_Fun
@@ -1078,7 +1071,7 @@ lemma range_list_pfun:
   apply (rename_tac f i)
   apply (rule_tac x="map (the \<circ> f \<circ> nat) [1..i]" in exI)
   apply (auto simp add: fun_eq_iff restrict_map_def)
-  apply (metis Suc_le_mono Suc_pred atLeastAtMost_iff domIff le0 nat_int of_nat_Suc option.exhaust_sel)
+  apply (metis Suc_le_mono Suc_pred atLeastAtMost_iff domIff le0 option.exhaust_sel)
   apply (metis One_nat_def atLeastAtMost_iff domIff le_zero_eq zero_neq_one)
   done
 

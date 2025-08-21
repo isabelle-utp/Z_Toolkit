@@ -1,3 +1,5 @@
+section \<open> Default Class Instances for Record Types \<close>
+
 theory Record_Default_Instance
   imports Main
   keywords "record_default" :: "thy_defn"

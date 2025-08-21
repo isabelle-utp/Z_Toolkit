@@ -61,7 +61,6 @@ fun enum_type tname cs thy =
     val (thm1, ctx3) = define_overloaded ("enum_" ^ tname, mk_def (HOLogic.listT ty) (@{const_name "enum_class.enum"}) (HOLogic.mk_list dummyT cs')) ctx2
     val (thm2, ctx4) = define_overloaded ("enum_all_" ^ tname, mk_def dummyT (@{const_name "enum_class.enum_all"}) (Abs ("P", dummyT, foldl1 HOLogic.mk_conj (map (fn c => Bound 0 $ c) cs')))) ctx3
     val (thm3, ctx5) = define_overloaded ("enum_ex_" ^ tname, mk_def dummyT (@{const_name "enum_class.enum_ex"}) (Abs ("P", dummyT, foldl1 HOLogic.mk_disj (map (fn c => Bound 0 $ c) cs')))) ctx4
-    val exhaust = Proof_Context.get_thm ctx5 (tname ^ ".exhaust");
     fun mk_def ty x v = Const ("Pure.eq", ty --> ty --> Term.propT) $ Free (x, ty) $ v;
     (* FIXME: The following proof relies on the splitting variable being called "x"; if it breaks this is probably why *)
     val thy1 = Class.prove_instantiation_exit

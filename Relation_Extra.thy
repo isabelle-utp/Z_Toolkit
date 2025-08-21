@@ -4,6 +4,8 @@ theory Relation_Extra
   imports "HOL-Library.FuncSet" "HOL-Library.AList" List_Extra Overriding
 begin
 
+no_notation SCons (infixr \<open>##\<close> 65)
+
 text \<open> This theory develops a universe for a Z-like relational language, including the core 
   operators of the ISO Z metalanguage. Much of this already exists in @{theory HOL.Relation},
   but we need to add some additional functions and sets. It characterises relations, partial
@@ -215,7 +217,7 @@ lemma override_eq: "R \<oplus> S = ((- Domain S) \<lhd>\<^sub>r R) \<union> S"
   by (simp add: oplus_set_def)
 
 lemma Domain_rel_override [simp]: "Domain (R \<oplus> S) = Domain(R) \<union> Domain(S)"
-  by (auto simp add: oplus_set_def Domain_Un_eq)
+  by (auto simp add: oplus_set_def)
 
 lemma Range_rel_override: "Range(R \<oplus> S) \<subseteq> Range(R) \<union> Range(S)"
   by (auto simp add: oplus_set_def rel_domres_def)

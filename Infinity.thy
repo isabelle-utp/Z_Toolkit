@@ -1,10 +1,3 @@
-(******************************************************************************)
-(* Project: Isabelle/UTP Toolkit                                              *)
-(* File: Infinity.thy                                                         *)
-(* Authors: Frank Zeyda and Simon Foster (University of York, UK)             *)
-(* Emails: frank.zeyda@york.ac.uk and simon.foster@york.ac.uk                 *)
-(******************************************************************************)
-
 section \<open> Infinity Supplement \<close>
 
 theory Infinity

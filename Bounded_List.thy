@@ -52,7 +52,7 @@ text \<open> This proof is performed by transfer \<close>
 lemma bappend_bmake [code]: 
   "bmake TYPE('a::finite) xs @\<^sub>s bmake TYPE('b::finite) ys 
     = bmake TYPE('a + 'b) (take CARD('a) xs @ take CARD('b) ys)"
-  by (transfer, simp add: min.absorb2)
+  by (transfer, simp)
 
 instantiation blist :: (type, finite) equal
 begin

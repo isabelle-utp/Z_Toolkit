@@ -1,10 +1,3 @@
-(*****************************************************************************************)
-(* Project: Isabelle/UTP Toolkit                                                         *)
-(* File: List_Extra.thy                                                                  *)
-(* Authors: Simon Foster, Pedro Ribeiro, and Frank Zeyda                                 *)
-(* Emails: simon.foster@york.ac.uk, pedro.ribeiro@york.ac.uk, and frank.zeyda@york.ac.uk *)
-(*****************************************************************************************)
-
 section \<open> Lists: extra functions and properties \<close>
 
 theory List_Extra
@@ -172,8 +165,6 @@ next
     by (metis \<open>distinct xs\<close> add.commute add_diff_cancel_left' distinct.simps(2) leD length_Cons length_greater_0_conv length_pos_if_in_set less_le nth_Cons_0 nth_Cons_Suc plus_1_eq_Suc set_ConsD sorted_wrt.elims(2) srtd)    
   qed
 qed
-
-term sorted
 
 lemma is_sorted_list_of_set_alt_def:
   "is_sorted_list_of_set A xs \<longleftrightarrow> sorted (xs) \<and> distinct (xs) \<and> set(xs) = A"

@@ -1,14 +1,7 @@
-(******************************************************************************)
-(* Project: Isabelle/UTP Toolkit                                              *)
-(* File: Finite_Fun.thy                                                       *)
-(* Authors: Simon Foster and Frank Zeyda                                      *)
-(* Emails: simon.foster@york.ac.uk and frank.zeyda@york.ac.uk                 *)
-(******************************************************************************)
-
 section \<open> Finite Functions \<close>
 
 theory Finite_Fun
-imports Map_Extra Partial_Fun
+  imports Map_Extra Partial_Fun
 begin
 
 subsection \<open> Finite function type and operations \<close>

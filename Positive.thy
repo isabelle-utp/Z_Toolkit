@@ -1,10 +1,3 @@
-(******************************************************************************)
-(* Project: Isabelle/UTP Toolkit                                              *)
-(* File: Positive.thy                                                         *)
-(* Authors: Simon Foster and Frank Zeyda                                      *)
-(* Emails: simon.foster@york.ac.uk and frank.zeyda@york.ac.uk                 *)
-(******************************************************************************)
-
 section \<open> Positive Subtypes \<close>
 
 theory Positive
