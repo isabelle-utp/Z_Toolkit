@@ -16,8 +16,8 @@ text \<open> The objective of this theory development is an implementation of th
   specification based on ZF set theory, whereas HOL targets an efficient proof system capable
   of scalable verification. The aim then is to reconcile these two objectives in one development.
 
-  In Z, the type system is very simple, consisting only of given types closed under powerset and 
-  product constructions. For example, in Z a total function is simply encoded as its graph in a 
+  In Z, the type system is very simple, consisting of given types closed under powerset and 
+  product constructions. For example, in Z a total function is encoded as its graph in a 
   relation, and a relation is simply a set of pairs. There is no distinct type constructor for
   functions. Similarly, a sequence (list in HOL) is a finite function whose domain is 
   @{term "{1::nat..n}"}, for some natural number @{term n}. This means in Z, we can write expressions
@@ -30,13 +30,12 @@ text \<open> The objective of this theory development is an implementation of th
   system to capture new mathematical concepts, such as vectors, bounded continuous functions, and
   physical quantities, to name a few examples. This approach has proven to be very successful and
   scalable, as evidenced by large verification projects like seL4, and the ever growing Archive of 
-  Formal Proofs.
+  Formal Proofs\footnote{Archive of Formal Proofs. \url{http://www.isa-afp.org}} (AFP).
   
   Now, it is entirely possible to reconstruct the Z mathematical toolkit in the way described above, 
   following the ISO standard, such that everything boils down to sets. However, there is a major 
   downside to this, which is that we cannot easily use the results in the HOL standard library (@{theory Main}) 
-  and the Archive of Formal Proofs\footnote{Archive of Formal Proofs. \url{http://www.isa-afp.org}}, 
-  since these are all built using the HOL type universe extension paradigm. There are also several 
+  and the AFP, since these are all built using the HOL type universe extension paradigm. There are also several 
   benefits to the HOL approach, notably that the type system can be used to deduce when a function 
   is closed under a set. This in turn greatly improves proof automation, since there is no 
   obligation to check well-formedness of expressions as part of the proof. Consequently, we chose
@@ -45,7 +44,7 @@ text \<open> The objective of this theory development is an implementation of th
   However, in order to be faithful with Z, we also implement the Z universe as a set of definitions,
   based on the ISO standard. Much of this already in implemented in the theory @{theory HOL.Relation},
   but we extend it with functions like application, domain restriction, and overriding, which
-  are all part of the Z metalanguage. Crucially, this development is all based on sets and relations,
+  are all part of the Z meta-language. Crucially, this development is all based on sets and relations,
   not HOL functions, and therefore is a faithful encoding with Z. Upon this foundation, we construct
   a hierarchy of types corresponding to partial functions, finite functions, and total functions, 
   and we reuse the HOL @{typ "'a list"} type. We then prove that every HOL typed construction can
@@ -55,8 +54,8 @@ text \<open> The objective of this theory development is an implementation of th
   In order to achieve compatibility between this HOL type hierarchy, and the Z mathematical toolkit, 
   the principle problem to solve is the necessity of type coercions. As mentioned, in Z, sequences 
   are subtypes of sets, and so set-based functions can be directly applied to functions, which is 
-  often benefical. For example, the domain of a sequence is the set of indices of that sequence. So 
-  the technical goal s to allow HOL to accept expressions of this kind. Our solution is to use a 
+  often beneficial. For example, the domain of a sequence is the set of indices of that sequence. So 
+  the technical goal is to allow HOL to accept expressions of this kind. Our solution is to use a 
   mixture of coercive subtyping and type overloading to achieve this. This allows the user to
   write Z expressions into Isabelle, which are then internally mapped into HOL expressions.
 

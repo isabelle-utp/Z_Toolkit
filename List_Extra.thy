@@ -1167,8 +1167,8 @@ lemma listpow_add: "xs ^^ (m + n) = xs ^^ m @ xs ^^ n"
 
 subsection \<open> Alternative List Lexicographic Order \<close>
 
-text \<open> Since we can't instantiate the order class twice for lists, and we want prefix as
-  the default order for the UTP we here add syntax for the lexicographic order relation. \<close>
+text \<open> Since we can't instantiate the order class twice for lists, and we often want prefix as
+  the default order, we here add syntax for the lexicographic order relation. \<close>
 
 definition list_lex_less :: "'a::linorder list \<Rightarrow> 'a list \<Rightarrow> bool" (infix "<\<^sub>l" 50)
 where "xs <\<^sub>l ys \<longleftrightarrow> (xs, ys) \<in> lexord {(u, v). u < v}"
