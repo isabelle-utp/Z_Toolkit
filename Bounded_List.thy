@@ -9,7 +9,10 @@ text \<open> The term @{term "CARD('n)"} retrieves the cardinality of a finite t
 
 typedef ('a, 'n::finite) blist = "{xs :: 'a list. length xs \<le> CARD('n)}"
   morphisms list_of_blist blist_of_list
-  by (rule_tac x="[]" in exI, auto)
+proof 
+  show "[] \<in> {xs. length xs \<le> CARD('n)}"
+    by simp
+qed
 
 declare list_of_blist_inverse [simp]
 
@@ -83,13 +86,19 @@ proof -
   finally show ?thesis .
 qed
 
-lemma set_blists_enum_UNIV: "set (blists TYPE('n::finite) enum_class.enum) = UNIV"
-  apply (auto simp add: blists_def image_iff)
-  apply (rule_tac x="list_of_blist x" in bexI, auto)
-  apply (rule in_blistsI)
-   apply (simp add: blist_always_bounded)
-  apply (auto simp add: lists_eq_set enum_UNIV)
-  done
+lemma set_blists_enum_UNIV: "set (blists TYPE('n::finite) (enum_class.enum ::'a::enum list)) = UNIV"
+proof -
+  have "\<And>x:: 'a blist['n]. list_of_blist x \<in> set (b_lists CARD('n) enum_class.enum)"
+  proof (rule in_blistsI)
+    fix x::"'a blist['n]"
+    show "length (list_of_blist x) \<le> CARD('n)"
+      by (simp add: blist_always_bounded)
+    show "list_of_blist x \<in> lists (set enum_class.enum)"
+      by (auto simp add: lists_eq_set enum_UNIV)
+  qed
+  thus ?thesis
+    by (force simp add: blists_def image_iff)
+qed
 
 lemma distinct_blists: "distinct xs \<Longrightarrow> distinct (blists n xs)"
   by (metis distinct_b_lists distinct_map n_blists_as_b_lists)

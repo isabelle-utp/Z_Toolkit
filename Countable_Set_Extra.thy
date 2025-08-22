@@ -102,10 +102,11 @@ lift_definition cPow :: "'a cset \<Rightarrow> 'a cset cset" is "\<lambda> A. {B
 proof -
   fix A
   have "{B :: 'a cset. B \<subseteq>\<^sub>c A \<and> cfinite B} = acset ` {B :: 'a set. B \<subseteq> rcset A \<and> finite B}"
-    apply (auto simp add: cfinite.rep_eq cin_def less_eq_cset_def countable_finite)
-    using image_iff apply fastforce
-    done
-
+  proof -
+    have "\<And>x. rcset x \<subseteq> rcset A \<Longrightarrow> finite (rcset x) \<Longrightarrow> x \<in> acset ` {B. B \<subseteq> rcset A \<and> finite B}"
+      using image_iff by fastforce
+    thus ?thesis by (auto simp add: cfinite.rep_eq cin_def less_eq_cset_def countable_finite)
+  qed
   moreover have "countable {B :: 'a set. B \<subseteq> rcset A \<and> finite B}"
     by (auto intro: countable_finite_power)
 
@@ -121,9 +122,8 @@ definition cset_mapM :: "'a option cset \<Rightarrow> 'a cset option" where
 
 lemma cset_mapM_Some_image [simp]:
   "cset_mapM (cimage Some A) = Some A"
-  apply (auto simp add: cset_mapM_def)
-  apply (metis cimage_cinsert cinsertI1 option.sel set_cinsert)
-  done
+  unfolding cset_mapM_def
+  by (metis cimageE comp_the_Some cset.map_comp cset.map_id option.simps(3))
 
 definition CCollect_ext :: "('a \<Rightarrow> 'b option) \<Rightarrow> ('a \<Rightarrow> bool option) \<Rightarrow> 'b cset option" where
 "CCollect_ext f p = do { xs \<leftarrow> CCollect p; cset_mapM (f `\<^sub>c xs) }"
@@ -180,7 +180,8 @@ definition cset_seq :: "'a cset \<Rightarrow> (nat \<rightharpoonup> 'a)" where
                  else None)"
 
 lemma cset_seq_ran: "ran (cset_seq A) = rcset(A)"
-  apply (auto simp add: ran_def cset_seq_def cin.rep_eq)
+  apply (simp add: ran_def cset_seq_def cin.rep_eq)
+  apply safe
   apply (metis cset_count_inj_seq inv_into_f_f rangeI)
   done
 
@@ -279,11 +280,11 @@ lemma csets_finite: "finite A \<Longrightarrow> finite (csets A)"
   by (auto simp add: csets_def)
 
 lemma csets_infinite: "infinite A \<Longrightarrow> infinite (csets A)"
-  by (auto simp add: csets_def, metis csets.abs_eq csets.rep_eq finite_countable_subset finite_imageI)
+  by (simp add: csets_def, metis csets.abs_eq csets.rep_eq finite_countable_subset finite_imageI)
 
 lemma csets_UNIV:
   "csets (UNIV :: 'a set) = (UNIV :: 'a cset set)"
-  by (auto simp add: csets_def, metis image_iff rcset rcset_inverse)
+  by (simp add: csets_def, metis UNIV_eq_I acset_cases image_iff)
 
 lemma infinite_nempty_cset:
   assumes "infinite (UNIV :: 'a set)"
@@ -336,11 +337,11 @@ lemma inj_on_image_csets:
 
 lemma image_csets_surj:
   "\<lbrakk> inj_on f A; f ` A = B \<rbrakk> \<Longrightarrow> (`\<^sub>c) f ` csets A = csets B"
-  apply (auto simp add: cimage_def csets_def image_mono map_fun_def)
-  apply (simp add: image_comp)
-  apply (auto simp add: image_Collect)
-  apply (erule subset_imageE)
-  using countable_image_inj_on subset_inj_on by blast
+  apply (simp add: cimage_def csets_def image_mono map_fun_def image_comp image_Collect)
+  apply safe
+   apply auto[1]
+  apply (metis acset_inverse countable_subset_image mem_Collect_eq)
+  done
 
 lemma bij_betw_image_csets:
   "bij_betw f A B \<Longrightarrow> bij_betw ((`\<^sub>c) f) (csets A) (csets B)"
