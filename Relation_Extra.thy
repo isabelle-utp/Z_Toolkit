@@ -426,67 +426,78 @@ lemma AList_restrict_in_dom: "AList.restrict (set (filter P (map fst xs))) xs = 
 lemma mk_functional_alist [code]:
   "mk_functional (set xs) = set (filter (\<lambda> (x,y). length (remdups (map snd (AList.restrict {x} xs))) = 1) xs)"
   by (simp only: mk_functional_single_valued_dom rel_domres_alist single_valued_dom_alist AList_restrict_in_dom)
-  
+
 lemma rel_apply_set [code]:
   "rel_apply (set xs) k = 
   (let ys = filter (\<lambda> (k', v). k = k') xs in
    if (length ys > 0 \<and> ys = replicate (length ys) (hd ys)) then snd (hd ys) else undefined)"
-proof (simp add: Let_unfold, safe)
+proof -
   let ?ys = "filter (\<lambda>(k', v). k = k') xs"
-  assume ys: "?ys \<noteq> []" "?ys = replicate (length ?ys) (hd ?ys)"
-  have kmem: "\<And> y. (k, y) \<in> set xs \<longleftrightarrow> (k, y) \<in> set ?ys"
-    by simp
-  from ys obtain v where v: "(k, v) \<in> set xs"
-    using hd_in_set by fastforce
-  hence ys':"?ys = replicate (length ?ys) (k, v)"
-    by (metis (mono_tags) case_prodI filter_set in_set_replicate member_filter ys(2))
-  hence "snd (hd ?ys) = v"
-    by (metis hd_replicate replicate_0 snd_conv ys(1))
-  moreover have "(THE y. (k, y) \<in> set xs) = v"
-    by (metis (no_types, lifting) v in_set_replicate kmem snd_conv the_equality ys')
-  moreover have "(\<exists>!y. (k, y) \<in> set xs)"
-    by (metis Pair_inject v in_set_replicate kmem ys')
-  ultimately show "set xs(k)\<^sub>r = snd (hd ?ys)"
-    by (simp add: rel_apply_def)
-next
-  assume "filter (\<lambda>(k', v). k = k') xs = []" 
-  hence "\<nexists>v. (k, v) \<in> set xs"
-    by (metis (mono_tags, lifting) case_prodI filter_empty_conv)
-  thus "set xs(k)\<^sub>r = undefined"
-    by (auto simp add: rel_apply_def)
-next
-  let ?ys = "filter (\<lambda>(k', v). k = k') xs"
-  assume ys: "?ys \<noteq> replicate (length ?ys) (hd ?ys)"
-  have keys: "\<forall> (k', v') \<in> set ?ys. k' = k"
-    by auto
-  show "set xs(k)\<^sub>r = undefined"
-  proof (cases "length ?ys = 0")
-    case True
-    then show ?thesis
-      using ys by fastforce
-  next
-    case False
-    hence "length ?ys > 1"
-      by (metis hd_in_set in_set_conv_nth length_0_conv less_one linorder_neqE_nat replicate_length_same ys)
-    have "fst (hd ?ys) = k"
-      using False hd_in_set by force
-    have "\<not>(\<forall> (k, v) \<in> set ?ys. v = snd (hd ?ys))"
-    proof 
-      assume "(\<forall> (k, v) \<in> set ?ys. v = snd (hd ?ys))"
-      hence "(\<forall> p \<in> set ?ys. p = (k, snd (hd ?ys)))"
-        by fastforce
-      hence "?ys = replicate (length ?ys) (hd ?ys)"
-        by (metis False length_0_conv list.set_sel(1) replicate_length_same)
-      thus False
-        using ys by blast
-    qed
-    then obtain v where "(k, v) \<in> set ?ys" "v \<noteq> snd (hd ?ys)"
-      by fastforce
-    hence "(\<not> (\<exists>!y. (k, y) \<in> set xs))"
-      using False list.set_sel(1) by fastforce
-    then show ?thesis
+  have 1: "\<lbrakk> ?ys \<noteq> []; ?ys = replicate (length ?ys) (hd ?ys) \<rbrakk> \<Longrightarrow>
+          set xs(k)\<^sub>r = snd (hd ?ys)"
+  proof -
+    assume ys: "?ys \<noteq> []" "?ys = replicate (length ?ys) (hd ?ys)"
+    have kmem: "\<And> y. (k, y) \<in> set xs \<longleftrightarrow> (k, y) \<in> set ?ys"
+      by simp
+    from ys obtain v where v: "(k, v) \<in> set xs"
+      using hd_in_set by fastforce
+    hence ys':"?ys = replicate (length ?ys) (k, v)"
+      by (metis (mono_tags) case_prodI filter_set in_set_replicate member_filter ys(2))
+    hence "snd (hd ?ys) = v"
+      by (metis hd_replicate replicate_0 snd_conv ys(1))
+    moreover have "(THE y. (k, y) \<in> set xs) = v"
+      by (metis (no_types, lifting) v in_set_replicate kmem snd_conv the_equality ys')
+    moreover have "(\<exists>!y. (k, y) \<in> set xs)"
+      by (metis Pair_inject v in_set_replicate kmem ys')
+    ultimately show "set xs(k)\<^sub>r = snd (hd ?ys)"
       by (simp add: rel_apply_def)
   qed
+
+  have 2: "?ys = [] \<Longrightarrow> set xs(k)\<^sub>r = undefined"
+  proof -
+    assume "filter (\<lambda>(k', v). k = k') xs = []" 
+    hence "\<nexists>v. (k, v) \<in> set xs"
+      by (metis (mono_tags, lifting) case_prodI filter_empty_conv)
+    thus "set xs(k)\<^sub>r = undefined"
+      by (auto simp add: rel_apply_def)
+  qed
+
+  have 3: "?ys \<noteq> replicate (length ?ys) (hd ?ys) \<Longrightarrow> set xs(k)\<^sub>r = undefined"
+  proof -
+    assume ys: "?ys \<noteq> replicate (length ?ys) (hd ?ys)"
+    have keys: "\<forall> (k', v') \<in> set ?ys. k' = k"
+      by auto
+    show "set xs(k)\<^sub>r = undefined"
+    proof (cases "length ?ys = 0")
+      case True
+      then show ?thesis
+        using ys by fastforce
+    next
+      case False
+      hence "length ?ys > 1"
+        by (metis hd_in_set in_set_conv_nth length_0_conv less_one linorder_neqE_nat replicate_length_same ys)
+      have "fst (hd ?ys) = k"
+        using False hd_in_set by force
+      have "\<not>(\<forall> (k, v) \<in> set ?ys. v = snd (hd ?ys))"
+      proof 
+        assume "(\<forall> (k, v) \<in> set ?ys. v = snd (hd ?ys))"
+        hence "(\<forall> p \<in> set ?ys. p = (k, snd (hd ?ys)))"
+          by fastforce
+        hence "?ys = replicate (length ?ys) (hd ?ys)"
+          by (metis False length_0_conv list.set_sel(1) replicate_length_same)
+        thus False
+          using ys by blast
+      qed
+      then obtain v where "(k, v) \<in> set ?ys" "v \<noteq> snd (hd ?ys)"
+        by fastforce
+      hence "(\<not> (\<exists>!y. (k, y) \<in> set xs))"
+        using False list.set_sel(1) by fastforce
+      then show ?thesis
+        by (simp add: rel_apply_def)
+    qed
+  qed
+  from 1 2 3 show ?thesis
+    by (simp add: Let_unfold)
 qed
 
 end
