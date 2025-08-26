@@ -292,7 +292,7 @@ lemma nth_le_takeWhile_ord: "\<lbrakk> sorted xs; i \<ge> length (takeWhile (\<l
   apply (induct xs arbitrary: i, simp_all)
   apply (rename_tac x xs i)
   apply (case_tac "x \<le> n")
-   apply (auto)
+   apply (safe, simp_all)
   apply (metis One_nat_def Suc_eq_plus1 le_less_linear le_less_trans less_imp_le list.size(4) nth_mem set_ConsD)
   done
 
@@ -1302,7 +1302,7 @@ lemma list_disjoint_Cons [simp]: "list_disjoint (A # Bs) = ((\<forall> B \<in> s
 subsection \<open> Code Generation \<close>
 
 lemma set_singleton_iff: "set xs = {x} \<longleftrightarrow> remdups xs = [x]"
-  apply (auto)
+  apply (safe)
     apply (metis card_set empty_set insert_not_empty length_0_conv length_Suc_conv list.simps(15) remdups.simps(1) remdups.simps(2) set_remdups the_elem_set)
    apply (metis empty_iff empty_set set_ConsD set_remdups)
   apply (metis list.set_intros(1) set_remdups)

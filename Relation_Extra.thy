@@ -237,7 +237,7 @@ lemma functional_def: "functional R \<longleftrightarrow> inj_on fst R"
   by (force simp add: single_valued_def inj_on_def)
 
 lemma functional_algebraic: "functional R \<longleftrightarrow> R\<inverse> O R \<subseteq> Id"
-  apply (auto simp add: functional_def subset_iff relcomp_unfold)
+  apply (simp add: functional_def subset_iff relcomp_unfold, safe)
   using inj_on_eq_iff apply fastforce
   apply (metis inj_onI surjective_pairing)
   done
@@ -398,7 +398,7 @@ lemma rel_pfun_insert [rclos]: "\<lbrakk> R \<in> A \<rightarrow>\<^sub>p B; x \
 lemma rel_pfun_override [rclos]: "\<lbrakk> R \<in> A \<rightarrow>\<^sub>p B; S \<in> A \<rightarrow>\<^sub>p B \<rbrakk> \<Longrightarrow> (R \<oplus> S) \<in> A \<rightarrow>\<^sub>p B"
   apply (rule rel_pfun_intro)
    apply (rule rel_typed_intro)
-  apply (auto simp add: rel_pfun_def rel_typed_def)
+  apply (simp_all add: rel_pfun_def rel_typed_def, safe)
   apply (metis (no_types, opaque_lifting) Range.simps Range_Un_eq Range_rel_override Un_iff rev_subsetD)
   done
 

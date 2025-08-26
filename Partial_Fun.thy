@@ -1073,9 +1073,10 @@ lemma range_list_pfun:
   apply (simp add: image_def)
   apply (rename_tac f i)
   apply (rule_tac x="map (the \<circ> f \<circ> nat) [1..i]" in exI)
-  apply (auto simp add: fun_eq_iff restrict_map_def)
+  apply (simp add: fun_eq_iff restrict_map_def, safe, simp_all)
   apply (metis Suc_le_mono Suc_pred atLeastAtMost_iff domIff le0 option.exhaust_sel)
   apply (metis One_nat_def atLeastAtMost_iff domIff le_zero_eq zero_neq_one)
+  apply (metis atLeastAtMost_iff domIff)
   done
 
 lemma list_pfun_le_iff_prefix [simp]: "list_pfun xs \<le> list_pfun ys \<longleftrightarrow> xs \<le> ys"

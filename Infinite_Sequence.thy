@@ -274,7 +274,7 @@ lemma infseq_inj: "inj infseq_inj"
 
 lemma infseq_inj_surj: "bij infseq_inj"
   apply (rule bijI)
-   apply (auto simp add: infseq_inj)
+   apply (simp add: infseq_inj, safe, simp_all)
   apply (metis rangeI infseq_proj_inverse)
   done
 
