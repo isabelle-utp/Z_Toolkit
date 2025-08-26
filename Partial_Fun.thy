@@ -33,7 +33,7 @@ begin
 definition "HOL.equal m1 m2 \<longleftrightarrow> (\<forall>k. pfun_lookup m1 k = pfun_lookup m2 k)"
 
 instance 
-  by (intro_classes, auto simp add: equal_pfun_def, transfer, auto)
+  by (intro_classes, simp add: equal_pfun_def, transfer, auto)
 
 end
 
@@ -234,13 +234,8 @@ lemma pfun_override_dist_comp:
   "(f \<oplus> g) \<circ>\<^sub>p h = (f \<circ>\<^sub>p h) \<oplus> (g \<circ>\<^sub>p h)"
   apply (transfer)
   apply (rule ext)
-  apply (auto simp add: map_add_def)
-  apply (rename_tac f g h x)
-  apply (case_tac "h x")
-   apply (auto)
-  apply (rename_tac f g h x y)
-  apply (case_tac "g y")
-   apply (auto)
+  apply (simp add: map_add_def)
+  apply (metis (no_types, lifting) bind.bind_lunit bind_eq_None_conv map_comp_def option.case_eq_if option.collapse)
   done
 
 lemma pfun_minus_unit [simp]:
@@ -272,14 +267,14 @@ lemma pfun_compat_add: "(P :: 'a \<Zpfun> 'b) ## Q \<Longrightarrow> P \<oplus> 
 lemma pfun_compat_addI: "\<lbrakk> (P :: 'a \<Zpfun> 'b) ## Q; P ## R; Q ## R \<rbrakk> \<Longrightarrow> P \<oplus> Q ## R"
   apply (simp add: compatible_pfun_def oplus_pfun_def)
   apply (transfer)
-  apply (auto simp add: restrict_map_def fun_eq_iff dom_def map_add_def option.case_eq_if)
-   apply (metis option.inject)+
+  apply (simp add: restrict_map_def fun_eq_iff dom_def map_add_def option.case_eq_if)
+   apply metis
   done
 
 instance proof
   fix P Q R :: "'a \<Zpfun> 'b"
   show "P ## Q \<Longrightarrow> P \<oplus> Q ## R \<Longrightarrow> P ## R"
-    by (simp add: pfun_compat_add)
+    using pfun_compat_add by blast
   show "P ## Q \<Longrightarrow> P ## R \<Longrightarrow> Q ## R \<Longrightarrow> P \<oplus> Q ## R"
     by (simp add: pfun_compat_addI)
 qed (simp_all add: compatible_pfun_def oplus_pfun_def,
@@ -319,7 +314,7 @@ lemma pfun_minus_common_subset:
 
 lemma pfun_minus_override:
   "pdom(f) \<inter> pdom(g) = {} \<Longrightarrow> (f \<oplus> g) - g = f"
-  by (transfer, simp add: map_add_def map_minus_def option.case_eq_if, rule ext, auto)
+  by (transfer, simp add: map_add_def map_minus_def option.case_eq_if, rule ext, safe, simp)
      (metis Int_commute domIff insert_disjoint(1) insert_dom)
 
 lemma pfun_override_pos: "x \<oplus> y = {}\<^sub>p \<Longrightarrow> x = {}\<^sub>p"
@@ -373,7 +368,7 @@ lemma pfun_upd_add [simp]: "f \<oplus> g(x \<mapsto> v)\<^sub>p = (f \<oplus> g)
   by (transfer, simp)
 
 lemma pfun_upd_add_left [simp]: "x \<notin> pdom(g) \<Longrightarrow> f(x \<mapsto> v)\<^sub>p \<oplus> g = (f \<oplus> g)(x \<mapsto> v)\<^sub>p"
-  by (transfer, auto, metis domD map_add_upd_left)
+  by (transfer, safe, metis domD map_add_upd_left)
 
 lemma pfun_app_add' [simp]: "e \<notin> pdom g \<Longrightarrow> (f \<oplus> g)(e)\<^sub>p = f(e)\<^sub>p"
   by (transfer, auto)
@@ -437,10 +432,10 @@ lemma psubseteq_ran_subset:
   by (transfer, auto simp add: map_le_def dom_def ran_def)
 
 lemma pfun_eq_iff: "f = g \<longleftrightarrow> (pdom(f) = pdom(g) \<and> (\<forall> x \<in> pdom(f). f(x)\<^sub>p = g(x)\<^sub>p))"
-  by (auto, transfer, simp add: map_eq_iff, metis domD option.sel)
+  by (safe, transfer, simp add: map_eq_iff, metis domD option.sel)
 
 lemma pfun_leI: "\<lbrakk> pdom f \<subseteq> pdom g; \<forall>x\<in>pdom f. f(x)\<^sub>p = g(x)\<^sub>p \<rbrakk> \<Longrightarrow> f \<subseteq>\<^sub>p g"
-  by (transfer, auto simp add: map_le_def)
+  by (transfer, simp add: map_le_def, safe)
      (metis domD domI option.sel subsetD)
 
 lemma pfun_le_iff: "(f \<subseteq>\<^sub>p g) = (pdom f \<subseteq> pdom g \<and> (\<forall>x\<in>pdom f. f(x)\<^sub>p = g(x)\<^sub>p))"
@@ -464,7 +459,7 @@ lemma map_pfun_as_pabs: "map_pfun f g = (\<lambda> x \<in> pdom(g) \<bullet> f(g
   by (simp add: pabs_def, transfer, auto simp add: fun_eq_iff restrict_map_def)
 
 lemma map_pfun_ovrd [simp]: "map_pfun f (g \<oplus> h) = (map_pfun f g) \<oplus> (map_pfun f h)"
-  by (simp add: map_pfun_def, transfer, auto simp add: map_add_def fun_eq_iff)
+  by (simp add: map_pfun_def, transfer, simp add: map_add_def fun_eq_iff)
      (metis bind.bind_lunit comp_apply map_conv_bind_option option.case_eq_if)
 
 lemma map_pfun_dres [simp]: "map_pfun f (A \<lhd>\<^sub>p g) = A \<lhd>\<^sub>p map_pfun f g"
@@ -482,9 +477,10 @@ lemma pdom_plus [simp]: "pdom (f \<oplus> g) = pdom f \<union> pdom g"
   by (transfer, auto)
 
 lemma pdom_minus [simp]: "g \<le> f \<Longrightarrow> pdom (f - g) = pdom f - pdom g"
-  apply (transfer, auto simp add: map_minus_def)
+  apply (transfer, simp add: map_minus_def, safe)
    apply (meson option.distinct(1))
   apply (metis domIff map_le_def option.simps(3))
+  apply metis
   done
 
 lemma pdom_inter: "pdom (f \<inter>\<^sub>p g) \<subseteq> pdom f \<inter> pdom g"
@@ -515,7 +511,7 @@ lemma pdom_pfun_graph_finite [simp]:
   by (transfer, simp add: finite_dom_graph)
 
 lemma pdom_map_pfun [simp]: "pdom (map_pfun F G) = pdom G"
-  unfolding map_pfun_def by (auto; metis dom_map_option_comp pdom.abs_eq pdom.rep_eq)
+  unfolding map_pfun_def by (safe, simp_all; metis dom_map_option_comp pdom.abs_eq pdom.rep_eq)
 
 lemma rel_comp_pfun: "R O pfun_graph f = (\<lambda> p. (fst p, pfun_app f (snd p))) ` (R \<rhd>\<^sub>r pdom(f))"
   by (transfer, auto simp add: rel_comp_map rel_ranres_def)                      
@@ -582,15 +578,16 @@ lemma pfun_graph_minus: "pfun_graph (f - g) = pfun_graph f - pfun_graph g"
   by (transfer, simp add: map_graph_minus)
 
 lemma pfun_graph_inter: "pfun_graph (f \<inter>\<^sub>p g) = pfun_graph f \<inter> pfun_graph g"
-  apply (transfer, auto simp add: map_graph_def)
-   apply (metis option.discI)+
+  apply (transfer, simp add: map_graph_def, safe, simp_all add: domIff)
+   apply (metis option.discI)
+  apply (metis ifSomeE)    
   done
 
 lemma pfun_graph_domres: "pfun_graph (A \<lhd>\<^sub>p f) = (A \<lhd>\<^sub>r pfun_graph f)"
   by (transfer, simp add: rel_domres_math_def map_graph_def restrict_map_def, metis option.simps(3))
 
 lemma pfun_graph_override: "pfun_graph (f \<oplus> g) = pfun_graph f \<oplus> pfun_graph g"
-  by (transfer, auto simp add: map_add_def oplus_set_def rel_domres_def map_graph_def option.case_eq_if)
+  by (transfer, simp add: map_add_def oplus_set_def rel_domres_def map_graph_def option.case_eq_if, safe, simp_all)
      (metis option.collapse)+
 
 lemma pfun_graph_update: "pfun_graph (f(k \<mapsto> v)\<^sub>p) = insert (k, v) ((- {k}) \<lhd>\<^sub>r pfun_graph f)"
@@ -691,13 +688,16 @@ lemma pfun_inv_f_f_apply: "\<lbrakk> pfun_inj f; x \<in> pdom f \<rbrakk> \<Long
   by (transfer, auto simp add: ranI)
 
 lemma pfun_inj_upd: "\<lbrakk> pfun_inj f; v \<notin> pran f \<rbrakk> \<Longrightarrow> pfun_inj (f(k \<mapsto> v)\<^sub>p)"
-  by (transfer, auto, meson f_the_inv_into_f inj_on_fun_updI)
+  apply (transfer, simp_all, safe)
+  apply (meson f_the_inv_into_f inj_on_fun_updI)
+  apply fastforce
+  done
 
 lemma pfun_inj_dres: "pfun_inj f \<Longrightarrow> pfun_inj (A \<lhd>\<^sub>p f)"
   by (transfer, auto simp add: inj_on_def)
 
 lemma pfun_inj_rres: "pfun_inj f \<Longrightarrow> pfun_inj (f \<rhd>\<^sub>p A)"
-  by (transfer, auto simp add: inj_on_def ran_restrict_map_def, metis domI option.simps(3))
+  by (transfer, simp add: inj_on_def ran_restrict_map_def, safe, simp, metis domI option.simps(3))
 
 lemma pfun_inj_comp: "\<lbrakk> pfun_inj f; pfun_inj g \<rbrakk> \<Longrightarrow> pfun_inj (f \<circ>\<^sub>p g)"
   by (transfer, auto simp add: inj_on_def map_comp_def option.case_eq_if dom_def)
@@ -720,7 +720,7 @@ lemma pdom_pfun_inv [simp]: "pdom (pfun_inv f) = pran f"
 lemma pfun_inv_add:
   assumes "pfun_inj f" "pfun_inj g" "pran f \<inter> pran g = {}"
   shows "pfun_inv (f \<oplus> g) = (pfun_inv f \<rhd>\<^sub>p (- pdom g)) \<oplus> pfun_inv g"
-  using assms by (simp add: pran_rep_eq, transfer, auto, meson map_inv_add)
+  using assms by (simp add: pran_rep_eq, transfer, safe, meson map_inv_add)
 
 lemma pfun_inv_upd:
   assumes "pfun_inj f" "v \<notin> pran f"
@@ -783,7 +783,8 @@ lemma pdom_res_apply [simp]:
 
 lemma pdom_res_frame_update [simp]: 
   "\<lbrakk> x \<in> pdom(f); (-{x}) \<lhd>\<^sub>p f = (-{x}) \<lhd>\<^sub>p g \<rbrakk> \<Longrightarrow> g(x \<mapsto> f(x)\<^sub>p)\<^sub>p = f"
-  by (transfer, auto, metis fun_upd_triv fun_upd_upd restrict_complement_singleton_eq)
+  by transfer (metis (mono_tags, opaque_lifting) domIff fun_upd_triv fun_upd_upd option.exhaust_sel
+      restrict_complement_singleton_eq)
 
 lemma pdres_rres_commute: "A \<lhd>\<^sub>p (P \<rhd>\<^sub>p B) = (A \<lhd>\<^sub>p P) \<rhd>\<^sub>p B"
   by (transfer, simp add: map_dres_rres_commute)
@@ -792,9 +793,9 @@ lemma pdom_nres_disjoint: "pdom(f) \<inter> A = {} \<Longrightarrow> (- A) \<lhd
   by (metis disjoint_eq_subset_Compl inf.absorb2 pdom_res_pdom pdom_res_twice)
 
 lemma pranres_pdom [simp]: "pdom (f \<rhd>\<^sub>p A) \<lhd>\<^sub>p f = f \<rhd>\<^sub>p A"
-  by (transfer, auto simp add: restrict_map_def fun_eq_iff ran_restrict_map_def option.case_eq_if)
-     (metis not_None_eq)
-
+  by (transfer, simp add: restrict_map_def fun_eq_iff ran_restrict_map_def option.case_eq_if)
+     (metis (full_types, lifting) bind.bind_lunit bind.bind_lzero domIff not_None_eq)
+  
 lemma pdom_pranres [simp]: "pdom (f \<rhd>\<^sub>p A) \<subseteq> pdom f"
   by (metis inf.absorb_iff1 inf.commute pdom_pdom_res pdom_res_pdom pdom_res_swap)
 
@@ -825,7 +826,7 @@ lemma pran_res_alt_def: "f \<rhd>\<^sub>p A = pId_on A \<circ>\<^sub>p f"
   by (transfer, rule ext, auto simp add: ran_restrict_map_def)
 
 lemma pran_res_override: "(f \<oplus> g) \<rhd>\<^sub>p A \<subseteq>\<^sub>p (f \<rhd>\<^sub>p A) \<oplus> (g \<rhd>\<^sub>p A)"
-  apply (transfer, auto simp add: map_add_def ran_restrict_map_def map_le_def)
+  apply (transfer, simp add: map_add_def ran_restrict_map_def map_le_def, safe)
   apply (rename_tac f g A a y x)
   apply (case_tac "g a")
    apply (auto)
@@ -838,7 +839,7 @@ lemma pranres_le: "A \<subseteq> B \<Longrightarrow> f \<rhd>\<^sub>p A \<le> f 
   by (simp add: pfun_graph_le_iff[THEN sym] pfun_graph_comp pfun_graph_rres relcomp_mono rel_ranres_le)
 
 lemma pranres_neg_ran [simp]: "P \<rhd>\<^sub>p- pran P = {}\<^sub>p"
-  by (transfer, auto simp add: ran_restrict_map_def fun_eq_iff option.case_eq_if bind_eq_None_conv, meson option.exhaust_sel)
+  by (transfer, simp add: ran_restrict_map_def fun_eq_iff option.case_eq_if bind_eq_None_conv, meson option.exhaust_sel)
 
 subsection \<open> Preimage Laws \<close>
 
@@ -972,7 +973,7 @@ definition pfun_singleton :: "('a \<Zpfun> 'b) \<Rightarrow> bool" where
 "pfun_singleton f = (\<exists> k v. f = {k \<mapsto> v}\<^sub>p)" 
 
 lemma pfun_singleton_dom: "pfun_singleton f \<longleftrightarrow> (\<exists> k. pdom(f) = {k})"
-  by (auto simp add: pfun_singleton_def)
+  by (simp add: pfun_singleton_def, safe, simp_all)
      (metis insertI1 override_lzero pdom_res_pdom pfun_ovrd_single_upd)
 
 lemma pfun_singleton_maplet [simp]:
@@ -983,10 +984,9 @@ definition dest_pfsingle :: "('a \<Zpfun> 'b) \<Rightarrow> 'a \<times> 'b" wher
 "dest_pfsingle f = (THE (k, v). f = {k \<mapsto> v}\<^sub>p)"
 
 lemma dest_pfsingle_maplet [simp]: "dest_pfsingle {k \<mapsto> v}\<^sub>p = (k, v)"
-  apply (auto intro!:the_equality simp add: dest_pfsingle_def)
-   apply (metis pdom_upd pdom_zero singleton_insert_inj_eq)
-  apply (metis pdom_upd pdom_zero pfun_app_upd_1 singleton_insert_inj_eq)
-  done  
+  unfolding dest_pfsingle_def
+  by (rule the_equality, simp_all add: prod.case_eq_if)
+     (metis fst_eqD pdom_res_zero pdom_upd pdom_zero pran_upd pran_zero prod.expand singleton_insert_inj_eq sndI)
 
 subsection \<open> Summation \<close>
     
@@ -1055,7 +1055,7 @@ lemma pdom_list_pfun [simp]: "pdom (list_pfun xs) = {1..length xs}"
   by (auto simp add: list_pfun_def)
 
 lemma pran_list_pfun [simp]: "pran (list_pfun xs) = set xs"
-  by (simp add: list_pfun_def, auto)
+  by (simp add: list_pfun_def, safe, simp_all)
      (metis One_nat_def Suc_leI diff_Suc_1 in_set_conv_nth zero_less_Suc)
 
 lemma pfun_app_list_pfun: "\<lbrakk> 0 < i; i \<le> length xs \<rbrakk> \<Longrightarrow> (list_pfun xs)(i)\<^sub>p = xs ! (i - 1)"
@@ -1067,7 +1067,7 @@ lemma pfun_graph_list_pfun: "pfun_graph (list_pfun xs) = (\<lambda> i. (i, xs ! 
 lemma range_list_pfun:
   "range list_pfun = {f. \<exists> i. pdom(f) = {1..i}}"
   apply (simp add: list_pfun_def pabs_def)
-  apply (transfer, auto)
+  apply (transfer, safe, simp_all)
   apply (rename_tac xs)
   apply (rule_tac x="length xs" in exI, auto simp add: dom_def)[1]
   apply (simp add: image_def)
@@ -1079,8 +1079,10 @@ lemma range_list_pfun:
   done
 
 lemma list_pfun_le_iff_prefix [simp]: "list_pfun xs \<le> list_pfun ys \<longleftrightarrow> xs \<le> ys"
-  by (auto simp add: pfun_le_iff list_le_prefix_iff pfun_app_list_pfun)
-     (metis Suc_leI atLeastAtMost_iff diff_Suc_Suc diff_zero zero_less_Suc)
+  apply (simp add: pfun_le_iff, safe, simp_all add: pfun_app_list_pfun list_le_prefix_iff)
+  apply (metis Suc_leI Suc_le_mono atLeastAtMost_iff diff_Suc_Suc le0 minus_nat.diff_0)
+  apply (metis Suc_le_D Suc_le_eq diff_Suc_Suc diff_zero)
+  done
 
 lemma pfun_upd_le_iff: "(f(k \<mapsto> v)\<^sub>p \<subseteq>\<^sub>p g) = (k \<in> pdom g \<and> g(k)\<^sub>p = v \<and> (- {k}) \<lhd>\<^sub>p f \<subseteq>\<^sub>p g)"
   by (auto simp add: pfun_le_iff)
@@ -1097,7 +1099,7 @@ lemma pfun_lens_mwb [simp]: "mwb_lens (pfun_lens i)"
   by (unfold_locales, simp_all add: pfun_lens_def)
 
 lemma pfun_lens_src: "\<S>\<^bsub>pfun_lens i\<^esub> = {f. i \<in> pdom(f)}"
-  by (auto simp add: lens_defs lens_source_def, transfer, force)
+  by (simp add: lens_defs lens_source_def, transfer, force)
 
 lemma lens_override_pfun_lens:
   "x \<in> pdom(g) \<Longrightarrow> f \<oplus>\<^sub>L g on pfun_lens x = f \<oplus> ({x} \<lhd>\<^sub>p g)"
@@ -1170,12 +1172,13 @@ lemma prism_fun_combine:
   shows "prism_fun c A PB \<oplus> prism_fun d B QB = prism_fun (c +\<^sub>\<triangle> d) (A <+> B) (case_sum PB QB)"
   using assms
   apply (simp add: pfun_eq_iff dom_prism_fun sum.case_eq_if prism_diff_build build_in_dom_prism_fun)
-  apply auto
-  apply (metis InlI build_plus_Inl sum.disc(1) sum.sel(1))
-    apply (metis InrI build_plus_Inr sum.disc(2) sum.sel(2))
-   apply (simp add: dom_prism_fun prism_diff_build prism_fun_apply)
-   apply (metis InlI build_plus_Inl case_sum_o_inj(1) comp_apply prism_fun_apply prism_plus_wb)
-  apply (simp add: build_in_dom_prism_fun prism_diff_build prism_fun_apply)
+  apply safe
+           apply (simp_all add: add: build_in_dom_prism_fun prism_diff_build prism_fun_apply)
+      apply (metis InlI build_plus_Inl sum.disc(1) sum.sel(1))
+     apply (metis InrI build_plus_Inr sum.disc(2) sum.sel(2))
+    apply metis
+   apply (metis InlI build_in_dom_prism_fun build_plus_Inl old.sum.simps(5) pfun_app_add prism_fun_apply prism_fun_commute
+      prism_plus_wb)
   apply (metis InrI build_plus_Inr old.sum.simps(6) prism_fun_apply prism_plus_wb)
   done
 
@@ -1202,7 +1205,7 @@ lemma map_pfun_prism_fun [simp]: "map_pfun f (prism_fun a A (\<lambda> x. (B x, 
 lemma prism_fun_as_map:
   "wb_prism b \<Longrightarrow> 
    prism_fun b A PB = pfun_of_map (\<lambda> x. case match\<^bsub>b\<^esub> x of None \<Rightarrow> None | Some x \<Rightarrow> if x \<in> A \<and> fst (PB x) then Some (snd (PB x)) else None)"
-  by (auto simp add: prism_fun_def pfun_eq_iff domIff pdom.abs_eq option.case_eq_if)
+  by (simp add: prism_fun_def pfun_eq_iff domIff pdom.abs_eq option.case_eq_if, safe, simp_all)
      (metis (no_types, lifting) image_iff option.collapse option.distinct(1) wb_prism.build_match, metis option.discI)
 
 subsection \<open> Code Generator \<close>
@@ -1228,17 +1231,14 @@ lemma dom_pfun_alist [simp, code]: "pdom (pfun_of_alist xs) = set (map fst xs)"
   by (transfer, simp add: dom_map_of_conv_image_fst)
 
 lemma ran_pfun_alist [simp, code]: "pran (pfun_of_alist xs) = set (remdups (map snd (AList.clearjunk xs)))"
-  by (transfer, auto)
-     (metis ranI ran_map_of, metis distinct_clearjunk map_of_clearjunk map_of_eq_Some_iff)
+  apply (transfer, safe, simp_all)
+   apply (safe, simp_all)
+   apply (metis ranI ran_map_of)
+  apply (metis distinct_clearjunk map_of_clearjunk map_of_eq_Some_iff)
+  done
 
 lemma map_graph_map_of: "map_graph (map_of xs) = set (AList.clearjunk xs)"
-  apply (induct xs, simp_all)                 
-  apply (auto simp add: map_graph_def)
-  apply (metis map_of_SomeD map_of_clearjunk map_of_delete)
-  apply (metis map_of_SomeD map_of_clearjunk map_of_delete option.inject snd_conv)
-  apply (metis clearjunk_delete delete_conv' fun_upd_apply option.distinct(1) weak_map_of_SomeI)
-  apply (metis Some_eq_map_of_iff distinct_clearjunk map_of_clearjunk map_of_delete)
-  done
+  by (metis graph_def graph_map_of map_graph_def)
 
 lemma pfun_graph_alist [code]: "pfun_graph (pfun_of_alist xs) = set (AList.clearjunk xs)"
   by (transfer, meson map_graph_map_of)
@@ -1251,9 +1251,9 @@ lemma update_pfun_alist [code]: "pfun_upd (pfun_of_alist xs) k v = pfun_of_alist
 
 lemma apply_pfun_alist [code]: 
   "pfun_app (pfun_of_alist xs) k = (if k \<in> set (map fst xs) then the (map_of xs k) else undefined)"
-  apply (transfer, auto)
+  apply (transfer, simp, safe)
   apply (metis map_of_eq_None_iff option.distinct(1))
-  apply (metis option.distinct(1) weak_map_of_SomeI)
+  apply (metis eq_fst_iff weak_map_of_SomeI)
   done
 
 lemma map_of_Cons_code [code]:
@@ -1287,7 +1287,7 @@ proof (induct xs)
 next
   case (Cons a xs)
   then show ?case 
-      by (auto; transfer)
+      by (simp, safe; transfer)
          (simp add: restrict_map_insert, metis Int_insert_right_if0 Map.restrict_restrict domIff map_restrict_dom)
 qed
 
@@ -1343,7 +1343,7 @@ lemma equal_pfun [code]:
   "HOL.equal (pfun_of_alist xs) (pfun_of_alist ys) \<longleftrightarrow>
     (let ks = map fst xs; ls = map fst ys
      in (\<forall>l\<in>set ls. l \<in> set ks) \<and> (\<forall>k\<in>set ks. k \<in> set ls \<and> map_of xs k = map_of ys k))"
-  apply (simp add: equal_pfun_def, transfer, auto)
+  apply (simp add: equal_pfun_def, transfer, safe, simp_all)
   apply (metis map_of_eq_None_iff option.distinct(1) weak_map_of_SomeI)
   apply (metis domI domIff map_of_eq_None_iff weak_map_of_SomeI)
   apply (metis (no_types, lifting) image_iff map_of_eq_None_iff)
@@ -1394,7 +1394,7 @@ fun pfuse_alist :: "('k \<times> 'a) list \<Rightarrow> ('k \<Zpfun> 'b) \<Right
 lemma pfuse_pfun_of_alist_aux: 
   "pfuse (pfun_of_alist xs) g = pfun_of_alist (pfuse_alist xs g)"
   apply (induct xs)
-  apply (auto simp add: pfuse_upd)
+  apply (simp_all add: pfuse_upd, safe, simp_all)
   apply (metis (no_types, lifting) disjoint_iff_not_equal pdom_nres_disjoint pfun_upd_ext pfun_upd_twice pfuse_upd singletonD)
   done
 

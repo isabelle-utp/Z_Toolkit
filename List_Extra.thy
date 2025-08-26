@@ -100,7 +100,7 @@ lemma sorted_map: "\<lbrakk> sorted xs; mono f \<rbrakk> \<Longrightarrow> sorte
 
 lemma sorted_distinct [intro]: "\<lbrakk> sorted (xs); distinct(xs) \<rbrakk> \<Longrightarrow> (\<forall> i<length xs - 1. xs!i < xs!(i + 1))"
   apply (induct xs)
-   apply (auto)
+   apply (simp_all)
   apply (metis (no_types, opaque_lifting) Suc_leI Suc_less_eq Suc_pred gr0_conv_Suc not_le not_less_iff_gr_or_eq nth_Cons_Suc nth_mem nth_non_equal_first_eq)
   done
 
@@ -152,7 +152,7 @@ next
   with hyps(1) have srtd: "sorted xs"
     by (simp add: is_sorted_list_of_set_def)
   with isl show "sorted (x # xs)"
-    apply (auto simp add: is_sorted_list_of_set_def)
+    apply (simp_all add: is_sorted_list_of_set_def)
     apply (metis (mono_tags, lifting) all_nth_imp_all_set less_le_trans linorder_not_less not_less_iff_gr_or_eq nth_Cons_0 sorted_iff_nth_mono zero_order(3))
     done
   from srt hyps(2) have "distinct xs"
@@ -168,10 +168,7 @@ qed
 
 lemma is_sorted_list_of_set_alt_def:
   "is_sorted_list_of_set A xs \<longleftrightarrow> sorted (xs) \<and> distinct (xs) \<and> set(xs) = A"
-  apply (auto intro: sorted_is_sorted_list_of_set)
-    apply (auto simp add: is_sorted_list_of_set_def)
-  apply (metis Nat.add_0_right One_nat_def add_Suc_right sorted_distinct)
-  done
+  by (metis is_sorted_list_of_set_def sorted_distinct sorted_is_sorted_list_of_set(1,2))
 
 definition sorted_list_of_set_alt :: "('a::ord) set \<Rightarrow> 'a list" where
 "sorted_list_of_set_alt A =
@@ -183,17 +180,15 @@ lemma is_sorted_list_of_set:
 
 lemma sorted_list_of_set_other_def:
   "finite A \<Longrightarrow> sorted_list_of_set(A) = (THE xs. sorted(xs) \<and> distinct(xs) \<and> set xs = A)"
-  apply (rule sym)
-  apply (rule the_equality)
-   apply (auto)
-  apply (simp add: sorted_distinct_set_unique)
-  done
+  by (metis (mono_tags, lifting) sorted_list_of_set.distinct_sorted_key_list_of_set
+      sorted_list_of_set.idem_if_sorted_distinct sorted_list_of_set.set_sorted_key_list_of_set
+      sorted_list_of_set.sorted_sorted_key_list_of_set the_equality)
 
 lemma sorted_list_of_set_alt [simp]:
   "finite A \<Longrightarrow> sorted_list_of_set_alt(A) = sorted_list_of_set(A)"
-  apply (rule sym)
-  apply (auto simp add: sorted_list_of_set_alt_def is_sorted_list_of_set_alt_def sorted_list_of_set_other_def)
-  done
+  by (metis is_sorted_list_of_set is_sorted_list_of_set_def sorted_is_sorted_list_of_set(1,2)
+      sorted_list_of_set.idem_if_sorted_distinct sorted_list_of_set_alt_def sorted_list_of_set_eq_Nil_iff
+      the_equality)
 
 text \<open> Sorting lists according to a relation \<close>
 
@@ -227,13 +222,8 @@ proof
     using fin_set_lexord_def by fastforce+
 
   with fin hyp show "(xs, ys) \<in> fin_set_lexord {(x, y). g x y}"
-    apply (auto simp add: fin_set_lexord_def)
-    apply (rename_tac xs' ys')
-    apply (rule_tac x="xs'" in exI)
-    apply (auto)
-     apply (metis case_prodD case_prodI is_sorted_list_of_set_by_def mem_Collect_eq)
-    apply (metis case_prodD case_prodI is_sorted_list_of_set_by_def lexord_mono' mem_Collect_eq)
-    done
+    by (simp add: fin_set_lexord_def, metis case_prod_conv is_sorted_list_of_set_by_def lexord_mono' mem_Collect_eq)
+
 qed
 
 definition distincts :: "'a set \<Rightarrow> 'a list set" where
@@ -268,11 +258,10 @@ qed
 
 subsubsection \<open> Drop While and Take While \<close>
 
-
 lemma dropWhile_sorted_le_above:
   "\<lbrakk> sorted xs; x \<in> set (dropWhile (\<lambda> x. x \<le> n) xs) \<rbrakk> \<Longrightarrow> x > n"
   apply (induct xs)
-   apply (auto)
+   apply (simp_all)
   apply (rename_tac a xs)
   apply (case_tac "a \<le> n")
    apply (auto)
@@ -300,7 +289,7 @@ next
 qed
 
 lemma nth_le_takeWhile_ord: "\<lbrakk> sorted xs; i \<ge> length (takeWhile (\<lambda> x. x \<le> n) xs); i < length xs \<rbrakk> \<Longrightarrow> n \<le> xs ! i"
-  apply (induct xs arbitrary: i, auto)
+  apply (induct xs arbitrary: i, simp_all)
   apply (rename_tac x xs i)
   apply (case_tac "x \<le> n")
    apply (auto)
@@ -363,8 +352,9 @@ lemma prefix_map_inj:
   apply (induct xs arbitrary:ys)
    apply (simp_all)
   apply (erule prefix_Cons_elim)
-  apply (auto)
-  apply (metis image_insert insertI1 insert_Diff_if singletonE)
+  apply safe
+  apply (metis Diff_iff Sublist.Cons_prefix_Cons Un_insert_right empty_iff image_eqI inj_on_insert insert_iff
+      list.simps(15))
   done
 
 lemma prefix_map_inj_eq [simp]:
@@ -382,11 +372,12 @@ lemma strict_prefix_map_inj:
   "\<lbrakk> inj_on f (set xs \<union> set ys); strict_prefix (map f xs) (map f ys) \<rbrakk> \<Longrightarrow>
    strict_prefix xs ys"
   apply (induct xs arbitrary:ys)
-   apply (auto)
+   apply (simp_all)
   using prefix_bot.not_eq_extremum apply fastforce
   apply (erule strict_prefix_Cons_elim)
-  apply (auto)
-  apply (metis (opaque_lifting, full_types) image_insert insertI1 insert_Diff_if singletonE)
+  apply (safe)
+  apply (metis Diff_iff Sublist.strict_prefix_simps(3) Un_insert_right empty_iff imageI inj_on_insert insert_iff
+      list.simps(15))
   done
 
 lemma strict_prefix_map_inj_eq [simp]:
@@ -476,7 +467,7 @@ qed
 
 lemma list_prefix_iff:
   "(prefix xs ys \<longleftrightarrow> (length xs \<le> length ys \<and> (\<forall> i<length xs. xs!i = ys!i)))"
-  apply (auto)
+  apply (safe)
     apply (simp add: prefix_imp_length_lteq)
    apply (metis nth_append prefix_def)
   apply (metis nth_take_lemma order_refl take_all take_is_prefix)
@@ -500,12 +491,12 @@ lemma gcp_append [simp]: "gcp (xs @ ys) (xs @ zs) = xs @ gcp ys zs"
   by (induct xs, auto)
 
 lemma gcp_lb1: "prefix (gcp xs ys) xs"
-  apply (induct xs arbitrary: ys, auto)
+  apply (induct xs arbitrary: ys, simp)
   apply (case_tac ys, auto)
   done
 
 lemma gcp_lb2: "prefix (gcp xs ys) ys"
-  apply (induct ys arbitrary: xs, auto)
+  apply (induct ys arbitrary: xs, simp)
   apply (case_tac xs, auto)
   done
 
@@ -513,9 +504,9 @@ interpretation prefix_semilattice: semilattice_inf gcp prefix strict_prefix
 proof
   fix xs ys :: "'a list"
   show "prefix (gcp xs ys) xs"
-    by (induct xs arbitrary: ys, auto, case_tac ys, auto)
+    by (induct xs arbitrary: ys, simp, case_tac ys, auto)
   show "prefix (gcp xs ys) ys"
-    by (induct ys arbitrary: xs, auto, case_tac xs, auto)
+    by (induct ys arbitrary: xs, simp, case_tac xs, auto)
 next
   fix xs ys zs :: "'a list"
   assume "prefix xs ys" "prefix xs zs"
@@ -532,7 +523,7 @@ using assms
 proof (induct xs\<^sub>2 arbitrary: xs\<^sub>1)
   case (Cons x\<^sub>2 xs\<^sub>2') note hyps = this
   from hyps(3) obtain x\<^sub>1 xs\<^sub>1' where xs\<^sub>1: "xs\<^sub>1 = x\<^sub>1 # xs\<^sub>1'" "length(xs\<^sub>1') = length(xs\<^sub>2')"
-    by (auto, metis Suc_length_conv)
+    by (simp, metis Suc_length_conv)
   with hyps(2) have xcases: "(x\<^sub>1, x\<^sub>2) \<in> R \<or> (xs\<^sub>1' @ ys\<^sub>1, xs\<^sub>2' @ ys\<^sub>2) \<in> lexord R"
     by (auto)
   show ?case
@@ -600,7 +591,7 @@ lemma lexord_intro_elems:
   shows "(xs, ys) \<in> lexord R"
 using assms proof (induct i arbitrary: xs ys)
   case 0 thus ?case
-    by (auto, metis lexord_cons_cons list.exhaust nth_Cons_0)
+    by (simp, metis lexord_cons_cons list.exhaust nth_Cons_0)
 next
   case (Suc i) note hyps = this
   then obtain x' y' xs' ys' where "xs = x' # xs'" "ys = y' # ys'"
@@ -680,7 +671,7 @@ lemma seq_extract_append:
   by (simp add: seq_extract_def nths_append)
 
 lemma seq_extract_range: "A \<upharpoonleft>\<^sub>l xs = (A \<inter> dom\<^sub>l(xs)) \<upharpoonleft>\<^sub>l xs"
-  apply (auto simp add: seq_extract_def nths_def)
+  apply (simp add: seq_extract_def nths_def)
   apply (metis (no_types, lifting) atLeastLessThan_iff filter_cong in_set_zip nth_mem set_upt)
 done
 
@@ -715,11 +706,12 @@ lemma seq_extract_singleton:
   shows "{i} \<upharpoonleft>\<^sub>l xs = [xs ! i]"
   using assms
   apply (induct xs arbitrary: i)
-  apply (auto simp add: seq_extract_Cons)
+   apply (simp_all add: seq_extract_Cons)
+  apply safe
   apply (rename_tac xs i)
   apply (subgoal_tac "{j. Suc j = i} = {i - 1}")
-  apply (auto)
-done
+   apply (auto)
+  done
 
 lemma seq_extract_as_map:
   assumes "m < n" "n \<le> length xs"
@@ -899,7 +891,7 @@ lemma length_minus_le: "length (ys - xs) \<le> length ys"
   by (simp add: minus_list_def)
 
 lemma length_minus_less: "\<lbrakk> xs \<le> ys; xs \<noteq> [] \<rbrakk> \<Longrightarrow> length (ys - xs) < length ys"
-  by (auto simp add: minus_list_def less_eq_list_def)
+  by (simp add: minus_list_def less_eq_list_def)
      (metis diff_less length_greater_0_conv prefix_bot.extremum_uniqueI)
 
 lemma filter_minus [simp]: "ys \<le> xs \<Longrightarrow> filter P (xs - ys) = filter P xs - filter P ys"
@@ -940,7 +932,7 @@ lemma list_augment_as_update:
 
 lemma nths_list_update_out: "k \<notin> A \<Longrightarrow> nths (list_update xs k x) A = nths xs A"
   apply (induct xs arbitrary: k x A)
-   apply (auto)
+   apply (simp)
   apply (rename_tac a xs k x A)
   apply (case_tac k)
    apply (auto simp add: nths_Cons)
@@ -1074,7 +1066,8 @@ proof -
 qed
 
 lemma nths_Cons_atLeastAtMost: "n > m \<Longrightarrow> nths (x # xs) {m..n} = (if m = 0 then x # nths xs {0..n-1} else nths xs {m-1..n-1})"
-  apply (auto simp add: nths_Cons)
+  apply (simp add: nths_Cons)
+  apply safe
   using One_nat_def sl1 apply presburger
   using One_nat_def le_eq_less_or_eq sl2 apply presburger
   done
@@ -1119,9 +1112,9 @@ next
            (metis (no_types, opaque_lifting) Cons.prems nths_single atLeastAtMost_singleton diff_is_0_eq' length_list_update list_update_code(2) list_update_code(3) list_update_nonempty nle_le nth_list_update_eq singletonD)
     next
       case greater
-      with Suc Cons(1)[of nat "m - Suc 0" "n - Suc 0" x] show ?thesis 
-        by (cases k, auto simp add: nths_Cons_atLeastAtMost nths_atLeastAtMost_0_take take_update_swap)
-           (metis Cons.prems Suc_le_mono Suc_pred atLeastAtMost_iff dual_order.strict_trans)
+      with Suc Cons(1)[of nat "m - Suc 0" "n - Suc 0" x] show ?thesis
+        by (cases k, simp_all add: nths_Cons_atLeastAtMost nths_atLeastAtMost_0_take take_update_swap, safe)
+           (metis Cons.prems Suc_le_mono Suc_pred atLeastAtMost_iff diff_Suc_Suc le_zero_eq not_gr_zero)
     qed
   qed
 qed
@@ -1208,7 +1201,7 @@ lemma b_lists_in_lists: "ys \<in> set (b_lists n xs) \<Longrightarrow> ys \<in> 
   by (auto simp add: b_lists_def in_mono set_n_lists)
 
 lemma in_blistsI: "\<lbrakk> length xs \<le> n; xs \<in> lists (set A) \<rbrakk> \<Longrightarrow> xs \<in> set (b_lists n A)"
-  apply (auto simp add: b_lists_def)
+  apply (simp_all add: b_lists_def, safe)
   apply (rule_tac x="length xs" in bexI)
    apply (auto simp add: set_n_lists subsetI)
   done
@@ -1263,22 +1256,23 @@ qed
 lemma distinct_b_lists: "distinct xs \<Longrightarrow> distinct (b_lists n xs)"
   apply (cases "xs = []")
    apply (simp)
-  apply (auto simp add: b_lists_def)
+  apply (simp add: b_lists_def, safe)
     apply (rule distinct_concat)
       apply (simp add: distinct_map)
       apply (simp add: inj_onI n_lists_inj)
   using distinct_n_lists apply auto[1]
-    apply (auto)
-  using length_n_lists_elem apply blast
+    apply (safe)
+    apply (metis ex_map_conv length_n_lists_elem)
    apply (simp add: distinct_n_lists)
-  using length_n_lists_elem apply blast
+  apply (metis atLeastLessThan_iff length_n_lists_elem order_less_irrefl)
   done
 
 definition bounded_lists :: "nat \<Rightarrow> 'a set \<Rightarrow> 'a list set" where
   "bounded_lists n A = {xs\<in>lists A. length xs \<le> n}"
 
 lemma bounded_lists_b_lists [code]: "bounded_lists n (set xs) = set (b_lists n xs)"
-  apply (auto simp add: bounded_lists_def in_blistsI in_listsI)
+  apply (simp add: bounded_lists_def in_blistsI in_listsI, safe)
+  using in_blistsI apply blast
   apply (meson b_lists_in_lists in_lists_conv_set)
   apply (meson length_b_lists_elem)
   done
@@ -1296,7 +1290,7 @@ lemma list_disjoint_Nil [simp]: "list_disjoint []"
 
 lemma list_disjoint_Cons [simp]: "list_disjoint (A # Bs) = ((\<forall> B \<in> set Bs. A \<inter> B = {}) \<and> list_disjoint Bs)"
   apply (simp add: list_disjoint_def disjoint_iff)
-  apply (auto)
+  apply (safe)
     apply (metis Suc_less_eq in_set_conv_nth nat.distinct(1) neq0_conv nth_Cons_0 nth_Cons_Suc)
    apply (metis lessI lift_Suc_mono_less_iff nat.inject nth_Cons_Suc)
   apply (rename_tac i j x)

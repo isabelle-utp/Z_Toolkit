@@ -31,7 +31,7 @@ lemma sinit_0 [simp]: "sinit 0 xs = []"
 
 lemma prefix_upt_0 [intro]:
   "i \<le> j \<Longrightarrow> prefix [0..<i] [0..<j]"
-  by (induct i, auto, metis append_prefixD le0 prefix_order.lift_Suc_mono_le prefix_order.order_refl upt_Suc)
+  by (induct i, simp, metis append_prefixD le0 prefix_order.lift_Suc_mono_le prefix_order.order_refl upt_Suc)
 
 lemma sinit_prefix:
   "i \<le> j \<Longrightarrow> prefix (sinit i xs) (sinit j xs)"
@@ -43,7 +43,7 @@ lemma sinit_strict_prefix:
 
 lemma nth_sinit:
   "i < n \<Longrightarrow> sinit n xs ! i = xs !\<^sub>s i"
-  apply (auto simp add: ssubstr_def)
+  apply (unfold ssubstr_def)
   apply (transfer, auto)
   done
 
@@ -54,7 +54,7 @@ proof -
   have "[0..<i] @ [i..<j] = [0..<j]"
     by (metis assms le0 le_add_diff_inverse le_less upt_add_eq_append)
   thus ?thesis
-    by (auto simp add: ssubstr_def, transfer, simp add: map_append[THEN sym])
+    by (simp add: ssubstr_def, transfer, simp add: map_append[THEN sym])
 qed
 
 lemma sinit_linear_asym_lemma1:
@@ -134,7 +134,7 @@ proof (rule transI, clarify)
       by (metis less_le_trans less_trans nth_sinit)
     ultimately have "(sinit n xs, sinit n zs) \<in> lexord R" using sinitm(2) sinitn(2) lt
       apply (rule_tac lexord_intro_elems)
-         apply (auto)
+         apply (simp_all)
       apply (metis less_le_trans less_trans nth_sinit)
       done
     thus ?thesis by auto
@@ -147,7 +147,7 @@ proof (rule transI, clarify)
       by (metis dual_order.strict_trans nth_sinit)
     ultimately have "(sinit n xs, sinit n zs) \<in> lexord R" using sinitm(2) sinitn(2) ge
       apply (rule_tac lexord_intro_elems)
-         apply (auto)
+         apply (simp_all)
       apply (metis less_trans nth_sinit)
       done
     thus ?thesis by auto
@@ -170,7 +170,7 @@ lemma infseq_lexord_asym:
 lemma infseq_lexord_total:
   assumes "total R"
   shows "total (infseq_lexord R)"
-  using assms by (auto simp add: total_on_def infseq_lexord_def, meson lexord_linear sinit_ext)
+  using assms by (simp add: total_on_def infseq_lexord_def, meson lexord_linear sinit_ext)
 
 lemma infseq_lexord_strict_linear_order:
   assumes "strict_linear_order R"
@@ -217,24 +217,17 @@ next
   fix xs ys :: "'a infseq"
   assume "xs \<le> ys" and "ys \<le> xs"
   then show "xs = ys"
-    apply (auto simp add: less_eq_infseq_def less_infseq_def)
-    apply (rule infseq_lexord_irreflexive [THEN notE])
-     defer
-     apply (rule infseq_lexord_trans)
-       apply (auto intro: transI)
+    apply (simp_all add: less_eq_infseq_def less_infseq_def)
+    apply safe
+    apply (metis asym_onI case_prodD infseq_lexord_antisym mem_Collect_eq order_less_asym)
     done
 next
   fix xs ys :: "'a infseq"
   show "xs < ys \<longleftrightarrow> xs \<le> ys \<and> \<not> ys \<le> xs"
-    apply (auto simp add: less_infseq_def less_eq_infseq_def)
-     defer
-     apply (rule infseq_lexord_irreflexive [THEN notE])
-      apply auto
-     apply (rule infseq_lexord_irreflexive [THEN notE])
-      defer
-      apply (rule infseq_lexord_trans)
-        apply (auto intro: transI)
-    apply (simp add: infseq_lexord_irreflexive)
+    apply (simp_all add: less_infseq_def less_eq_infseq_def)
+    apply safe
+     apply (simp_all add: infseq_lexord_irreflexive)
+    apply (metis asym_onI case_prodD infseq_lexord_antisym mem_Collect_eq order_less_imp_not_less)
     done
 qed
 
@@ -249,9 +242,9 @@ qed
 
 lemma infseq_lexord_mono [mono]:
   "(\<And> x y. f x y \<longrightarrow> g x y) \<Longrightarrow> (xs, ys) \<in> infseq_lexord {(x, y). f x y} \<longrightarrow> (xs, ys) \<in> infseq_lexord {(x, y). g x y}"
-  apply (auto simp add: infseq_lexord_def)
+  apply (simp add: infseq_lexord_def)
   apply (metis case_prodD case_prodI lexord_take_index_conv mem_Collect_eq)
-done
+  done
 
 fun insort_rel :: "'a rel \<Rightarrow> 'a \<Rightarrow> 'a list \<Rightarrow> 'a list" where
 "insort_rel R x [] = [x]" |
@@ -284,4 +277,5 @@ lemma infseq_inj_surj: "bij infseq_inj"
    apply (auto simp add: infseq_inj)
   apply (metis rangeI infseq_proj_inverse)
   done
+
 end
